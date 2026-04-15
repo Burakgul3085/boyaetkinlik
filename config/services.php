@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'shopier' => [
+        'api_key' => env('SHOPIER_API_KEY'),
+        'api_secret' => env('SHOPIER_API_SECRET'),
+        'website_index' => env('SHOPIER_WEBSITE_INDEX'),
+        'endpoint' => env('SHOPIER_ENDPOINT', 'https://www.shopier.com/ShowProduct/api_pay4.php'),
+    ],
+
 ];
