@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Shopier Yonlendirme')
+@section('title', 'Shopier Yönlendirme')
 
 @section('content')
     <div class="mx-auto max-w-xl rounded-2xl bg-white p-6 shadow">
-        <h1 class="text-xl font-bold text-slate-900">Shopier'e Yonlendiriliyorsunuz</h1>
+        <h1 class="text-xl font-bold text-slate-900">Shopier'e Yönlendiriliyorsunuz</h1>
         <p class="mt-3 text-slate-600">
-            Guvenli odeme sayfasina yonlendirme icin asagidaki butona tiklayin.
+            Güvenli ödeme sayfasına yönlendirme için aşağıdaki butona tıklayın.
         </p>
 
         <div class="mt-6 rounded-xl bg-slate-100 p-4 text-sm">
-            <p><strong>Siparis:</strong> {{ $transaction->order_id }}</p>
+            <p><strong>Sipariş:</strong> {{ $transaction->order_id }}</p>
             <p><strong>Tutar:</strong> {{ number_format($transaction->paid_amount, 2) }} TL</p>
             <p><strong>E-posta:</strong> {{ $transaction->email }}</p>
         </div>
@@ -20,10 +20,10 @@
                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
             @endforeach
             <button class="w-full rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-700">
-                Shopier Odeme Sayfasina Git
+                Shopier Ödeme Sayfasına Git
             </button>
         </form>
-        <p class="mt-2 text-xs text-slate-500">Butona basmazsaniz 2 saniye icinde otomatik yonlendirme olur.</p>
+        <p class="mt-2 text-xs text-slate-500">Butona basmazsanız 2 saniye içinde otomatik yönlendirme olur.</p>
     </div>
 
     <script>

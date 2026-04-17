@@ -3,8 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -31,6 +36,45 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Bu alana erişim yetkiniz yok.']);
         }
 
+        try {
+            $this->issueAndSendVerificationCode($request);
+        } catch (Throwable $exception) {
+            report($exception);
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors(['email' => 'Doğrulama kodu gönderilemedi. SMTP ayarlarınızı kontrol edin.']);
+        }
+
+        return redirect()->route('admin.verify.form');
+    }
+
+    public function showVerify()
+    {
+        return view('admin.auth.verify');
+    }
+
+    public function verify(Request $request)
+    {
+        $data = $request->validate([
+            'verification_code' => ['required', 'digits:6'],
+        ]);
+
+        $storedHash = (string) $request->session()->get('admin_verification_code_hash', '');
+        $expiresAt = (int) $request->session()->get('admin_verification_expires_at', 0);
+
+        if ($storedHash === '' || $expiresAt === 0 || now()->timestamp > $expiresAt) {
+            return back()->withErrors(['verification_code' => 'Kodun süresi doldu. Lütfen tekrar giriş yapın.']);
+        }
+
+        if (! hash_equals($storedHash, hash('sha256', $data['verification_code']))) {
+            return back()->withErrors(['verification_code' => 'Doğrulama kodu hatalı.']);
+        }
+
+        $request->session()->put('admin_code_verified', true);
+        $request->session()->forget(['admin_verification_code_hash', 'admin_verification_expires_at', 'admin_verification_sent_to']);
+
         return redirect()->route('admin.dashboard');
     }
 
@@ -41,5 +85,90 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login')->with('success', 'Cikis yapildi. Tekrar giris yapabilirsiniz.');
+    }
+
+    private function issueAndSendVerificationCode(Request $request): void
+    {
+        $verificationCode = (string) random_int(100000, 999999);
+        $recipientEmail = Setting::getValue('contact_email', '');
+
+        $smtpHost = Setting::getValue('smtp_host', '');
+        $smtpPort = (int) (Setting::getValue('smtp_port', '587') ?: 587);
+        $smtpUsername = Setting::getValue('smtp_username', '');
+        $smtpPassword = Setting::getValue('smtp_password', '');
+        $smtpEncryption = strtolower((string) (Setting::getValue('smtp_encryption', 'tls') ?: 'tls'));
+        $fromEmail = Setting::getValue('smtp_from_email', $smtpUsername ?: $recipientEmail);
+        $fromName = Setting::getValue('smtp_from_name', 'Boya Etkinlik Guvenlik');
+
+        if (! $recipientEmail || ! $smtpHost || ! $smtpPort || ! $smtpUsername || ! $smtpPassword || ! $fromEmail) {
+            throw new Exception('SMTP veya alici ayarlari eksik.');
+        }
+
+        $mailer = new PHPMailer(true);
+        $mailer->isSMTP();
+        $mailer->Host = $smtpHost;
+        $mailer->Port = $smtpPort;
+        $mailer->SMTPAuth = true;
+        $mailer->Username = $smtpUsername;
+        $mailer->Password = $smtpPassword;
+        $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+        $mailer->SMTPDebug = SMTP::DEBUG_OFF;
+        $mailer->CharSet = 'UTF-8';
+
+        $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik Guvenlik');
+        $mailer->addAddress($recipientEmail);
+        $mailer->isHTML(true);
+        $mailer->Subject = 'Admin Giris Dogrulama Kodu';
+        $mailer->Body = $this->buildVerificationMailBody($verificationCode);
+        $mailer->AltBody = "Admin giris dogrulama kodunuz: {$verificationCode}\nBu kod 10 dakika gecerlidir.";
+        $mailer->send();
+
+        $request->session()->put('admin_code_verified', false);
+        $request->session()->put('admin_verification_code_hash', hash('sha256', $verificationCode));
+        $request->session()->put('admin_verification_expires_at', now()->addMinutes(10)->timestamp);
+        $request->session()->put('admin_verification_sent_to', $recipientEmail);
+    }
+
+    private function buildVerificationMailBody(string $verificationCode): string
+    {
+        $appName = config('app.name', 'Boya Etkinlik');
+        $sentAt = now()->format('d.m.Y H:i');
+
+        return <<<HTML
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Giris Dogrulama Kodu</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:Inter,Arial,sans-serif;color:#0f172a;">
+    <table role="presentation" style="width:100%;border-collapse:collapse;padding:24px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" style="width:100%;max-width:620px;border-collapse:collapse;">
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#4338ca,#7c3aed);border-radius:16px 16px 0 0;padding:22px 24px;">
+                            <p style="margin:0;font-size:12px;color:#ddd6fe;letter-spacing:0.12em;text-transform:uppercase;">{$appName}</p>
+                            <h1 style="margin:8px 0 0;font-size:23px;line-height:1.3;color:#ffffff;">Admin Giris Dogrulama</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 16px 16px;padding:24px;">
+                            <p style="margin:0 0 16px;font-size:14px;color:#475569;">Admin paneline giris icin dogrulama kodunuz:</p>
+                            <div style="display:inline-block;padding:14px 20px;border-radius:12px;background:#eef2ff;border:1px solid #c7d2fe;">
+                                <span style="font-size:32px;letter-spacing:0.22em;font-weight:700;color:#312e81;">{$verificationCode}</span>
+                            </div>
+                            <p style="margin:16px 0 0;font-size:13px;color:#475569;">Bu kod <strong>10 dakika</strong> gecerlidir.</p>
+                            <p style="margin:8px 0 0;font-size:12px;color:#64748b;">Gonderim zamani: {$sentAt}</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
     }
 }

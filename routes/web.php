@@ -8,32 +8,45 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ColoringPageController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ShopierController;
 use Illuminate\Support\Facades\Route;
 
+$adminPath = trim((string) config('app.admin_path', 'yonetim-981400-panel'), '/');
+
 Route::get('/', HomeController::class)->name('home');
-Route::get('/login', fn () => redirect()->route('admin.login'))->name('login');
-Route::get('/yonetim', fn () => redirect()->route(auth()->check() ? 'admin.dashboard' : 'admin.login'));
-Route::get('/admin-giris', fn () => redirect()->route(auth()->check() ? 'admin.dashboard' : 'admin.login'));
+Route::get('/login', fn () => abort(404))->name('login');
+Route::get('/yonetim', fn () => abort(404));
+Route::get('/admin-giris', fn () => abort(404));
+Route::any('/admin', fn () => abort(404));
+Route::any('/admin/{any}', fn () => abort(404))->where('any', '.*');
 Route::get('/kategoriler/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+Route::get('/iletisim', [ContactController::class, 'show'])->name('contact.show');
+Route::post('/iletisim', [ContactController::class, 'send'])->name('contact.send');
 Route::get('/boyama/{coloringPage}', [ColoringPageController::class, 'show'])->name('products.show');
+Route::get('/boyama/{coloringPage}/preview-image', [ColoringPageController::class, 'previewImage'])->name('products.preview-image');
 Route::post('/boyama/{coloringPage}/buy', [ColoringPageController::class, 'buy'])->name('products.buy');
 Route::get('/boyama/{coloringPage}/free-download', [ColoringPageController::class, 'downloadFree'])->name('products.download.free');
 Route::get('/shopier/{transaction}/redirect', [ShopierController::class, 'redirect'])->name('shopier.redirect');
 Route::post('/shopier/callback', [ShopierController::class, 'callback'])->name('shopier.callback');
 Route::get('/download/{token}', [DownloadController::class, 'paid'])->name('download.paid');
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix($adminPath)->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
-        Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
+        Route::get('/giris', [AdminAuthController::class, 'showLogin'])->name('login');
+        Route::post('/giris', [AdminAuthController::class, 'login'])->name('login.submit');
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {
+        Route::get('/kod-dogrulama', [AdminAuthController::class, 'showVerify'])->name('verify.form');
+        Route::post('/kod-dogrulama', [AdminAuthController::class, 'verify'])->name('verify.submit');
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    });
+
+    Route::middleware(['auth', 'admin', 'admin.code'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories.index');

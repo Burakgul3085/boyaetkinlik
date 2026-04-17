@@ -14,21 +14,30 @@
             Admin Panel
         </a>
         <div class="mt-6 space-y-1 text-sm">
-            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.dashboard') }}">Genel Bakis</a>
+            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.dashboard') }}">Genel Bakış</a>
             <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.categories.index') }}">Kategoriler</a>
-            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.pages.index') }}">Boyama Sayfalari</a>
-            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.settings.index') }}">Sayfa Ayarlari</a>
-            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.ads.index') }}">Reklam Alanlari</a>
-            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.transactions.index') }}">Islemler</a>
+            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.pages.index') }}">Boyama Sayfaları</a>
+            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.settings.index') }}">Sayfa Ayarları</a>
+            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.ads.index') }}">Reklam Alanları</a>
+            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.transactions.index') }}">İşlemler</a>
         </div>
         <form method="post" action="{{ route('admin.logout') }}" class="mt-8">
             @csrf
-            <button class="btn-danger w-full">Cikis</button>
+            <button class="btn-danger w-full">Çıkış</button>
         </form>
     </aside>
     <main class="lg:col-span-9 xl:col-span-10 p-5 lg:p-8">
         @if(session('success'))
             <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('success') }}</div>
+        @endif
+        @if($errors->any())
+            <div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                <ul class="list-disc pl-5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
         @endif
         @yield('content')
     </main>

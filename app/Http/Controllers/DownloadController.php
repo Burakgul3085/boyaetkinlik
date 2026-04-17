@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,9 +26,16 @@ class DownloadController extends Controller
 
         $transaction->update(['downloaded_at' => now()]);
 
-        return Storage::disk('local')->download(
-            $transaction->coloringPage->pdf_path,
-            $transaction->coloringPage->title.'.pdf'
+        $downloadPath = $transaction->coloringPage->pdf_path;
+        $extension = pathinfo($downloadPath, PATHINFO_EXTENSION);
+        $extension = $extension ? '.'.strtolower($extension) : '.pdf';
+
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+
+        return $disk->download(
+            $downloadPath,
+            $transaction->coloringPage->title.$extension
         );
     }
 }

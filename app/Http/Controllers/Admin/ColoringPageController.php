@@ -19,14 +19,14 @@ class ColoringPageController extends Controller
 
     public function store(Request $request)
     {
-        $data = $this->validatePayload($request);
+        $data = $this->validatePayload($request, true);
         ColoringPage::query()->create($this->uploadAndFormat($request, $data));
         return back()->with('success', 'Boyama sayfası eklendi.');
     }
 
     public function update(Request $request, ColoringPage $coloringPage)
     {
-        $data = $this->validatePayload($request);
+        $data = $this->validatePayload($request, false);
         $coloringPage->update($this->uploadAndFormat($request, $data));
         return back()->with('success', 'Boyama sayfası güncellendi.');
     }
@@ -37,8 +37,12 @@ class ColoringPageController extends Controller
         return back()->with('success', 'Boyama sayfası silindi.');
     }
 
-    private function validatePayload(Request $request): array
+    private function validatePayload(Request $request, bool $isCreate): array
     {
+        $fileRule = $isCreate
+            ? ['required', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:20480']
+            : ['nullable', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:20480'];
+
         return $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
             'title' => ['required', 'string', 'max:255'],
@@ -47,7 +51,7 @@ class ColoringPageController extends Controller
             'is_free' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
             'cover_image' => ['nullable', 'image', 'max:4096'],
-            'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
+            'pdf_file' => $fileRule,
         ]);
     }
 
