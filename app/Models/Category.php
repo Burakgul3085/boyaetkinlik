@@ -18,6 +18,7 @@ class Category extends Model
         'parent_id',
         'nav_order',
         'show_in_nav',
+        'icon_path',
     ];
 
     protected function casts(): array

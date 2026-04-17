@@ -332,6 +332,86 @@
     document.addEventListener('dragover', function (event) {
         event.preventDefault();
     });
+
+    (function () {
+        var activeRequest = null;
+
+        function fetchAndSwap(url, targetSelector, pushUrl) {
+            if (!targetSelector) return;
+            var currentTarget = document.querySelector(targetSelector);
+            if (!currentTarget) return;
+
+            if (activeRequest) {
+                activeRequest.abort();
+            }
+
+            activeRequest = new AbortController();
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                signal: activeRequest.signal,
+            })
+                .then(function (response) {
+                    return response.text();
+                })
+                .then(function (html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var freshTarget = doc.querySelector(targetSelector);
+                    if (!freshTarget) return;
+
+                    currentTarget.replaceWith(freshTarget);
+                    if (pushUrl) {
+                        window.history.replaceState({}, '', pushUrl);
+                    }
+                })
+                .catch(function (error) {
+                    if (error && error.name === 'AbortError') return;
+                    console.error('Filtre güncellemesi sırasında hata oluştu:', error);
+                });
+        }
+
+        document.addEventListener('submit', function (event) {
+            var form = event.target.closest('.js-live-filter-form');
+            if (!form) return;
+
+            event.preventDefault();
+            var params = new URLSearchParams(new FormData(form));
+            var url = form.action + '?' + params.toString();
+            fetchAndSwap(url, form.dataset.liveTarget, url);
+        });
+
+        document.addEventListener('change', function (event) {
+            var field = event.target;
+            if (!field.form || !field.form.classList.contains('js-live-filter-form')) return;
+            field.form.requestSubmit();
+        });
+
+        document.addEventListener('input', function (event) {
+            var field = event.target;
+            if (!field.form || !field.form.classList.contains('js-live-filter-form')) return;
+            if (field.name !== 'q') return;
+
+            clearTimeout(field._liveTimer);
+            field._liveTimer = setTimeout(function () {
+                field.form.requestSubmit();
+            }, 450);
+        });
+
+        document.addEventListener('click', function (event) {
+            var link = event.target.closest('.js-live-filter-link');
+            if (!link) return;
+
+            var container = link.closest('#home-filter-panel, #category-live-area');
+            if (!container || !container.id) return;
+
+            event.preventDefault();
+            fetchAndSwap(link.href, '#' + container.id, link.href);
+        });
+    })();
 </script>
 </body>
 </html>

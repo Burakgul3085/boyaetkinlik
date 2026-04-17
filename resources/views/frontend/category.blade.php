@@ -16,12 +16,12 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div class="rounded-xl border border-violet-100 bg-white/90 p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Toplam İçerik</p>
-                    <p class="mt-1 text-2xl font-bold text-slate-900">{{ $coloringPages->count() }}</p>
+                    <p class="text-xs text-slate-500">Filtre Sonucu</p>
+                    <p class="mt-1 text-2xl font-bold text-slate-900">{{ $coloringPages->total() }}</p>
                 </div>
                 <div class="rounded-xl border border-violet-100 bg-white/90 p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Ücretsiz İçerik</p>
-                    <p class="mt-1 text-2xl font-bold text-emerald-600">{{ $coloringPages->where('is_free', true)->count() }}</p>
+                    <p class="text-xs text-slate-500">Bu Sayfada Gösterilen</p>
+                    <p class="mt-1 text-2xl font-bold text-emerald-600">{{ $coloringPages->count() }}</p>
                 </div>
                 <div class="col-span-2 rounded-xl border border-violet-100 bg-white/90 p-4 shadow-sm">
                     <p class="text-xs text-slate-500">Kategori Notu</p>
@@ -31,33 +31,112 @@
         </div>
     </section>
 
-    <div class="mt-6">
-        <div class="mb-4 flex items-center justify-between gap-3">
-            <h2 class="text-2xl font-bold text-slate-900">Boyama Sayfaları</h2>
-            <span class="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $coloringPages->count() }} içerik</span>
+    <div id="category-live-area">
+        <div class="mt-6 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
+            <div class="flex flex-wrap gap-2">
+                <a
+                    href="{{ route('categories.show', ['slug' => $category->slug, 'mode' => 'all', 'q' => $activeFilters['q'], 'pricing' => $activeFilters['pricing'], 'date_from' => $activeFilters['date_from'], 'date_to' => $activeFilters['date_to'], 'sort' => $activeFilters['sort']]) }}"
+                    class="js-live-filter-link {{ $activeFilters['mode'] === 'all' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700' }} rounded-full px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
+                >
+                    Tüm İçerikler
+                </a>
+                <a
+                    href="{{ route('categories.show', ['slug' => $category->slug, 'mode' => 'featured', 'q' => $activeFilters['q'], 'pricing' => $activeFilters['pricing'], 'date_from' => $activeFilters['date_from'], 'date_to' => $activeFilters['date_to'], 'sort' => $activeFilters['sort']]) }}"
+                    class="js-live-filter-link {{ $activeFilters['mode'] === 'featured' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700' }} rounded-full px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
+                >
+                    Öne Çıkanlar
+                </a>
+                <a
+                    href="{{ route('categories.show', ['slug' => $category->slug, 'mode' => 'latest', 'q' => $activeFilters['q'], 'pricing' => $activeFilters['pricing'], 'date_from' => $activeFilters['date_from'], 'date_to' => $activeFilters['date_to'], 'sort' => $activeFilters['sort']]) }}"
+                    class="js-live-filter-link {{ $activeFilters['mode'] === 'latest' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700' }} rounded-full px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
+                >
+                    En Yeniler (24 Saat)
+                </a>
+            </div>
+
+            <form method="get" action="{{ route('categories.show', ['slug' => $category->slug]) }}" class="js-live-filter-form mt-4 rounded-2xl border border-violet-100 bg-violet-50/40 p-3 md:p-4" data-live-target="#category-live-area">
+                <input type="hidden" name="mode" value="{{ $activeFilters['mode'] }}">
+
+                <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+                    <label class="input-ui">
+                        İsim Ara
+                        <input type="text" name="q" value="{{ $activeFilters['q'] }}" class="mt-1 w-full" placeholder="Örn: Tavşan, Araba...">
+                    </label>
+
+                    <label class="input-ui">
+                        Ücret Filtresi
+                        <select name="pricing" class="mt-1 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm">
+                            <option value="all" @selected($activeFilters['pricing'] === 'all')>Tümü</option>
+                            <option value="free" @selected($activeFilters['pricing'] === 'free')>Sadece Ücretsiz</option>
+                            <option value="paid" @selected($activeFilters['pricing'] === 'paid')>Sadece Ücretli</option>
+                        </select>
+                    </label>
+
+                    <label class="input-ui">
+                        Tarih (Başlangıç)
+                        <input type="date" name="date_from" value="{{ $activeFilters['date_from'] }}" class="mt-1 w-full">
+                    </label>
+
+                    <label class="input-ui">
+                        Tarih (Bitiş)
+                        <input type="date" name="date_to" value="{{ $activeFilters['date_to'] }}" class="mt-1 w-full">
+                    </label>
+
+                    <label class="input-ui">
+                        Sıralama
+                        <select name="sort" class="mt-1 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm">
+                            <option value="newest" @selected($activeFilters['sort'] === 'newest')>Tarihe Göre (Yeni -> Eski)</option>
+                            <option value="oldest" @selected($activeFilters['sort'] === 'oldest')>Tarihe Göre (Eski -> Yeni)</option>
+                            <option value="title_asc" @selected($activeFilters['sort'] === 'title_asc')>A-Z</option>
+                            <option value="title_desc" @selected($activeFilters['sort'] === 'title_desc')>Z-A</option>
+                            <option value="price_asc" @selected($activeFilters['sort'] === 'price_asc')>Fiyat (Artan)</option>
+                            <option value="price_desc" @selected($activeFilters['sort'] === 'price_desc')>Fiyat (Azalan)</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <p class="text-xs text-slate-500">Filtreler otomatik uygulanır.</p>
+                    <a href="{{ route('categories.show', ['slug' => $category->slug]) }}" class="btn-secondary">Temizle</a>
+                </div>
+            </form>
         </div>
+
+        <div class="mt-6">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <h2 class="text-2xl font-bold text-slate-900">Boyama Sayfaları</h2>
+                <span class="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $coloringPages->total() }} içerik</span>
+            </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            @forelse($coloringPages as $page)
+                <a href="{{ route('products.show', $page) }}" class="card group p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+                    <img
+                        src="{{ route('products.preview-image', $page) }}"
+                        class="h-40 w-full rounded-xl object-cover"
+                        alt="{{ $page->title }}"
+                        draggable="false"
+                        onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya+Sayfasi';"
+                    >
+                    <div class="mt-3 flex items-start justify-between gap-2">
+                        <p class="font-semibold text-slate-900">{{ $page->title }}</p>
+                        <span class="rounded-md bg-violet-50 px-2 py-0.5 text-[11px] text-violet-700 group-hover:bg-violet-100">Detay</span>
+                    </div>
+                    <p class="text-sm font-medium {{ $page->is_free ? 'text-emerald-600' : 'text-violet-600' }}">
+                        {{ $page->is_free ? 'Ücretsiz' : number_format($page->price, 2).' TL' }}
+                    </p>
+                </a>
+            @empty
+                <p class="card p-5 text-slate-500">Bu kategoride henüz boyama sayfası yok.</p>
+            @endforelse
+        </div>
+
+        @if($coloringPages->hasPages())
+            <div class="mt-6">
+                {{ $coloringPages->links() }}
+            </div>
+        @endif
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        @forelse($coloringPages as $page)
-            <a href="{{ route('products.show', $page) }}" class="card group p-4 transition hover:-translate-y-0.5 hover:shadow-md">
-                <img
-                    src="{{ route('products.preview-image', $page) }}"
-                    class="h-40 w-full rounded-xl object-cover"
-                    alt="{{ $page->title }}"
-                    draggable="false"
-                    onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya+Sayfasi';"
-                >
-                <div class="mt-3 flex items-start justify-between gap-2">
-                    <p class="font-semibold text-slate-900">{{ $page->title }}</p>
-                    <span class="rounded-md bg-violet-50 px-2 py-0.5 text-[11px] text-violet-700 group-hover:bg-violet-100">Detay</span>
-                </div>
-                <p class="text-sm font-medium {{ $page->is_free ? 'text-emerald-600' : 'text-violet-600' }}">
-                    {{ $page->is_free ? 'Ücretsiz' : number_format($page->price, 2).' TL' }}
-                </p>
-            </a>
-        @empty
-            <p class="card p-5 text-slate-500">Bu kategoride henüz boyama sayfası yok.</p>
-        @endforelse
-    </div>
 @endsection

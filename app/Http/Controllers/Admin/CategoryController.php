@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
@@ -35,11 +36,16 @@ class CategoryController extends Controller
             'parent_id' => ['nullable', 'exists:categories,id'],
             'nav_order' => ['nullable', 'integer', 'min:0'],
             'show_in_nav' => ['nullable', 'boolean'],
+            'icon_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
         ]);
 
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
         $data['show_in_nav'] = (bool) ($data['show_in_nav'] ?? false);
         $data['nav_order'] = (int) ($data['nav_order'] ?? 0);
+        if ($request->hasFile('icon_file')) {
+            $data['icon_path'] = $request->file('icon_file')->store('category-icons', 'public');
+        }
+        unset($data['icon_file']);
         Category::query()->create($data);
 
         return back()->with('success', 'Kategori eklendi.');
@@ -54,11 +60,19 @@ class CategoryController extends Controller
             'parent_id' => ['nullable', 'exists:categories,id', 'not_in:'.$category->id],
             'nav_order' => ['nullable', 'integer', 'min:0'],
             'show_in_nav' => ['nullable', 'boolean'],
+            'icon_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
         ]);
 
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
         $data['show_in_nav'] = (bool) ($data['show_in_nav'] ?? false);
         $data['nav_order'] = (int) ($data['nav_order'] ?? 0);
+        if ($request->hasFile('icon_file')) {
+            if ($category->icon_path) {
+                Storage::disk('public')->delete($category->icon_path);
+            }
+            $data['icon_path'] = $request->file('icon_file')->store('category-icons', 'public');
+        }
+        unset($data['icon_file']);
         $category->update($data);
 
         return back()->with('success', 'Kategori güncellendi.');
@@ -66,6 +80,9 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        if ($category->icon_path) {
+            Storage::disk('public')->delete($category->icon_path);
+        }
         $category->delete();
         return back()->with('success', 'Kategori silindi.');
     }
