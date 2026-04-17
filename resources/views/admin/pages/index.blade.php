@@ -9,12 +9,15 @@
         @csrf
         <input name="title" placeholder="Başlık" class="input-ui">
         <select name="category_id" class="input-ui">
-            @foreach($categories as $category)
-                <option value="{{ $category->id }}">{{ $category->name }}</option>
+            @foreach($categories as $rootCategory)
+                <option value="{{ $rootCategory->id }}">{{ $rootCategory->name }} (Ana)</option>
+                @foreach($rootCategory->children as $childCategory)
+                    <option value="{{ $childCategory->id }}">— {{ $childCategory->name }} (Alt)</option>
+                @endforeach
             @endforeach
         </select>
         <input type="number" step="0.01" name="price" placeholder="Fiyat" class="input-ui">
-        <label class="input-ui">Kapak <input type="file" name="cover_image" class="mt-1 block w-full text-sm"></label>
+        <label class="input-ui">Kapak (PNG/JPG/JPEG) <input type="file" name="cover_image" accept=".png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
         <label class="input-ui md:col-span-2">Dosya (PDF/PNG/JPG/JPEG) <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
         <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-2"></textarea>
         <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="is_free" value="1"> Ücretsiz</label>
@@ -44,12 +47,15 @@
                                         @method('PUT')
                                         <input name="title" value="{{ $page->title }}" class="input-ui" placeholder="Başlık" required>
                                         <select name="category_id" class="input-ui" required>
-                                            @foreach($categories as $category)
-                                                <option value="{{ $category->id }}" @selected($category->id === $page->category_id)>{{ $category->name }}</option>
+                                            @foreach($categories as $rootCategory)
+                                                <option value="{{ $rootCategory->id }}" @selected($rootCategory->id === $page->category_id)>{{ $rootCategory->name }} (Ana)</option>
+                                                @foreach($rootCategory->children as $childCategory)
+                                                    <option value="{{ $childCategory->id }}" @selected($childCategory->id === $page->category_id)>— {{ $childCategory->name }} (Alt)</option>
+                                                @endforeach
                                             @endforeach
                                         </select>
                                         <input type="number" step="0.01" name="price" value="{{ $page->price }}" placeholder="Fiyat" class="input-ui">
-                                        <label class="input-ui">Kapak <input type="file" name="cover_image" class="mt-1 block w-full text-sm"></label>
+                                        <label class="input-ui">Kapak (PNG/JPG/JPEG) <input type="file" name="cover_image" accept=".png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
                                         <label class="input-ui md:col-span-2">Dosya (PDF/PNG/JPG/JPEG) <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
                                         <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-2">{{ $page->description }}</textarea>
 

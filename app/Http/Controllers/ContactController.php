@@ -12,6 +12,8 @@ use Throwable;
 
 class ContactController extends Controller
 {
+    private const WHATSAPP_NUMBER = '905395189339';
+
     public function show()
     {
         return view('frontend.contact');
@@ -36,6 +38,20 @@ class ContactController extends Controller
         }
 
         return back()->with('success', 'Mesajiniz basariyla gonderildi.');
+    }
+
+    public function sendWhatsApp(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'wa_full_name' => ['required', 'string', 'max:120'],
+            'wa_email' => ['required', 'email', 'max:255'],
+            'wa_message' => ['required', 'string', 'min:10', 'max:4000'],
+        ]);
+
+        $message = $this->buildWhatsAppMessage($data);
+        $url = 'https://wa.me/'.self::WHATSAPP_NUMBER.'?text='.urlencode($message);
+
+        return redirect()->away($url);
     }
 
     private function sendMail(array $data): void
@@ -134,5 +150,16 @@ class ContactController extends Controller
 </body>
 </html>
 HTML;
+    }
+
+    private function buildWhatsAppMessage(array $data): string
+    {
+        $sentAt = now()->format('d.m.Y H:i');
+
+        return "Merhaba, web sitesi uzerinden yeni bir iletisim mesaji gonderildi.\n\n"
+            ."Ad Soyad: {$data['wa_full_name']}\n"
+            ."E-posta: {$data['wa_email']}\n"
+            ."Tarih: {$sentAt}\n\n"
+            ."Mesaj:\n{$data['wa_message']}";
     }
 }

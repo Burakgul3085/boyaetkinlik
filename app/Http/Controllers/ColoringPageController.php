@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ColoringPage;
 use App\Models\Transaction;
+use App\Support\FileFormatDownloadService;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -11,45 +12,80 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ColoringPageController extends Controller
 {
-    public function show(ColoringPage $coloringPage)
+    public function show(ColoringPage $coloringPage, FileFormatDownloadService $downloadService)
     {
-        return view('frontend.product', compact('coloringPage'));
+        $sourceExtension = $downloadService->sourceExtension($coloringPage->pdf_path);
+
+        return view('frontend.product', [
+            'coloringPage' => $coloringPage,
+            'downloadFormats' => $downloadService->downloadOptions($sourceExtension),
+        ]);
     }
 
-    public function downloadFree(ColoringPage $coloringPage)
+    public function downloadFree(Request $request, ColoringPage $coloringPage, FileFormatDownloadService $downloadService)
     {
         abort_unless($coloringPage->is_free, 403);
+
+        $requestedFormat = $request->string('format')->toString();
+        $requestedFormat = $downloadService->normalizeFormat($requestedFormat ?: null);
+
+        if ($requestedFormat !== null && ! in_array($requestedFormat, $downloadService->allowedFormats(), true)) {
+            abort(422, 'Geçersiz dosya formatı.');
+        }
 
         /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('public');
 
-        return $disk->download(
+        return $downloadService->download(
+            $disk,
             $coloringPage->pdf_path,
-            $this->resolveDownloadFileName($coloringPage)
+            $coloringPage->title,
+            $requestedFormat
+        );
+    }
+
+    public function printFree(Request $request, ColoringPage $coloringPage, FileFormatDownloadService $downloadService)
+    {
+        abort_unless($coloringPage->is_free, 403);
+
+        $sourceExtension = $downloadService->sourceExtension($coloringPage->pdf_path);
+        $availableFormats = $downloadService->downloadOptions($sourceExtension);
+
+        $requestedFormat = $request->string('format')->toString();
+        $requestedFormat = $downloadService->normalizeFormat($requestedFormat ?: $sourceExtension);
+
+        if (! in_array((string) $requestedFormat, $availableFormats, true)) {
+            abort(422, 'Geçersiz dosya formatı.');
+        }
+
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return $downloadService->inline(
+            $disk,
+            $coloringPage->pdf_path,
+            $coloringPage->title,
+            $requestedFormat
         );
     }
 
     public function previewImage(ColoringPage $coloringPage): StreamedResponse
     {
+        // Güvenlik: Asıl indirilebilir dosyayı (pdf/png/jpg/jpeg) preview endpointinden asla servis etmeyelim.
+        // Böylece kullanıcı yalnızca "İndir" akışı üzerinden dosyaya ulaşır.
         if ($coloringPage->cover_image_path) {
+            $coverExt = strtolower((string) pathinfo($coloringPage->cover_image_path, PATHINFO_EXTENSION));
+            $isImageCover = in_array($coverExt, ['png', 'jpg', 'jpeg'], true);
+
             /** @var FilesystemAdapter $publicDisk */
             $publicDisk = Storage::disk('public');
 
-            if ($publicDisk->exists($coloringPage->cover_image_path)) {
+            if ($isImageCover && $publicDisk->exists($coloringPage->cover_image_path)) {
                 return $publicDisk->response($coloringPage->cover_image_path);
             }
         }
 
-        $extension = strtolower((string) pathinfo($coloringPage->pdf_path, PATHINFO_EXTENSION));
-        $imageExtensions = ['png', 'jpg', 'jpeg'];
-        abort_unless(in_array($extension, $imageExtensions, true), 404);
-
-        $fileDisk = $coloringPage->is_free ? 'public' : 'local';
-        /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk($fileDisk);
-        abort_unless($disk->exists($coloringPage->pdf_path), 404);
-
-        return $disk->response($coloringPage->pdf_path);
+        abort(404);
     }
 
     public function buy(Request $request, ColoringPage $coloringPage)
@@ -69,13 +105,5 @@ class ColoringPageController extends Controller
 
         // Gerçek Shopier entegrasyonu için gerekli parametreler .env üzerinden doldurulmalıdır.
         return redirect()->route('shopier.redirect', $transaction);
-    }
-
-    private function resolveDownloadFileName(ColoringPage $coloringPage): string
-    {
-        $extension = pathinfo($coloringPage->pdf_path, PATHINFO_EXTENSION);
-        $extension = $extension ? '.'.strtolower($extension) : '.pdf';
-
-        return $coloringPage->title.$extension;
     }
 }

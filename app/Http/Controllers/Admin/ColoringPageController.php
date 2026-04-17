@@ -11,9 +11,16 @@ class ColoringPageController extends Controller
 {
     public function index()
     {
+        $categories = Category::query()
+            ->with('children')
+            ->whereNull('parent_id')
+            ->orderBy('nav_order')
+            ->orderBy('name')
+            ->get();
+
         return view('admin.pages.index', [
             'pages' => ColoringPage::query()->with('category')->latest()->get(),
-            'categories' => Category::query()->orderBy('name')->get(),
+            'categories' => $categories,
         ]);
     }
 
@@ -50,7 +57,7 @@ class ColoringPageController extends Controller
             'price' => ['nullable', 'numeric', 'min:0'],
             'is_free' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
-            'cover_image' => ['nullable', 'image', 'max:4096'],
+            'cover_image' => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:8192'],
             'pdf_file' => $fileRule,
         ]);
     }

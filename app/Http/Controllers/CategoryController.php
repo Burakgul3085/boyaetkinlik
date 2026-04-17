@@ -3,13 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\ColoringPage;
 
 class CategoryController extends Controller
 {
-    public function show(Category $category)
+    public function show(string $slug)
     {
-        $category->load(['coloringPages' => fn ($query) => $query->latest()]);
+        $category = Category::query()->where('slug', $slug)->firstOrFail();
+        $category->load('children');
 
-        return view('frontend.category', compact('category'));
+        $categoryIds = $category->children->pluck('id')->push($category->id)->all();
+        $coloringPages = ColoringPage::query()
+            ->whereIn('category_id', $categoryIds)
+            ->latest()
+            ->get();
+
+        return view('frontend.category', [
+            'category' => $category,
+            'coloringPages' => $coloringPages,
+        ]);
     }
 }
