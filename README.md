@@ -1,39 +1,40 @@
 # Boya Etkinlik Platformu (Laravel 11)
 
-Bu proje, ucretsiz ve ucretli boyama sayfalarinin listelendigi, satin alinabildigi ve token bazli indirilebildigi bir platform iskeletidir.
+Bu proje, ücretsiz ve ücretli boyama sayfalarının listelendiği, satın alınabildiği ve token bazlı indirilebildiği bir platform iskeletidir.
 
 ## Kurulum
 
 1. `cp .env.example .env`
-2. Veritabani ayarlarini `.env` icinde doldurun.
+2. Veritabanı ayarlarını `.env` içinde doldurun.
 3. `php artisan key:generate`
 4. `php artisan migrate --seed`
 5. `npm install && npm run build`
 
-## Varsayilan Admin
+## Varsayılan Admin
 
 - E-posta: `admin@boyaetkinlik.test`
-- Sifre: `12345678`
+- Şifre: `12345678`
 
-## Shared Hosting Notlari
+## Paylaşımlı Hosting Notları
 
 - `APP_ENV=production`, `APP_DEBUG=false`
-- Queue ve cache icin `database` veya `file` kullanin.
-- Ucretli dosyalar `storage/app/private` altinda saklanir ve public erisim yoktur.
-- Ucretsiz dosyalar `storage/app/public/free-pages` altinda saklanir.
+- Queue ve cache için `database` veya `file` kullanın.
+- Ücretli dosyalar `storage/app/private` altında saklanır ve herkese açık erişim yoktur.
+- Ücretsiz dosyalar `storage/app/public/free-pages` altında saklanır.
 
-### `storage:link` calismazsa alternatif
+### `storage:link` çalışmazsa alternatif
 
-Shared hostingte symlink kapaliysa:
+Paylaşımlı hostingte symlink kapalıysa:
 
-1. `storage/app/public` iceriklerini `public/storage` altina manuel kopyalayin.
-2. Yukleme stratejisini buna gore sabit tutun (deploy script ile senkronize edin).
+1. `storage/app/public` içeriklerini `public/storage` altına manuel kopyalayın.
+2. Yükleme stratejisini buna göre sabit tutun (deploy betiği ile senkronize edin).
 
 ## Shopier Notu
 
-Shopier callback rotasi: `POST /shopier/callback`
+Shopier callback rotası: `POST /shopier/callback`
 
 Bu iskelette callback geldikten sonra:
-- odeme basariliysa islem `paid` olur,
-- tek kullanimlik indirme tokeni uretilir,
-- kullaniciya e-posta ile indirme linki gonderilir.
+
+- ödeme başarılıysa işlem `paid` olur,
+- tek kullanımlık indirme tokeni üretilir,
+- kullanıcıya e-posta ile indirme linki gönderilir.

@@ -3,6 +3,7 @@
 @section('title', 'İndirme Formatı Seç')
 
 @section('content')
+    <x-public-ad-rail :tight="true">
     <section class="py-12">
         <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -69,4 +70,5 @@
             </div>
         </div>
     </section>
+    </x-public-ad-rail>
 @endsection

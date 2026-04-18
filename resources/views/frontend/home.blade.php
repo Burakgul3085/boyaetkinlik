@@ -193,8 +193,8 @@
         @endphp
         <section class="mb-6 overflow-hidden rounded-2xl border border-violet-100 bg-white/90 p-3 shadow-sm">
             <div class="mb-3 flex items-center justify-between gap-2 px-1">
-                <h2 class="text-sm font-bold tracking-wide text-violet-700">Premium Icerikler</h2>
-                <span class="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">{{ $totalPaidPagesCount }} ucretli urun</span>
+                <h2 class="text-sm font-bold tracking-wide text-violet-700">Premium içerikler</h2>
+                <span class="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">{{ $totalPaidPagesCount }} ücretli ürün</span>
             </div>
 
             <div class="paid-marquee">
@@ -224,25 +224,8 @@
         </section>
     @endif
 
-    <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-        <div class="overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">
-            <div class="min-h-[92px] w-full overflow-hidden rounded-lg bg-white text-center text-sm text-slate-500 [&_*]:max-w-full">
-                {!! $adsHeader ?: '<div class="flex min-h-[92px] items-center justify-center px-3">Header reklam alanı</div>' !!}
-            </div>
-        </div>
-    </section>
-
-    <div class="grid gap-5 lg:grid-cols-12">
-        <aside class="hidden lg:col-span-2 lg:block">
-            <div class="sticky top-24 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-                <p class="mb-2 text-center text-xs font-semibold text-slate-500">Sol Reklam</p>
-                <div class="min-h-[540px] overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center text-sm text-slate-500 [&_*]:max-w-full">
-                    {!! $adsLeft ?: '<div class="flex min-h-[540px] items-center justify-center px-2">Sol reklam alanı</div>' !!}
-                </div>
-            </div>
-        </aside>
-
-        <section class="lg:col-span-8">
+    <x-public-ad-rail class="mb-1">
+        <div class="space-y-7">
             <div class="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm md:p-5">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                 <h2 class="text-2xl font-bold text-slate-900">Yaş ve Seviye Kategorileri</h2>
@@ -372,7 +355,7 @@
                                     class="h-40 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                                     alt="{{ $page->title }}"
                                     draggable="false"
-                                    onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya+Sayfasi';"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya%20Sayfas%C4%B1';"
                                 >
                             </div>
                             <div class="mt-3 flex items-start justify-between gap-2">
@@ -396,17 +379,15 @@
                     </div>
                 @endif
             </div>
-        </section>
-
-        <aside class="hidden lg:col-span-2 lg:block">
-            <div class="sticky top-24 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-                <p class="mb-2 text-center text-xs font-semibold text-slate-500">Sağ Reklam</p>
-                <div class="min-h-[540px] overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center text-sm text-slate-500 [&_*]:max-w-full">
-                    {!! $adsRight ?: '<div class="flex min-h-[540px] items-center justify-center px-2">Sağ reklam alanı</div>' !!}
-                </div>
-            </div>
-        </aside>
-    </div>
+        </div>
+    </x-public-ad-rail>
 </div>
+
+    {{-- Ana ızgaradaki içerik sütunu (lg: 8/12, ortada) ile aynı hizada: yan boşluklar üstteki listeyle eşit --}}
+    <div class="mt-10 grid w-full gap-5 lg:grid-cols-12 lg:gap-6">
+        <div class="min-w-0 lg:col-span-8 lg:col-start-3">
+            @include('partials.home-visitor-feedback', ['approvedVisitorFeedback' => $approvedVisitorFeedback])
+        </div>
+    </div>
 
 @endsection

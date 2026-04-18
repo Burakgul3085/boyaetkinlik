@@ -33,11 +33,11 @@ class ContactController extends Controller
             report($exception);
 
             return back()
-                ->withErrors(['contact' => 'Mesaj gonderilemedi. Lutfen daha sonra tekrar deneyin.'])
+                ->withErrors(['contact' => 'Mesaj gönderilemedi. Lütfen daha sonra tekrar deneyin.'])
                 ->withInput();
         }
 
-        return back()->with('success', 'Mesajiniz basariyla gonderildi.');
+        return back()->with('success', 'Mesajınız başarıyla gönderildi.');
     }
 
     public function sendWhatsApp(Request $request): RedirectResponse
@@ -63,10 +63,10 @@ class ContactController extends Controller
         $smtpPassword = Setting::getValue('smtp_password', '');
         $smtpEncryption = strtolower((string) (Setting::getValue('smtp_encryption', 'tls') ?: 'tls'));
         $fromEmail = Setting::getValue('smtp_from_email', $smtpUsername ?: $recipientEmail);
-        $fromName = Setting::getValue('smtp_from_name', 'Boya Etkinlik Iletisim');
+        $fromName = Setting::getValue('smtp_from_name', 'Boya Etkinlik İletişim');
 
         if (! $recipientEmail || ! $smtpHost || ! $smtpPort || ! $smtpUsername || ! $smtpPassword || ! $fromEmail) {
-            throw new Exception('SMTP veya alici ayarlari eksik.');
+            throw new Exception('SMTP veya alıcı ayarları eksik.');
         }
 
         $mailer = new PHPMailer(true);
@@ -80,14 +80,14 @@ class ContactController extends Controller
         $mailer->SMTPDebug = SMTP::DEBUG_OFF;
         $mailer->CharSet = 'UTF-8';
 
-        $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik Iletisim');
+        $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik İletişim');
         $mailer->addAddress($recipientEmail);
         $mailer->addReplyTo($data['email'], $data['full_name']);
 
         $mailer->isHTML(true);
-        $mailer->Subject = 'Yeni Iletisim Mesaji - '.$data['full_name'];
+        $mailer->Subject = 'Yeni iletişim mesajı - '.$data['full_name'];
         $mailer->Body = $this->buildHtmlMailBody($data);
-        $mailer->AltBody = "Yeni iletisim mesaji\n"
+        $mailer->AltBody = "Yeni iletişim mesajı\n"
             ."Ad Soyad: {$data['full_name']}\n"
             ."E-posta: {$data['email']}\n\n"
             ."Mesaj:\n{$data['message']}";
@@ -109,7 +109,7 @@ class ContactController extends Controller
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeni Iletisim Mesaji</title>
+    <title>Yeni iletişim mesajı</title>
 </head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:Inter,Arial,sans-serif;color:#0f172a;">
     <table role="presentation" style="width:100%;border-collapse:collapse;padding:24px 12px;">
@@ -119,12 +119,12 @@ class ContactController extends Controller
                     <tr>
                         <td style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:16px 16px 0 0;padding:22px 24px;">
                             <p style="margin:0;font-size:12px;color:#e0e7ff;letter-spacing:0.12em;text-transform:uppercase;">{$appName}</p>
-                            <h1 style="margin:8px 0 0;font-size:24px;line-height:1.3;color:#ffffff;">Yeni Iletisim Formu Mesaji</h1>
+                            <h1 style="margin:8px 0 0;font-size:24px;line-height:1.3;color:#ffffff;">Yeni iletişim formu mesajı</h1>
                         </td>
                     </tr>
                     <tr>
                         <td style="background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 16px 16px;padding:24px;">
-                            <p style="margin:0 0 18px;font-size:14px;color:#475569;">Sitenizden yeni bir ziyaretci mesaji geldi.</p>
+                            <p style="margin:0 0 18px;font-size:14px;color:#475569;">Sitenizden yeni bir ziyaretçi mesajı geldi.</p>
                             <table role="presentation" style="width:100%;border-collapse:collapse;">
                                 <tr>
                                     <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;color:#334155;"><strong>Ad Soyad:</strong> {$fullName}</td>
@@ -133,14 +133,14 @@ class ContactController extends Controller
                                     <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;color:#334155;"><strong>E-posta:</strong> {$email}</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:10px 0;font-size:14px;color:#334155;"><strong>Gonderim Zamani:</strong> {$sentAt}</td>
+                                    <td style="padding:10px 0;font-size:14px;color:#334155;"><strong>Gönderim zamanı:</strong> {$sentAt}</td>
                                 </tr>
                             </table>
                             <div style="margin-top:18px;border:1px solid #dbeafe;background:#f8fafc;border-radius:12px;padding:16px;">
                                 <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#1e293b;">Mesaj:</p>
                                 <p style="margin:0;font-size:14px;line-height:1.7;color:#0f172a;">{$message}</p>
                             </div>
-                            <p style="margin:18px 0 0;font-size:12px;color:#64748b;">Bu mesaja dogrudan cevap vererek ziyaretciye ulasabilirsiniz.</p>
+                            <p style="margin:18px 0 0;font-size:12px;color:#64748b;">Bu mesaja doğrudan cevap vererek ziyaretçiye ulaşabilirsiniz.</p>
                         </td>
                     </tr>
                 </table>
@@ -156,7 +156,7 @@ HTML;
     {
         $sentAt = now()->format('d.m.Y H:i');
 
-        return "Merhaba, web sitesi uzerinden yeni bir iletisim mesaji gonderildi.\n\n"
+        return "Merhaba, web sitesi üzerinden yeni bir iletişim mesajı gönderildi.\n\n"
             ."Ad Soyad: {$data['wa_full_name']}\n"
             ."E-posta: {$data['wa_email']}\n"
             ."Tarih: {$sentAt}\n\n"

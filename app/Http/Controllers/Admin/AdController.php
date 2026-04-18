@@ -18,10 +18,11 @@ class AdController extends Controller
     public function update(Request $request)
     {
         $data = $request->validate([
-            'ads_header' => ['nullable', 'string'],
-            'ads_left' => ['nullable', 'string'],
-            'ads_right' => ['nullable', 'string'],
-            'ads_product_detail' => ['nullable', 'string'],
+            'ads_header' => ['nullable', 'string', 'max:100000'],
+            'ads_left' => ['nullable', 'string', 'max:100000'],
+            'ads_right' => ['nullable', 'string', 'max:100000'],
+            'ads_product_detail' => ['nullable', 'string', 'max:100000'],
+            'ads_footer' => ['nullable', 'string', 'max:100000'],
         ]);
 
         foreach ($data as $key => $value) {

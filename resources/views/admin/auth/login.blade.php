@@ -32,7 +32,7 @@
 <div class="relative z-10 flex w-full items-center justify-center">
 <form method="post" action="{{ route('admin.login.submit') }}" class="w-full max-w-md rounded-3xl border border-white/20 bg-slate-900/55 p-7 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-md">
     @csrf
-    <p class="inline-flex items-center rounded-full border border-indigo-300/40 bg-indigo-500/20 px-3 py-1 text-[11px] font-semibold tracking-wide text-indigo-100">Yonetim Girisi</p>
+    <p class="inline-flex items-center rounded-full border border-indigo-300/40 bg-indigo-500/20 px-3 py-1 text-[11px] font-semibold tracking-wide text-indigo-100">Yönetim girişi</p>
     <h1 class="mt-2 text-3xl font-bold text-white">Admin Giriş</h1>
     <p class="mt-1 text-sm text-slate-300">Yönetim paneline erişmek için giriş yapın.</p>
     @if(session('success'))

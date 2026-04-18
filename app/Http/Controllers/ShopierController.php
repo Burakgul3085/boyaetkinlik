@@ -14,7 +14,7 @@ class ShopierController extends Controller
 {
     public function redirect(Transaction $transaction)
     {
-        abort_if($transaction->status !== 'pending', 403, 'Bu siparis durumu odeme icin uygun degil.');
+        abort_if($transaction->status !== 'pending', 403, 'Bu sipariş durumu ödeme için uygun değil.');
 
         $shopierConfig = $this->shopierConfig();
         $apiKey = $shopierConfig['api_key'];

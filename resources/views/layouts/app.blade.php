@@ -95,6 +95,13 @@
     } else {
         $menuItems->push(['label' => 'İletişim', 'url' => '/iletisim', 'children' => []]);
     }
+
+    $adminPathTrim = trim((string) config('app.admin_path', 'yonetim-981400-panel'), '/');
+    $requestPath = request()->path();
+    $onPublicSiteSurface = ! request()->routeIs('contact.show', 'contact.send', 'contact.whatsapp')
+        && ! str_starts_with($requestPath, $adminPathTrim);
+    $stickyFooterAdHtml = (string) \App\Models\Setting::getValue('ads_footer', '');
+    $hasStickyFooterAd = $onPublicSiteSurface && trim($stickyFooterAdHtml) !== '';
 @endphp
 <header class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur">
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:py-4">
@@ -141,7 +148,7 @@
                 @endif
             @endauth
             </div>
-            <button type="button" class="theme-switch-btn" data-theme-toggle aria-label="Temayı değiştir" title="Dark/Light Mode">
+            <button type="button" class="theme-switch-btn" data-theme-toggle aria-label="Temayı değiştir" title="Koyu / açık tema">
                 <span class="theme-switch-thumb">
                     <svg data-theme-icon-sun xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 hidden" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path d="M10 2a.75.75 0 0 1 .75.75V4a.75.75 0 0 1-1.5 0V2.75A.75.75 0 0 1 10 2ZM10 15.25a.75.75 0 0 1 .75.75v1.25a.75.75 0 0 1-1.5 0V16a.75.75 0 0 1 .75-.75ZM4 9.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H4Zm13.25 0a.75.75 0 0 1 0 1.5H16a.75.75 0 0 1 0-1.5h1.25ZM5.47 4.53a.75.75 0 0 1 1.06 0l.88.88a.75.75 0 1 1-1.06 1.06l-.88-.88a.75.75 0 0 1 0-1.06Zm8 8a.75.75 0 0 1 1.06 0l.88.88a.75.75 0 1 1-1.06 1.06l-.88-.88a.75.75 0 0 1 0-1.06Zm1.94-8a.75.75 0 0 1 0 1.06l-.88.88a.75.75 0 1 1-1.06-1.06l.88-.88a.75.75 0 0 1 1.06 0Zm-8 8a.75.75 0 0 1 0 1.06l-.88.88a.75.75 0 1 1-1.06-1.06l.88-.88a.75.75 0 0 1 1.06 0ZM10 6a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z"/>
@@ -155,9 +162,16 @@
     </nav>
 </header>
 
-<main class="mx-auto max-w-7xl px-4 py-6">
+<main id="site-main" @class([
+    'mx-auto max-w-7xl px-4 py-6',
+    'pb-28 lg:pb-24' => $hasStickyFooterAd,
+])>
     @yield('content')
 </main>
+
+@if($hasStickyFooterAd)
+    @include('partials.ads-sticky-footer', ['html' => $stickyFooterAdHtml])
+@endif
 
 <footer id="iletisim" class="mt-14 border-t border-white/20 bg-gradient-to-br from-indigo-950 via-violet-900 to-fuchsia-900 text-white">
     <div class="mx-auto max-w-7xl px-4 py-7 text-sm">
@@ -302,7 +316,7 @@
                     name="last_name"
                     required
                     value="{{ old('last_name') }}"
-                    placeholder="Soyisim"
+                    placeholder="Soyad"
                     class="w-full rounded-lg border border-white/40 bg-white/10 px-3 py-2 text-xs text-white placeholder:text-white/70 focus:border-white focus:outline-none"
                 >
                 <input
@@ -314,7 +328,7 @@
                     class="w-full rounded-lg border border-white/40 bg-white/10 px-3 py-2 text-xs text-white placeholder:text-white/70 focus:border-white focus:outline-none"
                 >
                 <button class="w-full rounded-lg bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110">
-                    E-Bültene Kaydol
+                    E-bültene kayıt ol
                 </button>
             </form>
         </div>
@@ -510,8 +524,8 @@
         function applyThemeButtonLabel() {
             var isDark = document.documentElement.classList.contains('dark');
             document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
-                btn.setAttribute('aria-label', isDark ? 'Light moda gec' : 'Dark moda gec');
-                btn.setAttribute('title', isDark ? 'Light Mode' : 'Dark Mode');
+                btn.setAttribute('aria-label', isDark ? 'Açık temaya geç' : 'Koyu temaya geç');
+                btn.setAttribute('title', isDark ? 'Açık tema' : 'Koyu tema');
 
                 var sun = btn.querySelector('[data-theme-icon-sun]');
                 var moon = btn.querySelector('[data-theme-icon-moon]');
@@ -520,7 +534,7 @@
                     moon.classList.toggle('hidden', isDark);
                     btn.classList.toggle('is-dark', isDark);
                 } else {
-                    btn.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+                    btn.textContent = isDark ? 'Açık tema' : 'Koyu tema';
                 }
             });
         }

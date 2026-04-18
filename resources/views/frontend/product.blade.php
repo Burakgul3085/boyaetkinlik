@@ -3,6 +3,7 @@
 @section('title', $coloringPage->title)
 
 @section('content')
+    <x-public-ad-rail>
     <div x-data="{ previewOpen: false }">
         <div class="grid gap-6 lg:grid-cols-12">
             <div class="lg:col-span-8 card p-5 lg:p-6">
@@ -135,4 +136,5 @@
             </div>
         @endif
     </div>
+    </x-public-ad-rail>
 @endsection

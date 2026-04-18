@@ -59,6 +59,7 @@
         </div>
     </section>
 
+    <x-public-ad-rail>
     <div id="category-live-area">
         <div class="mt-6 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
             <div class="flex flex-wrap gap-2">
@@ -145,7 +146,7 @@
                         class="h-40 w-full rounded-xl object-cover"
                         alt="{{ $page->title }}"
                         draggable="false"
-                        onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya+Sayfasi';"
+                        onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya%20Sayfas%C4%B1';"
                     >
                     <div class="mt-3 flex items-start justify-between gap-2">
                         <p class="font-semibold text-slate-900">{{ $page->title }}</p>
@@ -166,5 +167,6 @@
             </div>
         @endif
     </div>
+    </x-public-ad-rail>
 
 @endsection

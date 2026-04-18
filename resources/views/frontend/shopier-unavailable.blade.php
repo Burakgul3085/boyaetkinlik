@@ -3,6 +3,7 @@
 @section('title', 'Ödeme Geçici Olarak Kapalı')
 
 @section('content')
+    <x-public-ad-rail :tight="true">
     <div class="mx-auto max-w-xl rounded-2xl bg-white p-6 shadow">
         <h1 class="text-xl font-bold text-slate-900">Ödeme Modülü Henüz Aktif Değil</h1>
         <p class="mt-3 text-slate-600">
@@ -19,4 +20,5 @@
             Ürüne Geri Dön
         </a>
     </div>
+    </x-public-ad-rail>
 @endsection

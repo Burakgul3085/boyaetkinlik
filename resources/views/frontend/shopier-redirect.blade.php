@@ -3,6 +3,7 @@
 @section('title', 'Shopier Yönlendirme')
 
 @section('content')
+    <x-public-ad-rail :tight="true">
     <div class="mx-auto max-w-xl rounded-2xl bg-white p-6 shadow">
         <h1 class="text-xl font-bold text-slate-900">Shopier'e Yönlendiriliyorsunuz</h1>
         <p class="mt-3 text-slate-600">
@@ -32,4 +33,5 @@
             if (form) form.submit();
         }, 2000);
     </script>
+    </x-public-ad-rail>
 @endsection

@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
 
         $defaults = [
             'footer_text' => 'Boya Etkinlik Platformu',
-            'about' => 'Modern ve kullanici dostu boyama sayfasi platformu.',
+            'about' => 'Modern ve kullanıcı dostu boyama sayfası platformu.',
             'contact' => 'iletisim@example.com',
             'navbar_links' => "Anasayfa|/\nAdmin|/admin/login",
         ];

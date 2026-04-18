@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\ColoringPage;
-use App\Models\Setting;
+use App\Models\VisitorFeedback;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -162,6 +162,7 @@ class HomeController extends Controller
             ->get();
 
         return view('frontend.home', [
+            'approvedVisitorFeedback' => VisitorFeedback::query()->approvedForPublic()->limit(80)->get(),
             'categories' => Category::query()->latest()->get(),
             'featuredPages' => ColoringPage::query()->latest()->take(8)->get(),
             'featuredCount' => ColoringPage::query()->where('is_featured', true)->count(),
@@ -182,9 +183,6 @@ class HomeController extends Controller
                 'sort' => $sort,
                 'category_id' => $filters['category_id'] ?? null,
             ],
-            'adsHeader' => Setting::getValue('ads_header'),
-            'adsLeft' => Setting::getValue('ads_left'),
-            'adsRight' => Setting::getValue('ads_right'),
         ]);
     }
 

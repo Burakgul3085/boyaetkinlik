@@ -153,7 +153,7 @@ class NewsletterController extends Controller
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{$safeSubject}</title>
 </head>
-<body style="margin:0;padding:0;background:#eef2ff;font-family:Inter,Arial,sans-serif;color:#0f172a;">
+<body style="margin:0;padding:0;background:#dde4ff;font-family:Inter,Arial,sans-serif;color:#0f172a;">
     <table role="presentation" style="width:100%;border-collapse:collapse;padding:28px 14px;">
         <tr>
             <td align="center">
