@@ -37,6 +37,7 @@ class CategoryController extends Controller
             'nav_order' => ['nullable', 'integer', 'min:0'],
             'show_in_nav' => ['nullable', 'boolean'],
             'icon_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
+            'cover_image_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:4096'],
         ]);
 
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
@@ -45,7 +46,11 @@ class CategoryController extends Controller
         if ($request->hasFile('icon_file')) {
             $data['icon_path'] = $request->file('icon_file')->store('category-icons', 'public');
         }
+        if ($request->hasFile('cover_image_file')) {
+            $data['cover_image_path'] = $request->file('cover_image_file')->store('category-covers', 'public');
+        }
         unset($data['icon_file']);
+        unset($data['cover_image_file']);
         Category::query()->create($data);
 
         return back()->with('success', 'Kategori eklendi.');
@@ -61,6 +66,7 @@ class CategoryController extends Controller
             'nav_order' => ['nullable', 'integer', 'min:0'],
             'show_in_nav' => ['nullable', 'boolean'],
             'icon_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
+            'cover_image_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:4096'],
         ]);
 
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
@@ -72,7 +78,14 @@ class CategoryController extends Controller
             }
             $data['icon_path'] = $request->file('icon_file')->store('category-icons', 'public');
         }
+        if ($request->hasFile('cover_image_file')) {
+            if ($category->cover_image_path) {
+                Storage::disk('public')->delete($category->cover_image_path);
+            }
+            $data['cover_image_path'] = $request->file('cover_image_file')->store('category-covers', 'public');
+        }
         unset($data['icon_file']);
+        unset($data['cover_image_file']);
         $category->update($data);
 
         return back()->with('success', 'Kategori güncellendi.');
@@ -82,6 +95,9 @@ class CategoryController extends Controller
     {
         if ($category->icon_path) {
             Storage::disk('public')->delete($category->icon_path);
+        }
+        if ($category->cover_image_path) {
+            Storage::disk('public')->delete($category->cover_image_path);
         }
         $category->delete();
         return back()->with('success', 'Kategori silindi.');

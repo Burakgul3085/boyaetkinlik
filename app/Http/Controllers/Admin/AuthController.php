@@ -57,9 +57,12 @@ class AuthController extends Controller
 
     public function verify(Request $request)
     {
-        $data = $request->validate([
-            'verification_code' => ['required', 'digits:6'],
-        ]);
+        $rawCode = (string) $request->input('verification_code', '');
+        $normalizedCode = preg_replace('/\D+/', '', $rawCode) ?? '';
+
+        if (strlen($normalizedCode) !== 6) {
+            return back()->withErrors(['verification_code' => 'Doğrulama kodu 6 haneli olmalıdır.']);
+        }
 
         $storedHash = (string) $request->session()->get('admin_verification_code_hash', '');
         $expiresAt = (int) $request->session()->get('admin_verification_expires_at', 0);
@@ -68,7 +71,7 @@ class AuthController extends Controller
             return back()->withErrors(['verification_code' => 'Kodun süresi doldu. Lütfen tekrar giriş yapın.']);
         }
 
-        if (! hash_equals($storedHash, hash('sha256', $data['verification_code']))) {
+        if (! hash_equals($storedHash, hash('sha256', $normalizedCode))) {
             return back()->withErrors(['verification_code' => 'Doğrulama kodu hatalı.']);
         }
 

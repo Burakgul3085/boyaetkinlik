@@ -4,6 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin Panel')</title>
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('site-theme');
+                if (saved === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-100 text-slate-700">
@@ -14,6 +24,7 @@
             Admin Panel
         </a>
         <div class="mt-6 space-y-1 text-sm">
+            <button type="button" class="theme-toggle-btn w-full justify-center !border-slate-600 !bg-slate-900 !text-slate-200" data-theme-toggle>Dark Mode</button>
             <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.dashboard') }}">Genel Bakış</a>
             <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.categories.index') }}">Kategoriler</a>
             <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.pages.index') }}">Boyama Sayfaları</a>
@@ -43,5 +54,30 @@
         @yield('content')
     </main>
 </div>
+<script>
+    (function () {
+
+        function applyThemeButtonLabel() {
+            var isDark = document.documentElement.classList.contains('dark');
+            document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+                btn.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            var toggle = event.target.closest('[data-theme-toggle]');
+            if (!toggle) return;
+
+            var root = document.documentElement;
+            root.classList.toggle('dark');
+            try {
+                localStorage.setItem('site-theme', root.classList.contains('dark') ? 'dark' : 'light');
+            } catch (e) {}
+            applyThemeButtonLabel();
+        });
+
+        applyThemeButtonLabel();
+    })();
+</script>
 </body>
 </html>

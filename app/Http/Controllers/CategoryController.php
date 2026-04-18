@@ -71,9 +71,19 @@ class CategoryController extends Controller
 
         $coloringPages = $query->paginate(18)->withQueryString();
 
+        $categoryStatsBase = ColoringPage::query()->whereIn('category_id', $categoryIds);
+        $categoryTotalCount = (clone $categoryStatsBase)->count();
+        $categoryFreeCount = (clone $categoryStatsBase)->where('is_free', true)->count();
+        $categoryPaidCount = (clone $categoryStatsBase)->where('is_free', false)->count();
+        $categoryFeaturedCount = (clone $categoryStatsBase)->where('is_featured', true)->count();
+
         return view('frontend.category', [
             'category' => $category,
             'coloringPages' => $coloringPages,
+            'categoryTotalCount' => $categoryTotalCount,
+            'categoryFreeCount' => $categoryFreeCount,
+            'categoryPaidCount' => $categoryPaidCount,
+            'categoryFeaturedCount' => $categoryFeaturedCount,
             'activeFilters' => [
                 'q' => $searchTerm,
                 'pricing' => $pricing,

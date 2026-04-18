@@ -21,6 +21,10 @@
             İkon (PNG/JPG/SVG/WEBP)
             <input type="file" name="icon_file" accept=".png,.jpg,.jpeg,.svg,.webp" class="mt-1 w-full text-sm">
         </label>
+        <label class="input-ui">
+            Kategori görseli (PNG/JPG/WEBP)
+            <input type="file" name="cover_image_file" accept=".png,.jpg,.jpeg,.webp" class="mt-1 w-full text-sm">
+        </label>
         <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-3"></textarea>
         <label class="inline-flex items-center gap-2 text-sm">
             <input type="hidden" name="show_in_nav" value="0">
@@ -62,6 +66,15 @@
                     <label class="input-ui md:col-span-3">
                         İkonu güncelle (opsiyonel)
                         <input type="file" name="icon_file" accept=".png,.jpg,.jpeg,.svg,.webp" class="mt-1 w-full text-sm">
+                    </label>
+                    <div class="md:col-span-1">
+                        <div class="flex h-14 items-center rounded-xl border border-dashed border-slate-300 px-3 text-xs text-slate-500">
+                            {{ $category->cover_image_path ? 'Kategori görseli var' : 'Kategori görseli yok' }}
+                        </div>
+                    </div>
+                    <label class="input-ui md:col-span-3">
+                        Kategori görselini güncelle (opsiyonel)
+                        <input type="file" name="cover_image_file" accept=".png,.jpg,.jpeg,.webp" class="mt-1 w-full text-sm">
                     </label>
                 </div>
                 <textarea name="description" class="input-ui mt-3">{{ $category->description }}</textarea>

@@ -4,6 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Boya Etkinlik')</title>
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('site-theme');
+                if (saved === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -89,10 +99,13 @@
 <header class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur">
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:py-4">
         <a href="{{ route('home') }}" class="group inline-flex items-center gap-3 text-slate-800">
-            <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-md shadow-indigo-200 transition group-hover:scale-105">BE</span>
+            <span class="logo-anim-wrap inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-violet-100 bg-white shadow-md shadow-indigo-200/50 transition group-hover:scale-105">
+                <img src="{{ asset('images/site-logo.png') }}" alt="Boya Etkinlik Logo" class="logo-anim-img h-full w-full object-cover">
+            </span>
             <span class="text-lg font-bold tracking-tight text-slate-900 lg:text-xl">Boya Etkinlik</span>
         </a>
-        <div class="flex items-center gap-1.5 rounded-2xl border border-violet-100 bg-violet-50/70 p-1 text-sm font-medium">
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 rounded-2xl border border-violet-100 bg-violet-50/70 p-1 text-sm font-medium">
             @foreach($menuItems as $item)
                 @if(! empty($item['children']))
                     <div class="group relative">
@@ -127,6 +140,17 @@
                     <a id="admin-nav-link" class="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700" href="{{ route('admin.dashboard') }}">Panel</a>
                 @endif
             @endauth
+            </div>
+            <button type="button" class="theme-switch-btn" data-theme-toggle aria-label="Temayı değiştir" title="Dark/Light Mode">
+                <span class="theme-switch-thumb">
+                    <svg data-theme-icon-sun xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 hidden" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M10 2a.75.75 0 0 1 .75.75V4a.75.75 0 0 1-1.5 0V2.75A.75.75 0 0 1 10 2ZM10 15.25a.75.75 0 0 1 .75.75v1.25a.75.75 0 0 1-1.5 0V16a.75.75 0 0 1 .75-.75ZM4 9.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H4Zm13.25 0a.75.75 0 0 1 0 1.5H16a.75.75 0 0 1 0-1.5h1.25ZM5.47 4.53a.75.75 0 0 1 1.06 0l.88.88a.75.75 0 1 1-1.06 1.06l-.88-.88a.75.75 0 0 1 0-1.06Zm8 8a.75.75 0 0 1 1.06 0l.88.88a.75.75 0 1 1-1.06 1.06l-.88-.88a.75.75 0 0 1 0-1.06Zm1.94-8a.75.75 0 0 1 0 1.06l-.88.88a.75.75 0 1 1-1.06-1.06l.88-.88a.75.75 0 0 1 1.06 0Zm-8 8a.75.75 0 0 1 0 1.06l-.88.88a.75.75 0 1 1-1.06-1.06l.88-.88a.75.75 0 0 1 1.06 0ZM10 6a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z"/>
+                    </svg>
+                    <svg data-theme-icon-moon xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M11.55 3.056A7 7 0 1 0 16.944 8.45a.75.75 0 0 0-1.161-.836 5.5 5.5 0 0 1-7.397-7.397.75.75 0 0 0-.836-1.161Z"/>
+                    </svg>
+                </span>
+            </button>
         </div>
     </nav>
 </header>
@@ -335,6 +359,63 @@
 
     (function () {
         var activeRequest = null;
+        var counterObserver = null;
+
+        function formatCounterValue(value) {
+            return value.toLocaleString('tr-TR');
+        }
+
+        function animateCounter(counterEl) {
+            if (!counterEl || counterEl.dataset.counterAnimated === '1') return;
+
+            var target = Number(counterEl.dataset.counterTarget || 0);
+            if (!Number.isFinite(target)) return;
+
+            var duration = 900;
+            var start = performance.now();
+            counterEl.dataset.counterAnimated = '1';
+
+            function tick(now) {
+                var progress = Math.min((now - start) / duration, 1);
+                var eased = 1 - Math.pow(1 - progress, 3);
+                var current = Math.round(target * eased);
+                counterEl.textContent = formatCounterValue(current);
+
+                if (progress < 1) {
+                    requestAnimationFrame(tick);
+                } else {
+                    counterEl.textContent = formatCounterValue(target);
+                }
+            }
+
+            requestAnimationFrame(tick);
+        }
+
+        function initAnimatedCounters(scope) {
+            var root = scope || document;
+            var counters = root.querySelectorAll('[data-counter-target]');
+            if (!counters.length) return;
+
+            if (!('IntersectionObserver' in window)) {
+                counters.forEach(animateCounter);
+                return;
+            }
+
+            if (!counterObserver) {
+                counterObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (!entry.isIntersecting) return;
+                        animateCounter(entry.target);
+                        counterObserver.unobserve(entry.target);
+                    });
+                }, { threshold: 0.35 });
+            }
+
+            counters.forEach(function (counterEl) {
+                if (counterEl.dataset.counterAnimated === '1') return;
+                counterObserver.observe(counterEl);
+            });
+        }
 
         function fetchAndSwap(url, targetSelector, pushUrl) {
             if (!targetSelector) return;
@@ -367,6 +448,19 @@
                     if (pushUrl) {
                         window.history.replaceState({}, '', pushUrl);
                     }
+
+                    if (targetSelector === '#home-filter-panel') {
+                        var panel = document.querySelector('#home-filter-panel');
+                        var heroInput = document.querySelector('#home-hero-search-form input[name="q"]');
+                        if (panel && heroInput) {
+                            var synced = panel.querySelector('input[name="q"]');
+                            if (synced) {
+                                heroInput.value = synced.value;
+                            }
+                        }
+                    }
+
+                    initAnimatedCounters(document);
                 })
                 .catch(function (error) {
                     if (error && error.name === 'AbortError') return;
@@ -411,6 +505,40 @@
             event.preventDefault();
             fetchAndSwap(link.href, '#' + container.id, link.href);
         });
+
+
+        function applyThemeButtonLabel() {
+            var isDark = document.documentElement.classList.contains('dark');
+            document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+                btn.setAttribute('aria-label', isDark ? 'Light moda gec' : 'Dark moda gec');
+                btn.setAttribute('title', isDark ? 'Light Mode' : 'Dark Mode');
+
+                var sun = btn.querySelector('[data-theme-icon-sun]');
+                var moon = btn.querySelector('[data-theme-icon-moon]');
+                if (sun && moon) {
+                    sun.classList.toggle('hidden', !isDark);
+                    moon.classList.toggle('hidden', isDark);
+                    btn.classList.toggle('is-dark', isDark);
+                } else {
+                    btn.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+                }
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            var toggle = event.target.closest('[data-theme-toggle]');
+            if (!toggle) return;
+
+            var root = document.documentElement;
+            root.classList.toggle('dark');
+            try {
+                localStorage.setItem('site-theme', root.classList.contains('dark') ? 'dark' : 'light');
+            } catch (e) {}
+            applyThemeButtonLabel();
+        });
+
+        applyThemeButtonLabel();
+        initAnimatedCounters(document);
     })();
 </script>
 </body>

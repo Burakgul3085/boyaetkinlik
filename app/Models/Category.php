@@ -19,6 +19,7 @@ class Category extends Model
         'nav_order',
         'show_in_nav',
         'icon_path',
+        'cover_image_path',
     ];
 
     protected function casts(): array

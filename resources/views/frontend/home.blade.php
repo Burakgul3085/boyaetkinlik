@@ -46,23 +46,183 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <div class="rounded-2xl border border-indigo-100 bg-white/90 p-4 shadow-sm">
+                <div class="rounded-2xl border border-indigo-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
                     <p class="text-xs font-medium text-slate-500">Toplam Kategori</p>
-                    <p class="mt-1 text-3xl font-bold text-violet-700">{{ $categories->count() }}</p>
+                    <p class="js-animated-counter mt-1 text-3xl font-bold text-violet-700" data-counter-target="{{ $categories->count() }}">0</p>
+                    <p class="mt-2 text-[11px] font-medium text-violet-500">Aktif kategori sayısı</p>
                 </div>
-                <div class="rounded-2xl border border-indigo-100 bg-white/90 p-4 shadow-sm">
+                <div class="rounded-2xl border border-indigo-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
                     <p class="text-xs font-medium text-slate-500">Öne Çıkan İçerik</p>
-                    <p class="mt-1 text-3xl font-bold text-pink-600">{{ $featuredCount }}</p>
+                    <p class="js-animated-counter mt-1 text-3xl font-bold text-pink-600" data-counter-target="{{ $featuredCount }}">0</p>
+                    <p class="mt-2 text-[11px] font-medium text-pink-500">Vitrin içerikleri</p>
+                </div>
+                <div class="rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                    <p class="text-xs font-medium text-slate-500">Toplam Ücretsiz</p>
+                    <p class="js-animated-counter mt-1 text-3xl font-bold text-emerald-600" data-counter-target="{{ $totalFreePagesCount }}">0</p>
+                    <p class="mt-2 text-[11px] font-medium text-emerald-500">Anında erişilebilir içerik</p>
+                </div>
+                <div class="rounded-2xl border border-violet-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                    <p class="text-xs font-medium text-slate-500">Toplam Ücretli</p>
+                    <p class="js-animated-counter mt-1 text-3xl font-bold text-violet-700" data-counter-target="{{ $totalPaidPagesCount }}">0</p>
+                    <p class="mt-2 text-[11px] font-medium text-violet-500">Premium içerikler</p>
                 </div>
                 <div class="col-span-2 rounded-2xl border border-indigo-100 bg-white/90 p-4 shadow-sm">
-                    <p class="text-xs font-medium text-slate-500">Neden Bu Platform?</p>
-                    <p class="mt-1 text-sm font-medium text-slate-700">
-                        Çocuklara uygun temiz tasarım, net kategori yapısı ve canlı yayında reklamlarla uyumlu düzen.
-                    </p>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <p class="text-xs font-medium text-slate-500">Toplam Yüklü Boyama Sayfası</p>
+                            <p class="js-animated-counter mt-1 text-2xl font-bold text-indigo-700" data-counter-target="{{ $totalPagesCount }}">0</p>
+                        </div>
+                        <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">Canlı İstatistik</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+
+    {{-- Ana arama: kategori, yaş, alt başlık veya boyama adı --}}
+    <section class="mb-6 rounded-3xl border border-violet-100/90 bg-gradient-to-br from-violet-50 via-fuchsia-50/70 to-indigo-50 px-4 py-8 shadow-sm shadow-violet-100/40">
+        <form
+            id="home-hero-search-form"
+            method="get"
+            action="{{ route('home') }}"
+            class="js-live-filter-form mx-auto w-full max-w-3xl"
+            data-live-target="#home-live-area"
+            autocomplete="off"
+        >
+            @foreach (['mode', 'pricing', 'sort', 'category_id', 'date_from', 'date_to'] as $filterKey)
+                <input type="hidden" name="{{ $filterKey }}" value="{{ $activeFilters[$filterKey] ?? '' }}">
+            @endforeach
+
+            <label class="sr-only" for="home-hero-q">İçerik ara</label>
+            <div class="flex items-center gap-2 rounded-full border-2 border-violet-200/90 bg-white py-1.5 pl-5 pr-1.5 shadow-md shadow-violet-100/60 ring-1 ring-violet-100/50 transition focus-within:border-indigo-200 focus-within:ring-indigo-100">
+                <input
+                    id="home-hero-q"
+                    type="search"
+                    name="q"
+                    value="{{ $activeFilters['q'] }}"
+                    class="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-0 md:text-[15px]"
+                    placeholder="Ne aramak istersiniz? Örn: boyama, kelime kartları, 5-6 yaş, okul öncesi, ortaokul, kaplumbağa..."
+                >
+                <button
+                    type="submit"
+                    class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-md shadow-violet-200 transition hover:scale-105 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2"
+                    aria-label="Ara"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 3.23 9.96l3.38 3.38a.75.75 0 1 0 1.06-1.06l-3.38-3.38A5.5 5.5 0 0 0 9 3.5ZM4.5 9a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0Z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            <p class="mt-3 text-center text-xs text-violet-900/60">
+                Yaş grubu, seviye, kategori veya yüklediğiniz boyama başlığıyla arayın; sonuçlar aşağıda listelenir.
+            </p>
+        </form>
+    </section>
+
+    <div id="home-live-area">
+        @if($activeFilters['q'] !== '')
+            <section class="mb-6 rounded-2xl border border-amber-100 bg-white p-4 shadow-sm md:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h2 class="text-xl font-bold text-slate-900">Arama Sonucu: "{{ $activeFilters['q'] }}"</h2>
+                    <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                        {{ $searchCategoryMatches->count() + $searchPageMatches->count() }} eşleşme
+                    </span>
+                </div>
+
+                <div class="mt-4">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Kategori ve Alt Kategori Eşleşmeleri</p>
+                    <div class="grid gap-3 md:grid-cols-2">
+                        @forelse($searchCategoryMatches as $matchedCategory)
+                            @php
+                                $matchedIcon = $categoryIcons[mb_strtolower($matchedCategory->name)] ?? '⭐';
+                            @endphp
+                            <a href="{{ route('categories.show', ['slug' => $matchedCategory->slug]) }}" class="group rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-indigo-50/40 p-4 transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-sm">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex items-center gap-2">
+                                        @if($matchedCategory->icon_path)
+                                            <span class="inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl bg-violet-100 shadow-sm">
+                                                <img src="{{ asset('storage/'.$matchedCategory->icon_path) }}" alt="{{ $matchedCategory->name }} ikonu" class="h-6 w-6 object-contain">
+                                            </span>
+                                        @else
+                                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-violet-100 text-base shadow-sm">{{ $matchedIcon }}</span>
+                                        @endif
+                                        <div>
+                                            <h3 class="text-base font-semibold text-slate-900">{{ $matchedCategory->name }}</h3>
+                                            @if($matchedCategory->parent)
+                                                <p class="text-xs text-slate-500">Ana kategori: {{ $matchedCategory->parent->name }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <span class="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-violet-700 shadow-sm transition group-hover:bg-violet-100">Aç</span>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500 md:col-span-2">
+                                Kategori bazlı eşleşme bulunamadı.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Boyama Sayfaları Eşleşmeleri</p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        @forelse($searchPageMatches as $matchedPage)
+                            <a href="{{ route('products.show', $matchedPage) }}" class="group rounded-2xl border border-slate-200 bg-white p-3 transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <p class="line-clamp-2 font-semibold text-slate-900">{{ $matchedPage->title }}</p>
+                                        <p class="mt-1 text-xs text-slate-500">{{ $matchedPage->category?->name ?? 'Kategori yok' }}</p>
+                                    </div>
+                                    <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700">Detay</span>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500 sm:col-span-2">
+                                Boyama sayfası eşleşmesi bulunamadı.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </section>
+        @endif
+
+    @if($paidMarqueePages->isNotEmpty())
+        @php
+            $paidLoopPages = $paidMarqueePages->concat($paidMarqueePages);
+        @endphp
+        <section class="mb-6 overflow-hidden rounded-2xl border border-violet-100 bg-white/90 p-3 shadow-sm">
+            <div class="mb-3 flex items-center justify-between gap-2 px-1">
+                <h2 class="text-sm font-bold tracking-wide text-violet-700">Premium Icerikler</h2>
+                <span class="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">{{ $totalPaidPagesCount }} ucretli urun</span>
+            </div>
+
+            <div class="paid-marquee">
+                <div class="paid-marquee-track">
+                    @foreach($paidLoopPages as $paidPage)
+                        <a href="{{ route('products.show', $paidPage) }}" class="paid-marquee-item group">
+                            <div class="overflow-hidden rounded-xl bg-slate-100">
+                                <img
+                                    src="{{ route('products.preview-image', $paidPage) }}"
+                                    alt="{{ $paidPage->title }}"
+                                    class="h-24 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                                    draggable="false"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Premium+Urun';"
+                                >
+                            </div>
+                            <div class="mt-2">
+                                <p class="line-clamp-1 text-sm font-semibold text-slate-900">{{ $paidPage->title }}</p>
+                                <div class="mt-1 flex items-center justify-between gap-2">
+                                    <p class="line-clamp-1 text-[11px] text-slate-500">{{ $paidPage->category?->name ?? 'Kategori yok' }}</p>
+                                    <span class="text-xs font-bold text-violet-700">{{ number_format((float) $paidPage->price, 2) }} TL</span>
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 
     <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div class="overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">
@@ -143,7 +303,7 @@
                     </a>
                 </div>
 
-                <form method="get" action="{{ route('home') }}" class="js-live-filter-form mt-4 rounded-2xl border border-violet-100 bg-violet-50/40 p-3 md:p-4" data-live-target="#home-filter-panel">
+                <form id="home-inner-filter-form" method="get" action="{{ route('home') }}" class="js-live-filter-form mt-4 rounded-2xl border border-violet-100 bg-violet-50/40 p-3 md:p-4" data-live-target="#home-live-area">
                     <input type="hidden" name="mode" value="{{ $activeFilters['mode'] }}">
 
                     <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -161,8 +321,8 @@
                         </label>
 
                         <label class="input-ui">
-                            İsim Ara
-                            <input type="text" name="q" value="{{ $activeFilters['q'] }}" class="mt-1 w-full" placeholder="Örn: Tavşan, Araba...">
+                            Kelime ile ara
+                            <input type="text" name="q" value="{{ $activeFilters['q'] }}" class="mt-1 w-full" placeholder="Başlık, kategori veya açıklama (örn. tavşan, ilkokul, kelime kartı)">
                         </label>
 
                         <label class="input-ui">
@@ -247,4 +407,6 @@
             </div>
         </aside>
     </div>
+</div>
+
 @endsection

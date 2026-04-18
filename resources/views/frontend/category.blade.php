@@ -3,7 +3,7 @@
 @section('title', $category->name)
 
 @section('content')
-    <section class="overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 via-fuchsia-50 to-indigo-50 shadow-sm">
+    <section class="overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-fuchsia-50/80 to-indigo-50 shadow-sm">
         <div class="grid gap-5 p-6 md:grid-cols-2 md:p-8">
             <div>
                 <p class="inline-flex items-center rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
@@ -13,19 +13,47 @@
                 <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
                     {{ $category->description ?: 'Bu kategori için özenle seçilmiş boyama içeriklerini aşağıda inceleyebilirsiniz.' }}
                 </p>
+                @if($category->cover_image_path)
+                    <div class="mt-5 w-full max-w-2xl overflow-hidden rounded-2xl border border-violet-100 bg-white/95 p-3 shadow-sm">
+                        <img
+                            src="{{ asset('storage/'.$category->cover_image_path) }}"
+                            alt="{{ $category->name }} kategori görseli"
+                            class="h-44 w-full rounded-xl object-contain select-none md:h-52"
+                            draggable="false"
+                            oncontextmenu="return false;"
+                        >
+                    </div>
+                @endif
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <div class="rounded-xl border border-violet-100 bg-white/90 p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Filtre Sonucu</p>
-                    <p class="mt-1 text-2xl font-bold text-slate-900">{{ $coloringPages->total() }}</p>
+                <div class="rounded-2xl border border-violet-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                    <p class="text-xs text-slate-500">Toplam İçerik</p>
+                    <p class="js-animated-counter mt-1 text-2xl font-bold text-violet-700" data-counter-target="{{ $categoryTotalCount }}">0</p>
+                    <p class="mt-2 text-[11px] font-medium text-violet-500">Kategoriye ait toplam</p>
                 </div>
-                <div class="rounded-xl border border-violet-100 bg-white/90 p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Bu Sayfada Gösterilen</p>
-                    <p class="mt-1 text-2xl font-bold text-emerald-600">{{ $coloringPages->count() }}</p>
+                <div class="rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                    <p class="text-xs text-slate-500">Toplam Ücretsiz</p>
+                    <p class="js-animated-counter mt-1 text-2xl font-bold text-emerald-600" data-counter-target="{{ $categoryFreeCount }}">0</p>
+                    <p class="mt-2 text-[11px] font-medium text-emerald-500">Hızlı erişim içerikleri</p>
                 </div>
-                <div class="col-span-2 rounded-xl border border-violet-100 bg-white/90 p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Kategori Notu</p>
-                    <p class="mt-1 text-sm font-medium text-slate-700">İçerikler yeni eklemelerle dinamik olarak güncellenir.</p>
+                <div class="rounded-2xl border border-pink-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                    <p class="text-xs text-slate-500">Toplam Ücretli</p>
+                    <p class="js-animated-counter mt-1 text-2xl font-bold text-pink-600" data-counter-target="{{ $categoryPaidCount }}">0</p>
+                    <p class="mt-2 text-[11px] font-medium text-pink-500">Premium içerikler</p>
+                </div>
+                <div class="rounded-2xl border border-indigo-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                    <p class="text-xs text-slate-500">Öne Çıkan</p>
+                    <p class="js-animated-counter mt-1 text-2xl font-bold text-indigo-600" data-counter-target="{{ $categoryFeaturedCount }}">0</p>
+                    <p class="mt-2 text-[11px] font-medium text-indigo-500">Vitrin içerikleri</p>
+                </div>
+                <div class="col-span-2 rounded-2xl border border-violet-100 bg-white/90 p-4 shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <p class="text-xs text-slate-500">Filtre Sonucu</p>
+                            <p class="js-animated-counter mt-1 text-xl font-bold text-slate-900" data-counter-target="{{ $coloringPages->total() }}">0</p>
+                        </div>
+                        <span class="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700"><span class="js-animated-counter" data-counter-target="{{ $coloringPages->count() }}">0</span> içerik gösteriliyor</span>
+                    </div>
                 </div>
             </div>
         </div>

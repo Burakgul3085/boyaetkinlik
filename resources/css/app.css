@@ -15,6 +15,74 @@
         background: linear-gradient(180deg, #f5f3ff 0%, #f8f7ff 35%, #eef2ff 100%);
         font-family: "Inter", sans-serif;
     }
+
+    html.dark {
+        color-scheme: dark;
+    }
+
+    html.dark body {
+        color: #cbd5e1;
+        background: linear-gradient(180deg, #0b1120 0%, #0f172a 45%, #111827 100%);
+    }
+
+    html.dark .card,
+    html.dark .card-soft,
+    html.dark .input-ui,
+    html.dark .paid-marquee,
+    html.dark .paid-marquee-item {
+        border-color: #334155 !important;
+        color: #cbd5e1;
+        background: #111827 !important;
+        box-shadow: 0 10px 24px rgba(2, 6, 23, 0.45);
+    }
+
+    html.dark .input-ui {
+        color: #e2e8f0 !important;
+    }
+
+    html.dark .input-ui::placeholder {
+        color: #94a3b8 !important;
+    }
+
+    html.dark [class*="bg-white"],
+    html.dark [class*="bg-slate-50"],
+    html.dark [class*="bg-slate-100"],
+    html.dark [class*="from-violet-50"],
+    html.dark [class*="via-fuchsia-50"],
+    html.dark [class*="to-indigo-50"] {
+        background-image: none !important;
+        background-color: #111827 !important;
+    }
+
+    html.dark [class*="border-violet-"],
+    html.dark [class*="border-indigo-"],
+    html.dark [class*="border-slate-"],
+    html.dark [class*="border-pink-"],
+    html.dark [class*="border-emerald-"] {
+        border-color: #334155 !important;
+    }
+
+    html.dark [class*="text-slate-900"],
+    html.dark [class*="text-slate-800"],
+    html.dark [class*="text-slate-700"],
+    html.dark [class*="text-slate-600"] {
+        color: #e2e8f0 !important;
+    }
+
+    html.dark [class*="text-slate-500"],
+    html.dark [class*="text-indigo-100"],
+    html.dark [class*="text-indigo-200"] {
+        color: #94a3b8 !important;
+    }
+
+    html.dark footer {
+        background: linear-gradient(135deg, #020617 0%, #111827 50%, #1f2937 100%) !important;
+    }
+
+    html.dark a:hover {
+        opacity: 0.95;
+    }
+
 }
 
 @layer components {
@@ -47,5 +115,209 @@
 
     .btn-danger {
         @apply inline-flex items-center justify-center rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700;
+    }
+
+    .paid-marquee {
+        @apply overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-r from-violet-50/70 via-white to-indigo-50/70 p-2;
+        position: relative;
+    }
+
+    .paid-marquee-track {
+        display: flex;
+        width: max-content;
+        gap: 0.75rem;
+        animation: paid-marquee-scroll 45s linear infinite;
+        will-change: transform;
+    }
+
+    .paid-marquee-item {
+        @apply block w-64 rounded-2xl border border-violet-100 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md;
+        flex: 0 0 auto;
+    }
+
+    .paid-marquee:hover .paid-marquee-track {
+        animation-play-state: paused;
+    }
+
+    .logo-anim-wrap {
+        animation: logo-pop-in 480ms ease-out, logo-breathe 3.2s ease-in-out 520ms infinite;
+        transform-origin: center;
+        position: relative;
+    }
+
+    .logo-anim-img {
+        transition: transform 220ms ease, filter 220ms ease;
+    }
+
+    .group:hover .logo-anim-img {
+        transform: scale(1.06) rotate(-2deg);
+        filter: saturate(1.08) contrast(1.03);
+    }
+
+    .group:hover .logo-anim-wrap {
+        box-shadow: 0 10px 22px rgba(99, 102, 241, 0.28);
+    }
+
+    .theme-toggle-btn {
+        @apply inline-flex items-center justify-center rounded-xl border px-3 py-2 text-xs font-semibold transition;
+        border-color: #c4b5fd;
+        color: #6d28d9;
+        background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
+    }
+
+    .theme-toggle-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(124, 58, 237, 0.18);
+    }
+
+    html.dark .theme-toggle-btn {
+        border-color: #334155;
+        color: #cbd5e1;
+        background: #0f172a;
+        box-shadow: none;
+    }
+
+    .theme-switch-btn {
+        @apply inline-flex h-8 w-14 items-center rounded-full border px-1 transition;
+        border-color: #cbd5e1;
+        background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+    }
+
+    .theme-switch-thumb {
+        @apply inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-slate-500 shadow;
+        transform: translateX(0);
+        transition: transform 220ms ease, background-color 220ms ease, color 220ms ease;
+    }
+
+    .theme-switch-btn.is-dark .theme-switch-thumb {
+        transform: translateX(22px);
+        background: #0f172a;
+        color: #f8fafc;
+    }
+
+    .theme-switch-btn:hover {
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.28);
+    }
+
+    html.dark .theme-switch-btn {
+        border-color: #475569;
+        background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+    }
+
+    .auth-screen {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+    }
+
+    .auth-logo-watermark {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: min(900px, 92vw);
+        height: min(900px, 92vw);
+        transform: translate(-50%, -50%);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        opacity: 0.2;
+        filter: saturate(1.05) contrast(1.02);
+    }
+
+    .auth-logo-reflection {
+        position: absolute;
+        left: 50%;
+        top: calc(50% + min(280px, 26vw));
+        width: min(760px, 84vw);
+        height: min(380px, 40vw);
+        transform: translateX(-50%) scaleY(-1);
+        transform-origin: top center;
+        background-repeat: no-repeat;
+        background-position: top center;
+        background-size: contain;
+        opacity: 0.22;
+        filter: blur(3px);
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+    }
+
+    .auth-overlay-soft {
+        background:
+            radial-gradient(ellipse at center, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.72) 65%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.72) 100%);
+    }
+
+    .auth-glass-card {
+        background: rgba(255, 255, 255, 0.82) !important;
+        border: 1px solid rgba(196, 181, 253, 0.5) !important;
+        box-shadow: 0 24px 48px rgba(99, 102, 241, 0.16), 0 8px 20px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(6px);
+    }
+
+    .auth-title-chip {
+        @apply inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide;
+        border-color: rgba(167, 139, 250, 0.5);
+        color: #6d28d9;
+        background: rgba(245, 243, 255, 0.9);
+    }
+
+    .auth-page-toggle {
+        @apply fixed right-4 top-4 z-50;
+    }
+
+    html.dark .auth-logo-watermark {
+        opacity: 0.11;
+    }
+
+    html.dark .auth-logo-reflection {
+        opacity: 0.12;
+    }
+
+    html.dark .auth-overlay-soft {
+        background:
+            radial-gradient(ellipse at center, rgba(15, 23, 42, 0.2) 0%, rgba(2, 6, 23, 0.78) 65%),
+            linear-gradient(180deg, rgba(2, 6, 23, 0.58) 0%, rgba(15, 23, 42, 0.8) 100%);
+    }
+
+    html.dark .auth-glass-card {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border-color: rgba(71, 85, 105, 0.7) !important;
+        box-shadow: 0 24px 48px rgba(2, 6, 23, 0.48), 0 8px 20px rgba(2, 6, 23, 0.36);
+    }
+
+    html.dark .auth-title-chip {
+        border-color: rgba(71, 85, 105, 0.8);
+        color: #e2e8f0;
+        background: rgba(15, 23, 42, 0.9);
+    }
+
+}
+
+@keyframes paid-marquee-scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes logo-pop-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(-4px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes logo-breathe {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-1px) scale(1.04);
     }
 }
