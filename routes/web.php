@@ -168,14 +168,14 @@ Route::get('/_mail-fpm-test/{secret}', function (string $secret) {
 
     if ($configured === '') {
         return response(
-            "MAIL_WEB_TEST_SECRET .env icinde tanimli degil; bu yuzden once 404 goruyordunuz.\n\n"
+            "MAIL_WEB_TEST_SECRET .env içinde tanımlı değil; bu yüzden önce 404 görüyordunuz.\n\n"
             ."Sunucuda:\n"
             ."1) nano /var/www/boyaetkinlik/.env\n"
-            ."2) Satir ekle (ornek): MAIL_WEB_TEST_SECRET=benim-gizli-anahtar\n"
+            ."2) Satır ekle (örnek): MAIL_WEB_TEST_SECRET=benim-gizli-anahtar\n"
             ."3) php artisan config:clear && sudo systemctl restart php8.4-fpm\n"
-            ."4) Tarayici: http://IP/_mail-fpm-test/benim-gizli-anahtar\n\n"
-            ."URLdeki son parca, .env deki deger ile birebir ayni olmali.\n"
-            ."Test bitince MAIL_WEB_TEST_SECRET satirini silin.\n",
+            ."4) Tarayıcı: http://IP/_mail-fpm-test/benim-gizli-anahtar\n\n"
+            ."URL’deki son parça, .env’deki değer ile birebir aynı olmalı.\n"
+            ."Test bitince MAIL_WEB_TEST_SECRET satırını silin.\n",
             503,
             ['Content-Type' => 'text/plain; charset=UTF-8']
         );
