@@ -15,7 +15,9 @@
             <input type="url" name="map_embed_url" value="{{ $settings['map_embed_url'] ?? '' }}" class="input-ui md:col-span-2" placeholder="Google Maps Embed URL">
             <input type="url" name="social_tiktok_url" value="{{ $settings['social_tiktok_url'] ?? '' }}" class="input-ui" placeholder="TikTok URL">
             <input type="url" name="social_instagram_url" value="{{ $settings['social_instagram_url'] ?? '' }}" class="input-ui" placeholder="Instagram URL">
-            <input type="url" name="social_youtube_url" value="{{ $settings['social_youtube_url'] ?? '' }}" class="input-ui md:col-span-2" placeholder="YouTube URL">
+            <input type="url" name="social_youtube_url" value="{{ $settings['social_youtube_url'] ?? '' }}" class="input-ui" placeholder="YouTube URL">
+            <input type="url" name="social_pinterest_url" value="{{ $settings['social_pinterest_url'] ?? '' }}" class="input-ui" placeholder="Pinterest URL">
+            <input type="url" name="social_dailymotion_url" value="{{ $settings['social_dailymotion_url'] ?? '' }}" class="input-ui md:col-span-2" placeholder="Dailymotion URL">
         </div>
         <textarea name="vision" rows="3" class="input-ui" placeholder="Vizyon">{{ $settings['vision'] ?? '' }}</textarea>
         <textarea name="mission" rows="3" class="input-ui" placeholder="Misyon">{{ $settings['mission'] ?? '' }}</textarea>

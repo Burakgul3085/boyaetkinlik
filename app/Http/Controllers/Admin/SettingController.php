@@ -26,6 +26,8 @@ class SettingController extends Controller
             'social_tiktok_url' => ['nullable', 'url', 'max:1000'],
             'social_instagram_url' => ['nullable', 'url', 'max:1000'],
             'social_youtube_url' => ['nullable', 'url', 'max:1000'],
+            'social_pinterest_url' => ['nullable', 'url', 'max:1000'],
+            'social_dailymotion_url' => ['nullable', 'url', 'max:1000'],
             'smtp_host' => ['nullable', 'string', 'max:255'],
             'smtp_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
             'smtp_username' => ['nullable', 'string', 'max:255'],

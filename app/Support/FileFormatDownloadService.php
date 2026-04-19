@@ -63,6 +63,23 @@ class FileFormatDownloadService
         return response()->download($resolved['absolute_path'], $filename)->deleteFileAfterSend(true);
     }
 
+    /**
+     * E-posta eki veya gönderim öncesi tek dosya yolu (geçici dönüştürülen dosyalar sonra silinir).
+     *
+     * @return array{path: string, filename: string, delete_after_send: bool}
+     */
+    public function prepareAttachment(FilesystemAdapter $disk, string $path, string $baseName, ?string $requestedFormat): array
+    {
+        $format = $this->normalizeFormat($requestedFormat);
+        $resolved = $this->resolveFileForFormat($disk, $path, $format);
+
+        return [
+            'path' => $resolved['absolute_path'],
+            'filename' => $this->safeBaseName($baseName).'.'.$resolved['extension'],
+            'delete_after_send' => $resolved['is_temporary'],
+        ];
+    }
+
     public function inline(FilesystemAdapter $disk, string $path, string $baseName, ?string $requestedFormat): BinaryFileResponse
     {
         $resolved = $this->resolveFileForFormat($disk, $path, $requestedFormat);

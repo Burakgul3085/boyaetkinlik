@@ -5,6 +5,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\AdminCodeVerifiedMiddleware;
+use App\Http\Middleware\MemberCodeVerifiedMiddleware;
+use App\Http\Middleware\MemberMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,11 +18,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'shopier/callback',
         ]);
-        $middleware->redirectGuestsTo(fn () => route('admin.login'));
+        $middleware->redirectGuestsTo(function ($request) {
+            if ($request && $request->routeIs('admin.*')) {
+                return route('admin.login');
+            }
+
+            return route('member.login');
+        });
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'admin.code' => AdminCodeVerifiedMiddleware::class,
+            'member' => MemberMiddleware::class,
+            'member.code' => MemberCodeVerifiedMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

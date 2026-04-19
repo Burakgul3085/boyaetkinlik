@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Transaction extends Model
@@ -12,6 +13,7 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'coloring_page_id',
         'order_id',
         'email',
@@ -45,5 +47,15 @@ class Transaction extends Model
     public function coloringPage(): BelongsTo
     {
         return $this->belongsTo(ColoringPage::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function purchaseSupportTickets(): HasMany
+    {
+        return $this->hasMany(PurchaseSupportTicket::class);
     }
 }

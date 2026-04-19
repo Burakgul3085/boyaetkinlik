@@ -29,6 +29,8 @@
     $tiktokUrl = \App\Models\Setting::getValue('social_tiktok_url', '');
     $instagramUrl = \App\Models\Setting::getValue('social_instagram_url', '');
     $youtubeUrl = \App\Models\Setting::getValue('social_youtube_url', '');
+    $pinterestUrl = \App\Models\Setting::getValue('social_pinterest_url', '');
+    $dailymotionUrl = \App\Models\Setting::getValue('social_dailymotion_url', '');
     $phoneHref = preg_replace('/[^0-9\+]/', '', (string) $contactPhone);
     $isEmbeddableMapUrl = str_contains($mapEmbedUrl, 'output=embed') || str_contains($mapEmbedUrl, '/maps/embed');
     $resolvedMapEmbedUrl = $isEmbeddableMapUrl
@@ -102,6 +104,22 @@
         && ! str_starts_with($requestPath, $adminPathTrim);
     $stickyFooterAdHtml = (string) \App\Models\Setting::getValue('ads_footer', '');
     $hasStickyFooterAd = $onPublicSiteSurface && trim($stickyFooterAdHtml) !== '';
+    $memberCartCount = (! auth()->check() || auth()->user()->is_admin)
+        ? 0
+        : \App\Models\CartItem::query()->where('user_id', auth()->id())->count();
+    $memberPurchasesCount = (! auth()->check() || auth()->user()->is_admin)
+        ? 0
+        : \App\Models\Transaction::query()
+            ->where('status', 'paid')
+            ->where(function ($query) {
+                $user = auth()->user();
+                $query->where('user_id', $user->id)
+                    ->orWhere(function ($legacyQuery) use ($user) {
+                        $legacyQuery->whereNull('user_id')
+                            ->where('email', $user->email);
+                    });
+            })
+            ->count();
 @endphp
 <header class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur">
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:py-4">
@@ -142,11 +160,55 @@
                     <a class="rounded-xl px-3 py-2 text-slate-700 transition hover:bg-white hover:text-violet-700 hover:shadow-sm" href="{{ $item['url'] }}">{{ $item['label'] }}</a>
                 @endif
             @endforeach
-            @auth
-                @if(auth()->user()->is_admin)
-                    <a id="admin-nav-link" class="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700" href="{{ route('admin.dashboard') }}">Panel</a>
-                @endif
-            @endauth
+            </div>
+            <div class="flex items-center gap-1.5 rounded-2xl border border-violet-100 bg-white/90 p-1 text-sm font-medium">
+                @auth
+                    @if(auth()->user()->is_admin)
+                        <a id="admin-nav-link" class="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700" href="{{ route('admin.dashboard') }}">Panel</a>
+                    @else
+                        <div class="relative" x-data="{ open: false }">
+                            <button
+                                type="button"
+                                @click="open = !open"
+                                :aria-expanded="open ? 'true' : 'false'"
+                                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 shadow-sm transition hover:border-violet-300 hover:text-violet-800"
+                                aria-label="Profil menüsü"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path d="M10 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-6 14a6 6 0 1 1 12 0v.75a.75.75 0 0 1-.75.75h-10.5A.75.75 0 0 1 4 16.75V16Z"/>
+                                </svg>
+                            </button>
+
+                            <div
+                                x-show="open"
+                                x-transition.opacity.duration.150ms
+                                x-cloak
+                                @click.outside="open = false"
+                                @keydown.escape.window="open = false"
+                                class="absolute right-0 top-full z-50 mt-2 w-48"
+                            >
+                                <div class="rounded-2xl border border-violet-200 bg-white p-2 shadow-lg">
+                                    <a href="{{ route('member.account') }}" class="block rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">Hesabım</a>
+                                    <a href="{{ route('member.cart') }}" class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
+                                        <span>Sepetim</span>
+                                        <span class="inline-flex min-w-6 items-center justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">{{ $memberCartCount }}</span>
+                                    </a>
+                                    <a href="{{ route('member.purchases') }}" class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">
+                                        <span>Satın Alınanlar</span>
+                                        <span class="inline-flex min-w-6 items-center justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">{{ $memberPurchasesCount }}</span>
+                                    </a>
+                                    <form method="post" action="{{ route('member.logout') }}" class="mt-1">
+                                        @csrf
+                                        <button class="block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50 hover:text-rose-700">Çıkış</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @else
+                    <a class="inline-flex items-center justify-center rounded-xl border border-violet-200 bg-white px-3.5 py-2 text-sm font-semibold text-violet-700 transition hover:border-violet-300 hover:text-violet-800 hover:shadow-sm" href="{{ route('member.login') }}">Giriş Yap</a>
+                    <a class="inline-flex items-center justify-center rounded-xl bg-violet-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700" href="{{ route('member.register') }}">Üye Ol</a>
+                @endauth
             </div>
             <button type="button" class="theme-switch-btn" data-theme-toggle aria-label="Temayı değiştir" title="Koyu / açık tema">
                 <span class="theme-switch-thumb">
@@ -161,6 +223,24 @@
         </div>
     </nav>
 </header>
+
+@auth
+    @if(!auth()->user()->is_admin && request()->routeIs('home') && session('member_code_verified', false))
+        <div class="mx-auto mt-4 max-w-7xl px-4">
+            <div class="rounded-2xl border border-violet-200 bg-violet-50/80 px-4 py-3 text-sm font-medium text-violet-800">
+                Hoş geldiniz {{ auth()->user()->display_name }}.
+            </div>
+        </div>
+    @endif
+@endauth
+
+@if(session('success') && !request()->routeIs('admin.*'))
+    <div class="mx-auto mt-4 max-w-7xl px-4">
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            {{ session('success') }}
+        </div>
+    </div>
+@endif
 
 <main id="site-main" @class([
     'mx-auto max-w-7xl px-4 py-6',
@@ -180,7 +260,7 @@
             <p class="text-base font-semibold text-white">Boya Etkinlik Platformu</p>
             <p class="mt-2 text-slate-300">{{ \App\Models\Setting::getValue('footer_text', 'Tüm hakları saklıdır.') }}</p>
             <p class="mt-4 text-xs text-slate-400">Profesyonel, güvenli ve aile dostu boyama platformu.</p>
-            @if($tiktokUrl || $instagramUrl || $youtubeUrl)
+            @if($tiktokUrl || $instagramUrl || $youtubeUrl || $pinterestUrl || $dailymotionUrl)
                 <div class="mt-4 flex flex-wrap items-center gap-2">
                     @if($tiktokUrl)
                         <a href="{{ $tiktokUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-slate-200 transition hover:bg-slate-800 hover:text-white">
@@ -206,6 +286,22 @@
                                 <path d="M23 12s0-3.2-.4-4.8a2.5 2.5 0 0 0-1.8-1.8C19.2 5 12 5 12 5s-7.2 0-8.8.4a2.5 2.5 0 0 0-1.8 1.8C1 8.8 1 12 1 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C4.8 19 12 19 12 19s7.2 0 8.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/>
                             </svg>
                             YouTube
+                        </a>
+                    @endif
+                    @if($pinterestUrl)
+                        <a href="{{ $pinterestUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-slate-200 transition hover:bg-slate-800 hover:text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.724-.359-1.792c0-1.687.988-2.943 2.217-2.943 1.048 0 1.555.796 1.555 1.748 0 1.065-.674 2.653-1.021 4.125-.291 1.234.621 2.242 1.846 2.242 2.209 0 3.904-2.318 3.904-5.673 0-2.995-2.156-5.086-5.238-5.086-3.571 0-5.662 2.674-5.662 5.434 0 1.073.414 2.223.931 2.842.102.123.117.231.087.354-.095.39-.308 1.235-.352 1.409-.056.233-.184.282-.425.169-1.587-.737-2.579-3.044-2.579-4.9 0-3.984 2.899-7.639 8.353-7.639 4.385 0 7.791 3.127 7.791 7.302 0 4.356-2.754 7.868-6.573 7.868-1.287 0-2.497-.67-2.909-1.461l-.791 3.004c-.286 1.092-1.058 2.461-1.574 3.306C9.558 23.59 10.776 24 12.017 24c6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001 12.017.001z"/>
+                            </svg>
+                            Pinterest
+                        </a>
+                    @endif
+                    @if($dailymotionUrl)
+                        <a href="{{ $dailymotionUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-slate-200 transition hover:bg-slate-800 hover:text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M4 5a2 2 0 0 1 2-2h5.2c2.76 0 5 2.24 5 5s-2.24 5-5 5H8v6H6V5zm2 2v6h3.2c1.65 0 3-1.35 3-3s-1.35-3-3-3H6zm10.5 0h2v4.25h3.25L16.5 17v-5.25H14V7z"/>
+                            </svg>
+                            Dailymotion
                         </a>
                     @endif
                 </div>
@@ -338,6 +434,12 @@
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-indigo-100/90">
             <p>© 2026 Burak Gül tarafından geliştirilmiştir.</p>
             <div class="flex flex-wrap items-center gap-2">
+                <a
+                    href="{{ route('guest.purchase.recovery') }}"
+                    class="rounded-md px-2 py-1 font-medium text-indigo-100/90 transition hover:bg-white/10 hover:text-white"
+                >
+                    Misafir indirme linki
+                </a>
                 <a
                     href="mailto:burakgul3085@gmail.com"
                     class="rounded-md px-2 py-1 font-medium text-white/90 transition hover:bg-white/10 hover:text-white"

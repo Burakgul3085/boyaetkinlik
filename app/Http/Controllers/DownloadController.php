@@ -24,8 +24,6 @@ class DownloadController extends Controller
             'İndirme linkinin süresi doldu.'
         );
 
-        abort_if($transaction->downloaded_at !== null, 403, 'Bu indirme linki daha önce kullanıldı.');
-
         $requestedFormat = $request->string('format')->toString();
         $requestedFormat = $downloadService->normalizeFormat($requestedFormat ?: null);
         $sourceExtension = $downloadService->sourceExtension($transaction->coloringPage->pdf_path);
@@ -52,7 +50,9 @@ class DownloadController extends Controller
             $requestedFormat
         );
 
-        $transaction->update(['downloaded_at' => now()]);
+        $transaction->update([
+            'downloaded_at' => $transaction->downloaded_at ?? now(),
+        ]);
 
         return $response;
     }
@@ -69,8 +69,6 @@ class DownloadController extends Controller
             403,
             'İndirme linkinin süresi doldu.'
         );
-
-        abort_if($transaction->downloaded_at !== null, 403, 'Bu indirme linki daha önce kullanıldı.');
 
         $sourceExtension = $downloadService->sourceExtension($transaction->coloringPage->pdf_path);
         $downloadFormats = $downloadService->downloadOptions($sourceExtension);
@@ -92,7 +90,9 @@ class DownloadController extends Controller
             $requestedFormat
         );
 
-        $transaction->update(['downloaded_at' => now()]);
+        $transaction->update([
+            'downloaded_at' => $transaction->downloaded_at ?? now(),
+        ]);
 
         return $response;
     }

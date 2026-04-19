@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CartItem;
 use App\Models\Setting;
 use App\Models\Transaction;
+use App\Support\SiteMailer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 class ShopierController extends Controller
 {
@@ -90,14 +91,52 @@ class ShopierController extends Controller
             $transaction->update([
                 'status' => 'paid',
                 'download_token' => $token,
-                'token_expires_at' => Carbon::now()->addHours(24),
+                'token_expires_at' => null,
                 'payload' => $request->all(),
             ]);
 
-            $url = route('download.paid', ['token' => $token]);
-            Mail::raw("Satın alma işleminiz tamamlandı. İndirme linkiniz: {$url}", function ($message) use ($transaction) {
-                $message->to($transaction->email)->subject('Boyama Sayfası İndirme Linkiniz');
-            });
+            if ($transaction->user_id) {
+                CartItem::query()
+                    ->where('user_id', $transaction->user_id)
+                    ->where('coloring_page_id', $transaction->coloring_page_id)
+                    ->delete();
+            }
+
+            $downloadUrl = route('download.paid', ['token' => $token]);
+            $recoveryUrl = route('guest.purchase.recovery');
+            $appName = (string) (Setting::getValue('smtp_from_name', 'Boya Etkinlik') ?: 'Boya Etkinlik');
+            $title = e($transaction->coloringPage?->title ?? 'Ürün');
+
+            $html = '<!doctype html>
+<html lang="tr">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Inter,Arial,sans-serif;color:#0f172a;line-height:1.6;padding:16px;">
+    <p>Merhaba,</p>
+    <p><strong>'.e($appName).'</strong> üzerinden yaptığınız ödeme tamamlandı.</p>
+    <p><strong>Ürün:</strong> '.$title.'</p>
+    <p><a href="'.e($downloadUrl).'" style="display:inline-block;margin:8px 0;padding:12px 20px;border-radius:12px;background:#4f46e5;color:#fff;font-weight:600;text-decoration:none;">İndirme sayfasına git</a></p>
+    <p style="color:#64748b;font-size:14px;">Bu bağlantıyı istediğiniz zaman kullanabilirsiniz. Sayfayı kapattıysanız veya e-postayı kaybettiyseniz, ödeme sırasında kullandığınız e-posta ile <a href="'.e($recoveryUrl).'">buradan</a> linki tekrar isteyebilirsiniz.</p>
+    <p style="font-size:12px;color:#94a3b8;">Üye hesabınız varsa dosyalarınızı <strong>Satın Alınanlar</strong> bölümünden de indirebilirsiniz.</p>
+</body>
+</html>';
+
+            $text = "Merhaba,\n\n{$appName} — ödemeniz tamamlandı.\n\n"
+                ."İndirme: {$downloadUrl}\n\n"
+                ."Linki tekrar almak için: {$recoveryUrl}\n";
+
+            try {
+                SiteMailer::send(
+                    $transaction->email,
+                    $appName.' — Ödemeniz tamamlandı',
+                    $html,
+                    $text
+                );
+            } catch (Throwable $e) {
+                Log::warning('Shopier sonrası indirme e-postası gönderilemedi', [
+                    'order_id' => $transaction->order_id,
+                    'exception' => $e->getMessage(),
+                ]);
+            }
         } elseif ($status !== 'success') {
             $transaction->update([
                 'status' => 'failed',

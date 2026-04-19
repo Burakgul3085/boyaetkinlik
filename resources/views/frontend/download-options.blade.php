@@ -10,7 +10,7 @@
                 <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">İndirme Adımı</p>
                 <h1 class="mt-2 text-2xl font-semibold text-slate-900">Dosya formatını seçin</h1>
                 <p class="mt-2 text-sm text-slate-600">
-                    Satın aldığınız içerik için uygun formatı seçebilirsiniz. Seçim yaptıktan sonra indirme linki tek kullanımlık olarak tamamlanır.
+                    Satın aldığınız içerik için uygun formatı seçebilirsiniz. Bu sayfaya aynı indirme bağlantısıyla istediğiniz zaman dönebilirsiniz.
                 </p>
 
                 <div class="mt-6 grid gap-3 sm:grid-cols-2">

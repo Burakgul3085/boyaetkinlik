@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ColoringPageController as AdminColoringPageController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MemberController as AdminMemberController;
+use App\Http\Controllers\MemberPurchaseSupportController;
 use App\Http\Controllers\Admin\NewsletterController as AdminNewsletterController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
@@ -13,7 +15,10 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ColoringPageController;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\GuestPurchaseRecoveryController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MemberAccountController;
+use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ShopierController;
 use App\Http\Controllers\VisitorFeedbackController;
@@ -40,10 +45,67 @@ Route::get('/boyama/{coloringPage}/preview-image', [ColoringPageController::clas
 Route::post('/boyama/{coloringPage}/buy', [ColoringPageController::class, 'buy'])->name('products.buy');
 Route::get('/boyama/{coloringPage}/free-download', [ColoringPageController::class, 'downloadFree'])->name('products.download.free');
 Route::get('/boyama/{coloringPage}/free-print', [ColoringPageController::class, 'printFree'])->name('products.print.free');
+Route::post('/boyama/{coloringPage}/ucretsiz-eposta', [ColoringPageController::class, 'sendFreeToEmail'])
+    ->middleware('throttle:6,1')
+    ->name('products.free.email');
 Route::get('/shopier/{transaction}/redirect', [ShopierController::class, 'redirect'])->name('shopier.redirect');
 Route::post('/shopier/callback', [ShopierController::class, 'callback'])->name('shopier.callback');
 Route::get('/download/{token}', [DownloadController::class, 'paid'])->name('download.paid');
 Route::get('/download/{token}/print', [DownloadController::class, 'printPaid'])->name('download.paid.print');
+
+Route::get('/indirme-linki-tekrar', [GuestPurchaseRecoveryController::class, 'show'])->name('guest.purchase.recovery');
+Route::post('/indirme-linki-tekrar', [GuestPurchaseRecoveryController::class, 'send'])
+    ->middleware('throttle:6,1')
+    ->name('guest.purchase.recovery.submit');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/uye-ol', [MemberAuthController::class, 'showRegister'])->name('member.register');
+    Route::post('/uye-ol', [MemberAuthController::class, 'register'])
+        ->middleware('throttle:10,1')
+        ->name('member.register.submit');
+    Route::get('/giris-yap', [MemberAuthController::class, 'showLogin'])->name('member.login');
+    Route::post('/giris-yap', [MemberAuthController::class, 'login'])->name('member.login.submit');
+    Route::get('/sifremi-unuttum', [MemberAuthController::class, 'showForgotPassword'])->name('member.forgot-password');
+    Route::post('/sifremi-unuttum', [MemberAuthController::class, 'sendForgotPassword'])
+        ->middleware('throttle:5,1')
+        ->name('member.forgot-password.submit');
+});
+
+Route::middleware('member')->group(function () {
+    Route::get('/uyelik-dogrulama', [MemberAuthController::class, 'showRegisterVerify'])->name('member.register.verify.form');
+    Route::post('/uyelik-dogrulama', [MemberAuthController::class, 'verifyRegister'])
+        ->middleware('throttle:24,1')
+        ->name('member.register.verify.submit');
+
+    Route::get('/giris-dogrulama', [MemberAuthController::class, 'showLoginVerify'])->name('member.login.verify.form');
+    Route::post('/giris-dogrulama', [MemberAuthController::class, 'verifyLogin'])
+        ->middleware('throttle:24,1')
+        ->name('member.login.verify.submit');
+});
+
+Route::middleware(['member', 'member.code'])->group(function () {
+    Route::get('/hesabim', [MemberAccountController::class, 'account'])->name('member.account');
+    Route::post('/hesabim', [MemberAccountController::class, 'update'])->name('member.account.update');
+
+    Route::get('/sepetim', [MemberAccountController::class, 'cart'])->name('member.cart');
+    Route::post('/sepetim', [MemberAccountController::class, 'addToCart'])->name('member.cart.add');
+    Route::post('/sepetim/{cartItem}/odeme', [MemberAccountController::class, 'checkoutFromCart'])->name('member.cart.checkout');
+    Route::delete('/sepetim/{cartItem}', [MemberAccountController::class, 'removeFromCart'])->name('member.cart.remove');
+
+    Route::get('/satin-alinanlar', [MemberAccountController::class, 'purchases'])->name('member.purchases');
+    Route::get('/satin-alinanlar/{transaction}/indir', [MemberAccountController::class, 'downloadPurchased'])->name('member.purchases.download');
+    Route::post('/satin-alinanlar/{transaction}/eposta-gonder', [MemberAccountController::class, 'sendPurchasedToEmail'])->name('member.purchases.email');
+    Route::post('/satin-alinanlar/destek', [MemberPurchaseSupportController::class, 'store'])
+        ->middleware('throttle:8,1')
+        ->name('member.purchases.support.store');
+});
+
+Route::get('/satin-alinanlar/paylas/{transaction}/indir', [MemberAccountController::class, 'sharedDownload'])
+    ->name('member.purchases.shared-download');
+
+Route::post('/hesabim/cikis', [MemberAuthController::class, 'logout'])
+    ->middleware('member')
+    ->name('member.logout');
 
 Route::prefix($adminPath)->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
@@ -62,6 +124,12 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
     Route::middleware(['auth', 'admin', 'admin.code'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
+        Route::get('/uyeler', [AdminMemberController::class, 'index'])->name('members.index');
+        Route::get('/uyeler/{user}', [AdminMemberController::class, 'show'])->name('members.show');
+        Route::post('/uyeler/{user}/destek/{ticket}/yanit', [AdminMemberController::class, 'replyPurchaseSupport'])
+            ->middleware('throttle:30,1')
+            ->name('members.support.reply');
+
         Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories.index');
         Route::post('/categories', [AdminCategoryController::class, 'store'])->name('categories.store');
         Route::put('/categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
@@ -79,6 +147,7 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/ads', [AdminAdController::class, 'update'])->name('ads.update');
 
         Route::get('/transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
+
         Route::get('/newsletter', [AdminNewsletterController::class, 'index'])->name('newsletter.index');
         Route::post('/newsletter/send', [AdminNewsletterController::class, 'sendToSubscriber'])->name('newsletter.send');
         Route::post('/newsletter/send-bulk', [AdminNewsletterController::class, 'sendBulk'])->name('newsletter.send.bulk');
