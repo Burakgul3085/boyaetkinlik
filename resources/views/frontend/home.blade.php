@@ -30,7 +30,7 @@
                 <p class="inline-flex items-center rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-violet-700 shadow-sm">
                     Çocuklar için eğlenceli ve güvenli içerikler
                 </p>
-                <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+                <h1 class="mt-4 break-words text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
                     Renkli, Tatlı ve Yaratıcı Boyama Dünyası
                 </h1>
                 <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
@@ -227,9 +227,9 @@
     <x-public-ad-rail class="mb-1">
         <div class="space-y-7">
             <div class="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm md:p-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                <h2 class="text-2xl font-bold text-slate-900">Yaş ve Seviye Kategorileri</h2>
-                    <span class="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $categories->count() }} kategori</span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+                    <h2 class="min-w-0 break-words text-xl font-bold text-slate-900 sm:text-2xl">Yaş ve Seviye Kategorileri</h2>
+                    <span class="w-fit shrink-0 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $categories->count() }} kategori</span>
                 </div>
 
                 <div class="mt-4 grid gap-3 md:grid-cols-2">
@@ -260,9 +260,9 @@
             </div>
 
             <div id="home-filter-panel" class="mt-7 rounded-2xl border border-pink-100 bg-white p-4 shadow-sm md:p-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="text-2xl font-bold text-slate-900">Boyama İçeriklerini Filtrele</h2>
-                    <span class="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $filteredPages->total() }} sonuç</span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+                    <h2 class="min-w-0 break-words text-xl font-bold text-slate-900 sm:text-2xl">Boyama İçeriklerini Filtrele</h2>
+                    <span class="w-fit shrink-0 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $filteredPages->total() }} sonuç</span>
                 </div>
 
                 <div class="mt-4 flex flex-wrap gap-2">
@@ -374,7 +374,7 @@
                 </div>
 
                 @if($filteredPages->hasPages())
-                    <div class="mt-6">
+                    <div class="mt-6 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
                         {{ $filteredPages->links() }}
                     </div>
                 @endif

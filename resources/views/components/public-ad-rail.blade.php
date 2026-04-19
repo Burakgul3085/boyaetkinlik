@@ -10,7 +10,7 @@
     $railMin = $tight ? 'min-h-[440px] xl:min-h-[520px]' : 'min-h-[600px] xl:min-h-[680px]';
 @endphp
 
-<div {{ $attributes->merge(['class' => 'public-ad-rail space-y-5']) }}>
+<div {{ $attributes->merge(['class' => 'public-ad-rail min-w-0 max-w-full space-y-5']) }}>
     <section class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
         <div class="overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-400 [&_*]:max-w-full">
             <div class="{{ $headerMin }} w-full overflow-hidden rounded-lg bg-white dark:bg-slate-900">

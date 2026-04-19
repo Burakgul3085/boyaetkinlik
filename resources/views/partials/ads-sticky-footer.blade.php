@@ -1,7 +1,7 @@
 {{-- Sabit alt şerit: yalnızca ads_footer doluysa ve genel site yüzeyinde gösterilir (layouts.app). --}}
 <div
     id="site-sticky-ad"
-    class="pointer-events-auto fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/90 bg-white/95 shadow-[0_-10px_40px_rgba(15,23,42,0.08)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-950/95 dark:shadow-[0_-10px_40px_rgba(0,0,0,0.45)]"
+    class="pointer-events-auto fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/90 bg-white/95 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-10px_40px_rgba(15,23,42,0.08)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-950/95 dark:shadow-[0_-10px_40px_rgba(0,0,0,0.45)]"
     role="complementary"
     aria-label="Sponsor alanı"
 >

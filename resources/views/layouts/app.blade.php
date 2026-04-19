@@ -121,16 +121,22 @@
             })
             ->count();
 @endphp
-<header class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur">
-    <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:py-4">
-        <a href="{{ route('home') }}" class="group inline-flex items-center gap-3 text-slate-800">
-            <span class="logo-anim-wrap inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-violet-100 bg-white shadow-md shadow-indigo-200/50 transition group-hover:scale-105">
+<header
+    class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
+    x-data="{ mobileNavOpen: false }"
+    x-effect="document.documentElement.style.overflow = mobileNavOpen ? 'hidden' : ''"
+>
+    <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 lg:gap-4 lg:py-4">
+        <a href="{{ route('home') }}" class="group flex min-w-0 max-w-[55%] items-center gap-2 text-slate-800 sm:max-w-none sm:gap-3">
+            <span class="logo-anim-wrap inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-violet-100 bg-white shadow-md shadow-indigo-200/50 transition group-hover:scale-105 sm:h-12 sm:w-12">
                 <img src="{{ asset('images/site-logo.png') }}" alt="Boya Etkinlik Logo" class="logo-anim-img h-full w-full object-cover">
             </span>
-            <span class="text-lg font-bold tracking-tight text-slate-900 lg:text-xl">Boya Etkinlik</span>
+            <span class="truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg lg:text-xl">Boya Etkinlik</span>
         </a>
-        <div class="flex items-center gap-2">
-            <div class="flex items-center gap-1.5 rounded-2xl border border-violet-100 bg-violet-50/70 p-1 text-sm font-medium">
+
+        {{-- Masaüstü: tam menü --}}
+        <div class="hidden min-w-0 flex-1 items-center justify-end gap-2 lg:flex">
+            <div class="flex max-w-full flex-wrap items-center justify-end gap-1.5 rounded-2xl border border-violet-100 bg-violet-50/70 p-1 text-sm font-medium">
             @foreach($menuItems as $item)
                 @if(! empty($item['children']))
                     <div class="group relative">
@@ -221,7 +227,101 @@
                 </span>
             </button>
         </div>
+
+        {{-- Mobil: tema + hamburger (menü masaüstünde) --}}
+        <div class="flex shrink-0 items-center gap-2 lg:hidden">
+            <button type="button" class="theme-switch-btn" data-theme-toggle aria-label="Temayı değiştir" title="Koyu / açık tema">
+                <span class="theme-switch-thumb">
+                    <svg data-theme-icon-sun xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 hidden" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M10 2a.75.75 0 0 1 .75.75V4a.75.75 0 0 1-1.5 0V2.75A.75.75 0 0 1 10 2ZM10 15.25a.75.75 0 0 1 .75.75v1.25a.75.75 0 0 1-1.5 0V16a.75.75 0 0 1 .75-.75ZM4 9.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H4Zm13.25 0a.75.75 0 0 1 0 1.5H16a.75.75 0 0 1 0-1.5h1.25ZM5.47 4.53a.75.75 0 0 1 1.06 0l.88.88a.75.75 0 1 1-1.06 1.06l-.88-.88a.75.75 0 0 1 0-1.06Zm8 8a.75.75 0 0 1 1.06 0l.88.88a.75.75 0 1 1-1.06 1.06l-.88-.88a.75.75 0 0 1 0-1.06Zm1.94-8a.75.75 0 0 1 0 1.06l-.88.88a.75.75 0 1 1-1.06-1.06l.88-.88a.75.75 0 0 1 1.06 0Zm-8 8a.75.75 0 0 1 0 1.06l-.88.88a.75.75 0 1 1-1.06-1.06l.88-.88a.75.75 0 0 1 1.06 0ZM10 6a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z"/>
+                    </svg>
+                    <svg data-theme-icon-moon xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M11.55 3.056A7 7 0 1 0 16.944 8.45a.75.75 0 0 0-1.161-.836 5.5 5.5 0 0 1-7.397-7.397.75.75 0 0 0-.836-1.161Z"/>
+                    </svg>
+                </span>
+            </button>
+            <button
+                type="button"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-violet-200 bg-white text-violet-700 shadow-sm transition hover:border-violet-300 hover:text-violet-800 dark:border-slate-600 dark:bg-slate-800 dark:text-violet-300"
+                aria-label="Menüyü aç"
+                :aria-expanded="mobileNavOpen ? 'true' : 'false'"
+                @click="mobileNavOpen = true"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
     </nav>
+
+    {{-- Mobil yan menü --}}
+    <div
+        class="lg:hidden"
+        x-show="mobileNavOpen"
+        x-cloak
+        x-transition.opacity.duration.200ms
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site menüsü"
+    >
+        <div class="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm" @click="mobileNavOpen = false"></div>
+        <div class="fixed inset-y-0 right-0 z-[70] flex w-[min(100%,20rem)] flex-col border-l border-violet-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-center justify-between gap-3 border-b border-violet-100 px-4 py-3 dark:border-slate-700">
+                <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Menü</p>
+                <button
+                    type="button"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-violet-200 bg-violet-50 text-violet-800 transition hover:bg-violet-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                    aria-label="Menüyü kapat"
+                    @click="mobileNavOpen = false"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <nav class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8 pt-2" style="padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));">
+                @foreach($menuItems as $item)
+                    @if(! empty($item['children']))
+                        <div class="mb-3">
+                            <a href="{{ $item['url'] }}" class="block rounded-xl px-3 py-2.5 text-base font-semibold text-slate-800 transition hover:bg-violet-50 dark:text-slate-100 dark:hover:bg-slate-800" @click="mobileNavOpen = false">{{ $item['label'] }}</a>
+                            <div class="ml-2 mt-1 space-y-0.5 border-l-2 border-violet-100 pl-3 dark:border-slate-600">
+                                @foreach($item['children'] as $child)
+                                    <a href="{{ $child['url'] }}" class="block rounded-lg py-2 pl-1 text-sm text-slate-600 transition hover:text-violet-700 dark:text-slate-300 dark:hover:text-violet-300" @click="mobileNavOpen = false">{{ $child['label'] }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ $item['url'] }}" class="mb-1 block rounded-xl px-3 py-2.5 text-base font-medium text-slate-800 transition hover:bg-violet-50 dark:text-slate-100 dark:hover:bg-slate-800" @click="mobileNavOpen = false">{{ $item['label'] }}</a>
+                    @endif
+                @endforeach
+
+                <div class="mt-6 border-t border-violet-100 pt-4 dark:border-slate-700">
+                    @auth
+                        @if(auth()->user()->is_admin)
+                            <a href="{{ route('admin.dashboard') }}" class="btn-primary mb-2 flex w-full justify-center py-3" @click="mobileNavOpen = false">Yönetim paneli</a>
+                        @else
+                            <a href="{{ route('member.account') }}" class="mb-2 block rounded-xl border border-violet-100 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-violet-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800" @click="mobileNavOpen = false">Hesabım</a>
+                            <a href="{{ route('member.cart') }}" class="mb-2 flex items-center justify-between rounded-xl border border-violet-100 px-3 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-600 dark:text-slate-200" @click="mobileNavOpen = false">
+                                <span>Sepetim</span>
+                                <span class="inline-flex min-w-6 items-center justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">{{ $memberCartCount }}</span>
+                            </a>
+                            <a href="{{ route('member.purchases') }}" class="mb-2 flex items-center justify-between rounded-xl border border-violet-100 px-3 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-600 dark:text-slate-200" @click="mobileNavOpen = false">
+                                <span>Satın Alınanlar</span>
+                                <span class="inline-flex min-w-6 items-center justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">{{ $memberPurchasesCount }}</span>
+                            </a>
+                            <form method="post" action="{{ route('member.logout') }}" class="mt-2">
+                                @csrf
+                                <button type="submit" class="w-full rounded-xl border border-rose-200 bg-rose-50/50 px-3 py-2.5 text-sm font-medium text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-400">Çıkış</button>
+                            </form>
+                        @endif
+                    @else
+                        <a href="{{ route('member.login') }}" class="mb-2 block rounded-xl border border-violet-200 bg-white px-3 py-3 text-center text-sm font-semibold text-violet-700 shadow-sm transition hover:bg-violet-50 dark:border-slate-600 dark:bg-slate-800 dark:text-violet-300" @click="mobileNavOpen = false">Giriş Yap</a>
+                        <a href="{{ route('member.register') }}" class="block rounded-xl bg-violet-600 px-3 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700" @click="mobileNavOpen = false">Üye Ol</a>
+                    @endauth
+                </div>
+            </nav>
+        </div>
+    </div>
 </header>
 
 @auth
@@ -243,7 +343,7 @@
 @endif
 
 <main id="site-main" @class([
-    'mx-auto max-w-7xl px-4 py-6',
+    'mx-auto w-full min-w-0 max-w-7xl px-4 py-6',
     'pb-28 lg:pb-24' => $hasStickyFooterAd,
 ])>
     @yield('content')

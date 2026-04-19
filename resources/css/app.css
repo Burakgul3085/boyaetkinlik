@@ -135,8 +135,9 @@
     }
 
     .paid-marquee-item {
-        @apply block w-64 rounded-2xl border border-violet-100 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md;
+        @apply block rounded-2xl border border-violet-100 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md;
         flex: 0 0 auto;
+        width: min(16rem, calc(100vw - 2.75rem));
     }
 
     .paid-marquee:hover .paid-marquee-track {

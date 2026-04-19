@@ -5,8 +5,8 @@
 @section('content')
     <x-public-ad-rail>
     <div x-data="{ previewOpen: false }">
-        <div class="grid gap-6 lg:grid-cols-12">
-            <div class="lg:col-span-8 card p-5 lg:p-6">
+        <div class="grid min-w-0 gap-6 lg:grid-cols-12">
+            <div class="min-w-0 lg:col-span-8 card p-5 lg:p-6">
             <div class="group relative">
                 <img
                     src="{{ route('products.preview-image', $coloringPage) }}"
@@ -41,14 +41,14 @@
                     </div>
                 @endif
             </div>
-            <h1 class="mt-4 text-2xl font-bold text-slate-900">{{ $coloringPage->title }}</h1>
+            <h1 class="mt-4 break-words text-2xl font-bold text-slate-900">{{ $coloringPage->title }}</h1>
             <p class="mt-2 text-slate-600">{{ $coloringPage->description }}</p>
             <div class="mt-6">
                 {!! \App\Models\Setting::getValue('ads_product_detail') ?: '<div class="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">Ürün detay reklam alanı</div>' !!}
             </div>
             </div>
 
-            <div class="lg:col-span-4 card p-5" x-data="{ open: false }">
+            <div class="min-w-0 lg:col-span-4 card p-5" x-data="{ open: false }">
                 <p class="text-sm text-slate-500">Kategori: {{ $coloringPage->category->name }}</p>
                 <p class="mt-3 text-2xl font-bold {{ $coloringPage->is_free ? 'text-emerald-600' : 'text-indigo-600' }}">
                     {{ $coloringPage->is_free ? 'Ücretsiz' : number_format($coloringPage->price, 2).' TL' }}
@@ -70,7 +70,7 @@
                             PDF İndir
                         </a>
                     @else
-                        <div class="mt-3 grid grid-cols-2 gap-2">
+                        <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             @foreach ($downloadFormats as $format)
                                 @php
                                     $formatLabel = strtolower($format) === $originalFormat

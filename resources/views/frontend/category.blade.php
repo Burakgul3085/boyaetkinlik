@@ -9,7 +9,7 @@
                 <p class="inline-flex items-center rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
                     Kategori Detayı
                 </p>
-                <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900">{{ $category->name }}</h1>
+                <h1 class="mt-4 break-words text-3xl font-bold tracking-tight text-slate-900">{{ $category->name }}</h1>
                 <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
                     {{ $category->description ?: 'Bu kategori için özenle seçilmiş boyama içeriklerini aşağıda inceleyebilirsiniz.' }}
                 </p>
@@ -132,9 +132,9 @@
         </div>
 
         <div class="mt-6">
-            <div class="mb-4 flex items-center justify-between gap-3">
-                <h2 class="text-2xl font-bold text-slate-900">Boyama Sayfaları</h2>
-                <span class="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $coloringPages->total() }} içerik</span>
+            <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <h2 class="min-w-0 break-words text-xl font-bold text-slate-900 sm:text-2xl">Boyama Sayfaları</h2>
+                <span class="w-fit shrink-0 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $coloringPages->total() }} içerik</span>
             </div>
         </div>
 
@@ -162,7 +162,7 @@
         </div>
 
         @if($coloringPages->hasPages())
-            <div class="mt-6">
+            <div class="mt-6 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
                 {{ $coloringPages->links() }}
             </div>
         @endif
