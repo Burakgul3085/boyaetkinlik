@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -62,6 +63,9 @@ class MemberAuthController extends Controller
         try {
             $this->issueAndSendMemberCode($request, 'register');
         } catch (Throwable $exception) {
+            $prev = $exception->getPrevious();
+            Log::error('[member_verify_mail register] '.get_class($exception).': '.$exception->getMessage()
+                .($prev ? ' | prev: '.get_class($prev).': '.$prev->getMessage() : ''));
             report($exception);
             Auth::logout();
             $request->session()->invalidate();
@@ -215,6 +219,9 @@ HTML;
         try {
             $this->issueAndSendMemberCode($request, 'login');
         } catch (Throwable $exception) {
+            $prev = $exception->getPrevious();
+            Log::error('[member_verify_mail login] '.get_class($exception).': '.$exception->getMessage()
+                .($prev ? ' | prev: '.get_class($prev).': '.$prev->getMessage() : ''));
             report($exception);
             Auth::logout();
             $request->session()->invalidate();

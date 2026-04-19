@@ -9,6 +9,7 @@ use App\Support\VerificationMailFlow;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class AuthController extends Controller
@@ -39,6 +40,9 @@ class AuthController extends Controller
         try {
             $this->issueAndSendVerificationCode($request);
         } catch (Throwable $exception) {
+            $prev = $exception->getPrevious();
+            Log::error('[admin_verify_mail] '.get_class($exception).': '.$exception->getMessage()
+                .($prev ? ' | prev: '.get_class($prev).': '.$prev->getMessage() : ''));
             report($exception);
             Auth::logout();
             $request->session()->invalidate();
