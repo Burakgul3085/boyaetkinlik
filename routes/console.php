@@ -36,3 +36,42 @@ Artisan::command('mail:test {email? : Alıcı adres (boşsa contact_email)}', fu
         return 1;
     }
 })->purpose('Veritabanı SMTP ayarlarıyla test e-postası gönderir (sunucu tanısı için)');
+
+Artisan::command('mail:diagnostics', function () {
+    $this->line('SAPI: '.PHP_SAPI);
+    $this->line('disable_functions: '.(ini_get('disable_functions') ?: '(yok)'));
+    $this->line('open_basedir: '.(ini_get('open_basedir') ?: '(yok)'));
+
+    $errno = 0;
+    $errstr = '';
+    $fp = @stream_socket_client('tcp://smtp.gmail.com:587', $errno, $errstr, 12, STREAM_CLIENT_CONNECT);
+    if (is_resource($fp)) {
+        fclose($fp);
+        $this->info('Bağlantı: smtp.gmail.com:587 (TCP) — OK');
+    } else {
+        $this->error("Bağlantı: smtp.gmail.com:587 — HATA [{$errno}] {$errstr}");
+    }
+
+    $to = trim((string) (Setting::getValue('contact_email', '') ?? ''));
+    if ($to === '') {
+        $this->warn('contact_email boş; SiteMailer testi atlandı.');
+
+        return 1;
+    }
+
+    try {
+        SiteMailer::send(
+            $to,
+            'mail:diagnostics',
+            '<p>CLI diagnostics</p>',
+            'CLI diagnostics'
+        );
+        $this->info('SiteMailer::send — OK → '.$to);
+    } catch (\Throwable $e) {
+        $this->error('SiteMailer::send — '.$e->getMessage());
+
+        return 1;
+    }
+
+    return 0;
+})->purpose('CLI ortamında SMTP soket ve SiteMailer denemesi');

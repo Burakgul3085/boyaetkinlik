@@ -4,6 +4,8 @@ namespace App\Support;
 
 use App\Models\Setting;
 use Exception;
+use Illuminate\Support\Facades\Log;
+use PHPMailer\PHPMailer\Exception as PhpmailerException;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 
@@ -59,6 +61,21 @@ class SiteMailer
         $mailer->Body = $htmlBody;
         $mailer->AltBody = $textBody;
 
-        $mailer->send();
+        try {
+            $mailer->send();
+        } catch (PhpmailerException $exception) {
+            Log::error('SiteMailer PHPMailer', [
+                'to' => $toEmail,
+                'sapi' => PHP_SAPI,
+                'error_info' => $mailer->ErrorInfo,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw new Exception(
+                'SMTP gönderilemedi: '.$mailer->ErrorInfo,
+                (int) $exception->getCode(),
+                $exception
+            );
+        }
     }
 }

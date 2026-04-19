@@ -125,4 +125,10 @@ return [
 
     'admin_path' => env('ADMIN_PATH', 'y981'),
 
+    /*
+    | Geçici tanı: tarayıcıdan PHP-FPM ile SMTP testi (/_mail-fpm-test/{secret}).
+    | .env: MAIL_WEB_TEST_SECRET=uzun-rastgele-dize — testten sonra silin.
+    */
+    'mail_web_test_secret' => env('MAIL_WEB_TEST_SECRET', ''),
+
 ];

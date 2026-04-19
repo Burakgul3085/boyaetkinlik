@@ -162,3 +162,43 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::delete('/visitor-feedback/{visitorFeedback}', [AdminVisitorFeedbackController::class, 'destroy'])->name('visitor-feedback.destroy');
     });
 });
+
+$mailWebTestSecret = trim((string) config('app.mail_web_test_secret', ''));
+if ($mailWebTestSecret !== '') {
+    Route::get('/_mail-fpm-test/{secret}', function (string $secret) use ($mailWebTestSecret) {
+        if (! hash_equals($mailWebTestSecret, $secret)) {
+            abort(404);
+        }
+
+        $to = trim((string) (\App\Models\Setting::getValue('contact_email', '') ?? ''));
+        if ($to === '') {
+            return response(
+                "HATA: contact_email bos\nSAPI: ".PHP_SAPI."\ndisable_functions: ".ini_get('disable_functions'),
+                500,
+                ['Content-Type' => 'text/plain; charset=UTF-8']
+            );
+        }
+
+        try {
+            \App\Support\SiteMailer::send(
+                $to,
+                'Web (PHP-FPM) SMTP test',
+                '<p>Tarayıcı / FPM üzerinden test.</p>',
+                'Tarayıcı / FPM üzerinden test.'
+            );
+
+            return response(
+                "OK: FPM ile SiteMailer gönderdi. Gelen kutusu: {$to}\nSAPI: ".PHP_SAPI,
+                200,
+                ['Content-Type' => 'text/plain; charset=UTF-8']
+            );
+        } catch (\Throwable $e) {
+            return response(
+                'HATA: '.$e->getMessage()."\nSınıf: ".get_class($e)."\nSAPI: ".PHP_SAPI
+                ."\ndisable_functions: ".ini_get('disable_functions'),
+                500,
+                ['Content-Type' => 'text/plain; charset=UTF-8']
+            );
+        }
+    })->where('secret', '[A-Za-z0-9_-]+');
+}
