@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
-use App\Support\PhpmailerSmtp;
+use App\Support\SiteMailer;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use Throwable;
 
 class ContactController extends Controller
@@ -57,44 +55,26 @@ class ContactController extends Controller
 
     private function sendMail(array $data): void
     {
-        $recipientEmail = Setting::getValue('contact_email', '');
-        $smtpHost = Setting::getValue('smtp_host', '');
-        $smtpPort = (int) (Setting::getValue('smtp_port', '587') ?: 587);
-        $smtpUsername = Setting::getValue('smtp_username', '');
-        $smtpPassword = Setting::getValue('smtp_password', '');
-        $smtpEncryption = strtolower((string) (Setting::getValue('smtp_encryption', 'tls') ?: 'tls'));
-        $fromEmail = Setting::getValue('smtp_from_email', $smtpUsername ?: $recipientEmail);
-        $fromName = Setting::getValue('smtp_from_name', 'Boya Etkinlik İletişim');
+        $recipientEmail = trim((string) (Setting::getValue('contact_email', '') ?? ''));
 
-        if (! $recipientEmail || ! $smtpHost || ! $smtpPort || ! $smtpUsername || ! $smtpPassword || ! $fromEmail) {
-            throw new Exception('SMTP veya alıcı ayarları eksik.');
+        if (! $recipientEmail) {
+            throw new Exception('İletişim e-postası (contact_email) ayarı eksik.');
         }
 
-        $mailer = new PHPMailer(true);
-        $mailer->isSMTP();
-        $mailer->Host = $smtpHost;
-        $mailer->Port = $smtpPort;
-        $mailer->SMTPAuth = true;
-        $mailer->Username = $smtpUsername;
-        $mailer->Password = $smtpPassword;
-        $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
-        $mailer->SMTPDebug = SMTP::DEBUG_OFF;
-        $mailer->CharSet = 'UTF-8';
-        PhpmailerSmtp::applyTransportDefaults($mailer);
-
-        $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik İletişim');
-        $mailer->addAddress($recipientEmail);
-        $mailer->addReplyTo($data['email'], $data['full_name']);
-
-        $mailer->isHTML(true);
-        $mailer->Subject = 'Yeni iletişim mesajı - '.$data['full_name'];
-        $mailer->Body = $this->buildHtmlMailBody($data);
-        $mailer->AltBody = "Yeni iletişim mesajı\n"
+        $html = $this->buildHtmlMailBody($data);
+        $text = "Yeni iletişim mesajı\n"
             ."Ad Soyad: {$data['full_name']}\n"
             ."E-posta: {$data['email']}\n\n"
             ."Mesaj:\n{$data['message']}";
 
-        $mailer->send();
+        // mail:test / doğrulama mailleri ile aynı SiteMailer yolu
+        SiteMailer::send(
+            $recipientEmail,
+            'Yeni iletişim mesajı - '.$data['full_name'],
+            $html,
+            $text,
+            ['email' => $data['email'], 'name' => $data['full_name']]
+        );
     }
 
     private function buildHtmlMailBody(array $data): string
