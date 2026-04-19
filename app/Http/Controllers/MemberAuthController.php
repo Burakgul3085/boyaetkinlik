@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
 use App\Models\User;
-use App\Support\PhpmailerSmtp;
 use App\Support\SiteMailer;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -13,8 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use Throwable;
 
 class MemberAuthController extends Controller
@@ -317,36 +313,16 @@ HTML;
         $recipientEmail = trim((string) $request->user()->email);
         $verificationCode = (string) random_int(100000, 999999);
 
-        $smtpHost = trim((string) (Setting::getValue('smtp_host', '') ?? ''));
-        $smtpPort = (int) (Setting::getValue('smtp_port', '587') ?: 587);
-        $smtpUsername = trim((string) (Setting::getValue('smtp_username', '') ?? ''));
-        $smtpPassword = (string) (Setting::getValue('smtp_password', '') ?? '');
-        $smtpEncryption = strtolower((string) (Setting::getValue('smtp_encryption', 'tls') ?: 'tls'));
-        $fromEmail = Setting::smtpFromEmail($smtpUsername !== '' ? $smtpUsername : $recipientEmail);
-        $fromName = (string) (Setting::getValue('smtp_from_name', 'Boya Etkinlik Güvenlik') ?? 'Boya Etkinlik Güvenlik');
-
-        if (! $recipientEmail || ! $smtpHost || ! $smtpPort || ! $smtpUsername || ! $smtpPassword || ! $fromEmail) {
-            throw new Exception('SMTP ayarları eksik.');
+        if (! $recipientEmail) {
+            throw new Exception('Kullanıcı e-postası bulunamadı.');
         }
 
-        $mailer = new PHPMailer(true);
-        $mailer->isSMTP();
-        $mailer->Host = $smtpHost;
-        $mailer->Port = $smtpPort;
-        $mailer->SMTPAuth = true;
-        $mailer->Username = $smtpUsername;
-        $mailer->Password = $smtpPassword;
-        $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
-        $mailer->SMTPDebug = SMTP::DEBUG_OFF;
-        $mailer->CharSet = 'UTF-8';
-        PhpmailerSmtp::applyTransportDefaults($mailer);
-        $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik');
-        $mailer->addAddress($recipientEmail);
-        $mailer->isHTML(true);
-        $mailer->Subject = $flow === 'register' ? 'Üyelik doğrulama kodunuz' : 'Giriş doğrulama kodunuz';
-        $mailer->Body = "<p>Doğrulama kodunuz: <strong>{$verificationCode}</strong></p><p>Bu kod 15 dakika geçerlidir.</p>";
-        $mailer->AltBody = "Doğrulama kodunuz: {$verificationCode}. Bu kod 15 dakika geçerlidir.";
-        $mailer->send();
+        $subject = $flow === 'register' ? 'Üyelik doğrulama kodunuz' : 'Giriş doğrulama kodunuz';
+        $html = "<p>Doğrulama kodunuz: <strong>{$verificationCode}</strong></p><p>Bu kod 15 dakika geçerlidir.</p>";
+        $text = "Doğrulama kodunuz: {$verificationCode}. Bu kod 15 dakika geçerlidir.";
+
+        // php artisan mail:test ile aynı yol (SiteMailer).
+        SiteMailer::send($recipientEmail, $subject, $html, $text);
 
         $request->session()->put('member_code_verified', false);
         $request->session()->put('member_verification_flow', $flow);
