@@ -163,42 +163,56 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
     });
 });
 
-$mailWebTestSecret = trim((string) config('app.mail_web_test_secret', ''));
-if ($mailWebTestSecret !== '') {
-    Route::get('/_mail-fpm-test/{secret}', function (string $secret) use ($mailWebTestSecret) {
-        if (! hash_equals($mailWebTestSecret, $secret)) {
-            abort(404);
-        }
+Route::get('/_mail-fpm-test/{secret}', function (string $secret) {
+    $configured = trim((string) config('app.mail_web_test_secret', ''));
 
-        $to = trim((string) (\App\Models\Setting::getValue('contact_email', '') ?? ''));
-        if ($to === '') {
-            return response(
-                "HATA: contact_email bos\nSAPI: ".PHP_SAPI."\ndisable_functions: ".ini_get('disable_functions'),
-                500,
-                ['Content-Type' => 'text/plain; charset=UTF-8']
-            );
-        }
+    if ($configured === '') {
+        return response(
+            "MAIL_WEB_TEST_SECRET .env icinde tanimli degil; bu yuzden once 404 goruyordunuz.\n\n"
+            ."Sunucuda:\n"
+            ."1) nano /var/www/boyaetkinlik/.env\n"
+            ."2) Satir ekle (ornek): MAIL_WEB_TEST_SECRET=benim-gizli-anahtar\n"
+            ."3) php artisan config:clear && sudo systemctl restart php8.4-fpm\n"
+            ."4) Tarayici: http://IP/_mail-fpm-test/benim-gizli-anahtar\n\n"
+            ."URLdeki son parca, .env deki deger ile birebir ayni olmali.\n"
+            ."Test bitince MAIL_WEB_TEST_SECRET satirini silin.\n",
+            503,
+            ['Content-Type' => 'text/plain; charset=UTF-8']
+        );
+    }
 
-        try {
-            \App\Support\SiteMailer::send(
-                $to,
-                'Web (PHP-FPM) SMTP test',
-                '<p>Tarayıcı / FPM üzerinden test.</p>',
-                'Tarayıcı / FPM üzerinden test.'
-            );
+    if (! hash_equals($configured, $secret)) {
+        abort(404);
+    }
 
-            return response(
-                "OK: FPM ile SiteMailer gönderdi. Gelen kutusu: {$to}\nSAPI: ".PHP_SAPI,
-                200,
-                ['Content-Type' => 'text/plain; charset=UTF-8']
-            );
-        } catch (\Throwable $e) {
-            return response(
-                'HATA: '.$e->getMessage()."\nSınıf: ".get_class($e)."\nSAPI: ".PHP_SAPI
-                ."\ndisable_functions: ".ini_get('disable_functions'),
-                500,
-                ['Content-Type' => 'text/plain; charset=UTF-8']
-            );
-        }
-    })->where('secret', '[A-Za-z0-9_-]+');
-}
+    $to = trim((string) (\App\Models\Setting::getValue('contact_email', '') ?? ''));
+    if ($to === '') {
+        return response(
+            "HATA: contact_email bos\nSAPI: ".PHP_SAPI."\ndisable_functions: ".ini_get('disable_functions'),
+            500,
+            ['Content-Type' => 'text/plain; charset=UTF-8']
+        );
+    }
+
+    try {
+        \App\Support\SiteMailer::send(
+            $to,
+            'Web (PHP-FPM) SMTP test',
+            '<p>Tarayıcı / FPM üzerinden test.</p>',
+            'Tarayıcı / FPM üzerinden test.'
+        );
+
+        return response(
+            "OK: FPM ile SiteMailer gönderdi. Gelen kutusu: {$to}\nSAPI: ".PHP_SAPI,
+            200,
+            ['Content-Type' => 'text/plain; charset=UTF-8']
+        );
+    } catch (\Throwable $e) {
+        return response(
+            'HATA: '.$e->getMessage()."\nSınıf: ".get_class($e)."\nSAPI: ".PHP_SAPI
+            ."\ndisable_functions: ".ini_get('disable_functions'),
+            500,
+            ['Content-Type' => 'text/plain; charset=UTF-8']
+        );
+    }
+})->where('secret', '[^/]+');
