@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Support\SiteMailer;
+use App\Support\VerificationMailFlow;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -66,7 +67,11 @@ class MemberAuthController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return back()->withErrors(['email' => 'Doğrulama kodu gönderilemedi. Lütfen SMTP ayarlarını kontrol edin.'])->withInput();
+            $msg = VerificationMailFlow::isSessionSaveFailure($exception)
+                ? VerificationMailFlow::sessionSaveFailedMessage()
+                : 'Doğrulama kodu gönderilemedi. Lütfen SMTP ayarlarını kontrol edin.';
+
+            return back()->withErrors(['email' => $msg])->withInput();
         }
 
         return redirect()->route('member.register.verify.form')
@@ -215,7 +220,11 @@ HTML;
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return back()->withErrors(['email' => 'Giriş doğrulama kodu gönderilemedi. Lütfen tekrar deneyin.']);
+            $msg = VerificationMailFlow::isSessionSaveFailure($exception)
+                ? VerificationMailFlow::sessionSaveFailedMessage()
+                : 'Giriş doğrulama kodu gönderilemedi. Lütfen tekrar deneyin.';
+
+            return back()->withErrors(['email' => $msg]);
         }
 
         return redirect()->route('member.login.verify.form');
@@ -324,12 +333,21 @@ HTML;
         // php artisan mail:test ile aynı yol (SiteMailer).
         SiteMailer::send($recipientEmail, $subject, $html, $text);
 
-        $request->session()->put('member_code_verified', false);
-        $request->session()->put('member_verification_flow', $flow);
-        $request->session()->put('member_verification_code_hash', hash('sha256', $verificationCode));
-        $request->session()->put('member_verification_expires_at', now()->addMinutes(15)->timestamp);
-        $request->session()->put('member_verification_wrong_count', 0);
-        $request->session()->save();
+        try {
+            $request->session()->put('member_code_verified', false);
+            $request->session()->put('member_verification_flow', $flow);
+            $request->session()->put('member_verification_code_hash', hash('sha256', $verificationCode));
+            $request->session()->put('member_verification_expires_at', now()->addMinutes(15)->timestamp);
+            $request->session()->put('member_verification_wrong_count', 0);
+            $request->session()->save();
+        } catch (Throwable $e) {
+            report($e);
+            throw new Exception(
+                VerificationMailFlow::SESSION_SAVE_FAILED_MARKER.$e->getMessage(),
+                0,
+                $e
+            );
+        }
     }
 
     /**

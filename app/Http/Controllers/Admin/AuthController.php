@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Support\SiteMailer;
+use App\Support\VerificationMailFlow;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +44,11 @@ class AuthController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return back()->withErrors(['email' => 'Doğrulama kodu gönderilemedi. SMTP ayarlarınızı kontrol edin.']);
+            $msg = VerificationMailFlow::isSessionSaveFailure($exception)
+                ? VerificationMailFlow::sessionSaveFailedMessage()
+                : 'Doğrulama kodu gönderilemedi. SMTP ayarlarınızı kontrol edin.';
+
+            return back()->withErrors(['email' => $msg]);
         }
 
         return redirect()->route('admin.verify.form');
@@ -148,12 +153,21 @@ class AuthController extends Controller
             "Admin giriş doğrulama kodunuz: {$verificationCode}\nBu kod 15 dakika geçerlidir."
         );
 
-        $request->session()->put('admin_code_verified', false);
-        $request->session()->put('admin_verification_wrong_count', 0);
-        $request->session()->put('admin_verification_code_hash', hash('sha256', $verificationCode));
-        $request->session()->put('admin_verification_expires_at', now()->addMinutes(15)->timestamp);
-        $request->session()->put('admin_verification_sent_to', $recipientEmail);
-        $request->session()->save();
+        try {
+            $request->session()->put('admin_code_verified', false);
+            $request->session()->put('admin_verification_wrong_count', 0);
+            $request->session()->put('admin_verification_code_hash', hash('sha256', $verificationCode));
+            $request->session()->put('admin_verification_expires_at', now()->addMinutes(15)->timestamp);
+            $request->session()->put('admin_verification_sent_to', $recipientEmail);
+            $request->session()->save();
+        } catch (Throwable $e) {
+            report($e);
+            throw new Exception(
+                VerificationMailFlow::SESSION_SAVE_FAILED_MARKER.$e->getMessage(),
+                0,
+                $e
+            );
+        }
     }
 
     private function isAdminCodeVerified(Request $request): bool
