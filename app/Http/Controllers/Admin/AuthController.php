@@ -63,6 +63,7 @@ class AuthController extends Controller
         return view('admin.auth.verify', [
             'attemptsRemaining' => max(0, 3 - $wrong),
             'hasPendingCode' => $hasPending,
+            'sentToEmail' => (string) $request->session()->get('admin_verification_sent_to', ''),
         ]);
     }
 

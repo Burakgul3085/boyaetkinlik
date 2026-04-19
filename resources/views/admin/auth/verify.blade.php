@@ -34,6 +34,9 @@
     @csrf
     <p class="inline-flex items-center rounded-full border border-indigo-300/40 bg-indigo-500/20 px-3 py-1 text-[11px] font-semibold tracking-wide text-indigo-100">Güvenli doğrulama</p>
     <h1 class="mt-2 text-3xl font-bold text-white">Kod Doğrulama</h1>
+    @if($sentToEmail !== '')
+        <p class="mt-2 rounded-lg border border-indigo-400/35 bg-indigo-500/15 p-2 text-xs text-indigo-100">Doğrulama kodu <strong class="text-white">{{ $sentToEmail }}</strong> adresine gönderildi. Gelen kutusu ve <strong>Spam</strong> klasörüne bakın; Gmail’de aynı hesaptan giden “kendine” mailler gecikmeli veya farklı sekmede görünebilir.</p>
+    @endif
     <p class="mt-1 text-sm text-slate-300">Devam etmek için e-postanıza gönderilen 6 haneli doğrulama kodunu girin. Kod <strong class="text-indigo-200">15 dakika</strong> geçerlidir; yanlış kodda en fazla <strong class="text-indigo-200">3</strong> deneme hakkınız vardır.</p>
     @if(! $hasPendingCode && ! $errors->any())
         <p class="mt-3 rounded-lg border border-amber-400/40 bg-amber-500/15 p-2 text-xs text-amber-100">Doğrulama verisi bulunamadıysa veya sayfayı yenilediyseniz tekrar giriş yapıp yeni kod isteyin.</p>
