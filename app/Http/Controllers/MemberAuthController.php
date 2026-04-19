@@ -313,16 +313,16 @@ HTML;
 
     private function issueAndSendMemberCode(Request $request, string $flow): void
     {
-        $recipientEmail = (string) $request->user()->email;
+        $recipientEmail = trim((string) $request->user()->email);
         $verificationCode = (string) random_int(100000, 999999);
 
-        $smtpHost = Setting::getValue('smtp_host', '');
+        $smtpHost = trim((string) (Setting::getValue('smtp_host', '') ?? ''));
         $smtpPort = (int) (Setting::getValue('smtp_port', '587') ?: 587);
-        $smtpUsername = Setting::getValue('smtp_username', '');
-        $smtpPassword = Setting::getValue('smtp_password', '');
+        $smtpUsername = trim((string) (Setting::getValue('smtp_username', '') ?? ''));
+        $smtpPassword = (string) (Setting::getValue('smtp_password', '') ?? '');
         $smtpEncryption = strtolower((string) (Setting::getValue('smtp_encryption', 'tls') ?: 'tls'));
-        $fromEmail = Setting::getValue('smtp_from_email', $smtpUsername ?: $recipientEmail);
-        $fromName = Setting::getValue('smtp_from_name', 'Boya Etkinlik Güvenlik');
+        $fromEmail = Setting::smtpFromEmail($smtpUsername !== '' ? $smtpUsername : $recipientEmail);
+        $fromName = (string) (Setting::getValue('smtp_from_name', 'Boya Etkinlik Güvenlik') ?? 'Boya Etkinlik Güvenlik');
 
         if (! $recipientEmail || ! $smtpHost || ! $smtpPort || ! $smtpUsername || ! $smtpPassword || ! $fromEmail) {
             throw new Exception('SMTP ayarları eksik.');
