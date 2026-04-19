@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Support\PhpmailerSmtp;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -159,6 +160,7 @@ class AuthController extends Controller
         $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
         $mailer->SMTPDebug = SMTP::DEBUG_OFF;
         $mailer->CharSet = 'UTF-8';
+        PhpmailerSmtp::applyTransportDefaults($mailer);
 
         $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik Güvenlik');
         $mailer->addAddress($recipientEmail);

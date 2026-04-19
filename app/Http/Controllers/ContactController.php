@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Support\PhpmailerSmtp;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -79,6 +80,7 @@ class ContactController extends Controller
         $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
         $mailer->SMTPDebug = SMTP::DEBUG_OFF;
         $mailer->CharSet = 'UTF-8';
+        PhpmailerSmtp::applyTransportDefaults($mailer);
 
         $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik İletişim');
         $mailer->addAddress($recipientEmail);

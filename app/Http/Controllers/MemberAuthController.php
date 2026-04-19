@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\PhpmailerSmtp;
 use App\Support\SiteMailer;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -338,6 +339,7 @@ HTML;
         $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
         $mailer->SMTPDebug = SMTP::DEBUG_OFF;
         $mailer->CharSet = 'UTF-8';
+        PhpmailerSmtp::applyTransportDefaults($mailer);
         $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik');
         $mailer->addAddress($recipientEmail);
         $mailer->isHTML(true);

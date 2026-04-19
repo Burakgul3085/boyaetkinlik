@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Support\PhpmailerSmtp;
 use App\Models\VisitorFeedback;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -151,6 +152,7 @@ class VisitorFeedbackController extends Controller
         $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
         $mailer->SMTPDebug = SMTP::DEBUG_OFF;
         $mailer->CharSet = 'UTF-8';
+        PhpmailerSmtp::applyTransportDefaults($mailer);
         $mailer->setFrom($fromEmail, $fromName ?: $appName);
         $mailer->addAddress($recipientEmail, $feedback->first_name.' '.$feedback->last_name);
         $mailer->isHTML(true);

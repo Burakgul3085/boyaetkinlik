@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ColoringPage;
 use App\Models\Setting;
+use App\Support\PhpmailerSmtp;
 use App\Models\Transaction;
 use App\Support\FileFormatDownloadService;
 use Exception;
@@ -164,6 +165,7 @@ class ColoringPageController extends Controller
         $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
         $mailer->SMTPDebug = SMTP::DEBUG_OFF;
         $mailer->CharSet = 'UTF-8';
+        PhpmailerSmtp::applyTransportDefaults($mailer);
 
         $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik');
         $mailer->addAddress($toEmail);

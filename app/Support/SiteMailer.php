@@ -45,6 +45,7 @@ class SiteMailer
         $mailer->SMTPSecure = $smtpEncryption === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
         $mailer->SMTPDebug = SMTP::DEBUG_OFF;
         $mailer->CharSet = 'UTF-8';
+        PhpmailerSmtp::applyTransportDefaults($mailer);
 
         $mailer->setFrom($fromEmail, $fromName ?: 'Boya Etkinlik');
         $mailer->addAddress($toEmail);
