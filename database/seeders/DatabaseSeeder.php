@@ -25,8 +25,8 @@ class DatabaseSeeder extends Seeder
         $defaults = [
             'footer_text' => 'Boya Etkinlik Platformu',
             'about' => 'Modern ve kullanıcı dostu boyama sayfası platformu.',
-            'contact' => 'iletisim@example.com',
-            'navbar_links' => "Anasayfa|/\nAdmin|/admin/login",
+            'contact_email' => 'admin@boyaetkinlik.test',
+            'navbar_links' => "Anasayfa|/\nİletişim|/iletisim",
         ];
 
         foreach ($defaults as $key => $value) {
