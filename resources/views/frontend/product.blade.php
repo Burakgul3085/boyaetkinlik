@@ -49,7 +49,7 @@
             </div>
 
             <div class="min-w-0 lg:col-span-4 card p-5" x-data="{ open: false }">
-                <p class="text-sm text-slate-500">Kategori: {{ $coloringPage->category->name }}</p>
+                <p class="text-sm text-slate-500">Kategori: {{ $coloringPage->category?->name ?? 'Kategorisiz' }}</p>
                 <p class="mt-3 text-2xl font-bold {{ $coloringPage->is_free ? 'text-emerald-600' : 'text-indigo-600' }}">
                     {{ $coloringPage->is_free ? 'Ücretsiz' : number_format($coloringPage->price, 2).' TL' }}
                 </p>
