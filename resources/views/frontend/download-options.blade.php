@@ -13,6 +13,12 @@
                     Satın aldığınız içerik için uygun formatı seçebilirsiniz. Bu sayfaya aynı indirme bağlantısıyla istediğiniz zaman dönebilirsiniz.
                 </p>
 
+                @if (session('download_error'))
+                    <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                        {{ session('download_error') }}
+                    </div>
+                @endif
+
                 <div class="mt-6 grid gap-3 sm:grid-cols-2">
                     @php
                         $originalFormat = strtolower(pathinfo($transaction->coloringPage->pdf_path, PATHINFO_EXTENSION) ?: 'pdf');

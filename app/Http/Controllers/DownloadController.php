@@ -7,7 +7,7 @@ use App\Support\FileFormatDownloadService;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class DownloadController extends Controller
 {
@@ -26,7 +26,8 @@ class DownloadController extends Controller
 
         $requestedFormat = $request->string('format')->toString();
         $requestedFormat = $downloadService->normalizeFormat($requestedFormat ?: null);
-        $sourceExtension = $downloadService->sourceExtension($transaction->coloringPage->pdf_path);
+        $mainRelativePath = $transaction->coloringPage->mainDownloadRelativePath();
+        $sourceExtension = $downloadService->sourceExtension($mainRelativePath);
         $downloadFormats = $downloadService->downloadOptions($sourceExtension);
 
         if ($requestedFormat === null) {
@@ -40,15 +41,29 @@ class DownloadController extends Controller
             abort(422, 'Geçersiz dosya formatı.');
         }
 
-        /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk('local');
+        if ($transaction->coloringPage->mainFilePathLooksLikeCoverFolder()) {
+            return redirect()
+                ->route('download.paid', ['token' => $token])
+                ->with('download_error', 'Ana dosya yolu hatalı görünüyor (kapak klasörü). Yönetim panelinde «Dosya (PDF/PNG/…)» alanına asıl indirilecek dosyayı yeniden yükleyin.');
+        }
 
-        $response = $downloadService->download(
-            $disk,
-            $transaction->coloringPage->pdf_path,
-            $transaction->coloringPage->title,
-            $requestedFormat
-        );
+        /** @var FilesystemAdapter $disk */
+        $disk = $transaction->coloringPage->diskForMainFile();
+
+        try {
+            $response = $downloadService->download(
+                $disk,
+                $mainRelativePath,
+                $transaction->coloringPage->title,
+                $requestedFormat
+            );
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return redirect()
+                ->route('download.paid', ['token' => $token])
+                ->with('download_error', 'Dosya hazırlanırken bir sorun oluştu. Lütfen farklı bir format deneyin veya daha sonra tekrar deneyin.');
+        }
 
         $transaction->update([
             'downloaded_at' => $transaction->downloaded_at ?? now(),
@@ -70,7 +85,8 @@ class DownloadController extends Controller
             'İndirme linkinin süresi doldu.'
         );
 
-        $sourceExtension = $downloadService->sourceExtension($transaction->coloringPage->pdf_path);
+        $mainRelativePath = $transaction->coloringPage->mainDownloadRelativePath();
+        $sourceExtension = $downloadService->sourceExtension($mainRelativePath);
         $downloadFormats = $downloadService->downloadOptions($sourceExtension);
 
         $requestedFormat = $request->string('format')->toString();
@@ -80,15 +96,29 @@ class DownloadController extends Controller
             abort(422, 'Geçersiz dosya formatı.');
         }
 
-        /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk('local');
+        if ($transaction->coloringPage->mainFilePathLooksLikeCoverFolder()) {
+            return redirect()
+                ->route('download.paid', ['token' => $token])
+                ->with('download_error', 'Ana dosya yolu hatalı görünüyor (kapak klasörü). Yönetim panelinde «Dosya (PDF/PNG/…)» alanına asıl indirilecek dosyayı yeniden yükleyin.');
+        }
 
-        $response = $downloadService->inline(
-            $disk,
-            $transaction->coloringPage->pdf_path,
-            $transaction->coloringPage->title,
-            $requestedFormat
-        );
+        /** @var FilesystemAdapter $disk */
+        $disk = $transaction->coloringPage->diskForMainFile();
+
+        try {
+            $response = $downloadService->inline(
+                $disk,
+                $mainRelativePath,
+                $transaction->coloringPage->title,
+                $requestedFormat
+            );
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return redirect()
+                ->route('download.paid', ['token' => $token])
+                ->with('download_error', 'Yazdırılabilir dosya hazırlanırken bir sorun oluştu. Lütfen farklı bir format deneyin veya daha sonra tekrar deneyin.');
+        }
 
         $transaction->update([
             'downloaded_at' => $transaction->downloaded_at ?? now(),
