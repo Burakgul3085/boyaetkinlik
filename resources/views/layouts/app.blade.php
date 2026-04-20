@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Boya Etkinlik')</title>
+    {{-- Sekme ikonu + Google arama sonuçlarında site ikonu (tarayıcılar /favicon.ico veya rel=icon kullanır) --}}
+    <link rel="icon" type="image/png" href="{{ asset('images/site-logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/site-logo.png') }}">
     <script>
         (function () {
             try {
