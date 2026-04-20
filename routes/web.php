@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MemberController as AdminMemberController;
 use App\Http\Controllers\MemberPurchaseSupportController;
 use App\Http\Controllers\Admin\NewsletterController as AdminNewsletterController;
+use App\Http\Controllers\Admin\PurchaseVerificationController as AdminPurchaseVerificationController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\VisitorFeedbackController as AdminVisitorFeedbackController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MemberAccountController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\PurchaseVerificationController;
 use App\Http\Controllers\ShopierController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\VisitorFeedbackController;
@@ -59,6 +61,14 @@ Route::get('/indirme-linki-tekrar', [GuestPurchaseRecoveryController::class, 'sh
 Route::post('/indirme-linki-tekrar', [GuestPurchaseRecoveryController::class, 'send'])
     ->middleware('throttle:6,1')
     ->name('guest.purchase.recovery.submit');
+Route::get('/satin-alim-dogrula', [PurchaseVerificationController::class, 'show'])->name('purchase.verification.show');
+Route::post('/satin-alim-dogrula', [PurchaseVerificationController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('purchase.verification.store');
+Route::get('/satin-alim-dogrula/{token}', [PurchaseVerificationController::class, 'status'])->name('purchase.verification.status');
+Route::post('/satin-alim-dogrula/{token}/eposta', [PurchaseVerificationController::class, 'sendEmail'])
+    ->middleware('throttle:6,1')
+    ->name('purchase.verification.email');
 
 Route::middleware('guest')->group(function () {
     Route::get('/uye-ol', [MemberAuthController::class, 'showRegister'])->name('member.register');
@@ -149,6 +159,9 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/ads', [AdminAdController::class, 'update'])->name('ads.update');
 
         Route::get('/transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
+        Route::get('/purchase-verifications', [AdminPurchaseVerificationController::class, 'index'])->name('purchase-verifications.index');
+        Route::post('/purchase-verifications/{purchaseVerification}/approve', [AdminPurchaseVerificationController::class, 'approve'])->name('purchase-verifications.approve');
+        Route::post('/purchase-verifications/{purchaseVerification}/reject', [AdminPurchaseVerificationController::class, 'reject'])->name('purchase-verifications.reject');
 
         Route::get('/newsletter', [AdminNewsletterController::class, 'index'])->name('newsletter.index');
         Route::post('/newsletter/send', [AdminNewsletterController::class, 'sendToSubscriber'])->name('newsletter.send');

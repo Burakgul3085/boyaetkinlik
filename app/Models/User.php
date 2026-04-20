@@ -77,6 +77,11 @@ class User extends Authenticatable
         return $this->hasMany(PurchaseSupportTicket::class);
     }
 
+    public function reviewedPurchaseVerifications(): HasMany
+    {
+        return $this->hasMany(PurchaseVerificationRequest::class, 'reviewed_by');
+    }
+
     public function getDisplayNameAttribute(): string
     {
         $fullName = trim(($this->first_name ?? '').' '.($this->last_name ?? ''));

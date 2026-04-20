@@ -44,6 +44,11 @@ class ColoringPage extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function purchaseVerificationRequests(): HasMany
+    {
+        return $this->hasMany(PurchaseVerificationRequest::class);
+    }
+
     /**
      * Yönetim panelindeki «Dosya» alanı (pdf_path). İndirme / yazdırma / e-posta bu yolu kullanır.
      * Kapak görseli cover_image_path ile karıştırılmamalıdır.

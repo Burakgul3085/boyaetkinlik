@@ -58,4 +58,9 @@ class Transaction extends Model
     {
         return $this->hasMany(PurchaseSupportTicket::class);
     }
+
+    public function purchaseVerificationRequests(): HasMany
+    {
+        return $this->hasMany(PurchaseVerificationRequest::class);
+    }
 }
