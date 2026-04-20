@@ -551,11 +551,11 @@
                 {{-- Gizli giriş: geniş tıklama alanı + belirgin nokta (yönetim giriş sayfası) --}}
                 <a
                     href="{{ route('admin.login') }}"
-                    class="group relative z-30 inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-transparent transition hover:border-white/20 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-95"
+                    class="group relative z-30 -my-0.5 inline-flex min-h-[36px] min-w-[36px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] px-1.5 py-1.5 transition hover:border-white/25 hover:bg-white/[0.08] focus:outline-none focus:ring-1 focus:ring-white/30 active:scale-[0.98]"
                     title=""
                     aria-label="Giriş"
                 >
-                    <span class="pointer-events-none h-3 w-3 rounded-full bg-white/70 shadow ring-1 ring-white/30 transition group-hover:scale-110 group-hover:bg-white group-hover:ring-white/50"></span>
+                    <span class="pointer-events-none h-2 w-2 rounded-full bg-white/65 shadow-[0_0_0_1px_rgba(255,255,255,0.12)] transition group-hover:bg-white/90 group-hover:shadow-[0_0_0_1px_rgba(255,255,255,0.25)]"></span>
                 </a>
             </div>
             <div class="flex flex-wrap items-center gap-2">
