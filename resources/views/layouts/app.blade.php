@@ -278,8 +278,8 @@
         aria-modal="true"
         aria-label="Site menüsü"
     >
-        <div class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm" @click="mobileNavOpen = false"></div>
-        <div class="fixed inset-y-0 right-0 z-[110] flex h-screen max-h-[100dvh] w-[min(100%,20rem)] min-h-0 flex-col border-l border-violet-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <div class="fixed inset-0 z-[9998] bg-slate-900/50 backdrop-blur-sm" @click="mobileNavOpen = false"></div>
+        <div class="fixed inset-y-0 right-0 z-[9999] flex h-screen max-h-[100dvh] w-[min(100%,20rem)] min-h-0 flex-col border-l border-violet-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
             <div class="flex shrink-0 items-center justify-between gap-3 border-b border-violet-100 px-4 py-3 dark:border-slate-700">
                 <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Menü</p>
                 <button
