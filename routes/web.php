@@ -21,12 +21,14 @@ use App\Http\Controllers\MemberAccountController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ShopierController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\VisitorFeedbackController;
 use Illuminate\Support\Facades\Route;
 
 $adminPath = trim((string) config('app.admin_path', 'yonetim-981400-panel'), '/');
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/login', fn () => abort(404))->name('login');
 Route::get('/yonetim', fn () => abort(404));
 Route::get('/admin-giris', fn () => abort(404));
