@@ -127,7 +127,15 @@
 <header
     class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
     x-data="{ mobileNavOpen: false }"
-    x-effect="document.documentElement.style.overflow = mobileNavOpen ? 'hidden' : ''"
+    x-effect="
+        if (mobileNavOpen) {
+            document.documentElement.classList.add('overflow-hidden');
+            document.body.classList.add('overflow-hidden');
+        } else {
+            document.documentElement.classList.remove('overflow-hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    "
 >
     <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 lg:gap-4 lg:py-4">
         <a href="{{ route('home') }}" class="group flex min-w-0 max-w-[55%] items-center gap-2 text-slate-800 sm:max-w-none sm:gap-3">
@@ -257,19 +265,18 @@
         </div>
     </nav>
 
-    {{-- Mobil yan menü --}}
+    {{-- Mobil yan menü: header dışına taşınmaz ama panel tam ekran yüksekliği + scroll alanı sabit (responsive/DevTools taşması önlenir) --}}
     <div
         class="lg:hidden"
         x-show="mobileNavOpen"
         x-cloak
-        x-transition.opacity.duration.200ms
         role="dialog"
         aria-modal="true"
         aria-label="Site menüsü"
     >
-        <div class="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm" @click="mobileNavOpen = false"></div>
-        <div class="fixed inset-y-0 right-0 z-[70] flex w-[min(100%,20rem)] flex-col border-l border-violet-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-            <div class="flex items-center justify-between gap-3 border-b border-violet-100 px-4 py-3 dark:border-slate-700">
+        <div class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm" @click="mobileNavOpen = false"></div>
+        <div class="fixed inset-y-0 right-0 z-[110] flex h-screen max-h-[100dvh] w-[min(100%,20rem)] min-h-0 flex-col border-l border-violet-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-violet-100 px-4 py-3 dark:border-slate-700">
                 <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Menü</p>
                 <button
                     type="button"
@@ -282,7 +289,7 @@
                     </svg>
                 </button>
             </div>
-            <nav class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8 pt-2" style="padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));">
+            <nav class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-8 pt-2 [-webkit-overflow-scrolling:touch]" style="padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));">
                 @foreach($menuItems as $item)
                     @if(! empty($item['children']))
                         <div class="mb-3">
