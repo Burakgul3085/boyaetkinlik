@@ -106,6 +106,7 @@
     $requestPath = request()->path();
     $onPublicSiteSurface = ! request()->routeIs('contact.show', 'contact.send', 'contact.whatsapp')
         && ! str_starts_with($requestPath, $adminPathTrim);
+    $showKofiWidget = ! str_starts_with($requestPath, $adminPathTrim);
     $stickyFooterAdHtml = (string) \App\Models\Setting::getValue('ads_footer', '');
     $hasStickyFooterAd = $onPublicSiteSurface && trim($stickyFooterAdHtml) !== '';
     $memberCartCount = (! auth()->check() || auth()->user()->is_admin)
@@ -363,6 +364,10 @@
 ])>
     @yield('content')
 </main>
+
+@if($showKofiWidget)
+    @include('partials.kofi-support-widget', ['hasStickyFooterAd' => $hasStickyFooterAd])
+@endif
 
 @if($hasStickyFooterAd)
     @include('partials.ads-sticky-footer', ['html' => $stickyFooterAdHtml])

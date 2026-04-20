@@ -326,3 +326,43 @@
         transform: translateY(-1px) scale(1.04);
     }
 }
+
+/* Ko-fi sağ alt baloncuk: hafif yüzen hareket (sabit görünümde bile canlılık) */
+@keyframes kofi-bubble-float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes kofi-deco-drift {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.85;
+    }
+    50% {
+        transform: translate(-2px, -3px);
+        opacity: 1;
+    }
+}
+
+.kofi-bubble-main {
+    animation: kofi-bubble-float 3.2s ease-in-out infinite;
+}
+
+.kofi-deco-bubble {
+    animation: kofi-deco-drift 3.6s ease-in-out infinite;
+}
+
+.kofi-deco-bubble--delay {
+    animation-delay: 0.55s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kofi-bubble-main,
+    .kofi-deco-bubble {
+        animation: none;
+    }
+}
