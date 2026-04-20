@@ -546,15 +546,17 @@
     </div>
     <div class="border-t border-white/20">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-indigo-100/90">
-            <p class="inline-flex flex-wrap items-center gap-2">
+            <p class="inline-flex flex-wrap items-center gap-1">
                 <span>© 2026 Burak Gül tarafından geliştirilmiştir.</span>
-                {{-- Gizli giriş: metin yok; sadece küçük nokta (admin giriş sayfası) --}}
+                {{-- Gizli giriş: küçük ayırıcı nokta (tıklanınca yönetim giriş / e-posta–şifre sayfası) --}}
                 <a
                     href="{{ route('admin.login') }}"
-                    class="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-white/20 align-middle transition hover:bg-white/40 focus:outline-none focus:ring-2 focus:ring-white/25"
-                    aria-hidden="true"
-                    tabindex="-1"
-                ></a>
+                    class="group inline-flex min-h-9 min-w-9 shrink-0 items-center justify-center rounded-lg align-middle text-white/50 transition hover:bg-white/10 hover:text-white/90 focus:outline-none focus:ring-2 focus:ring-white/35"
+                    title=""
+                    aria-label="Giriş"
+                >
+                    <span class="h-2 w-2 rounded-full bg-white/55 shadow-sm ring-1 ring-white/25 transition group-hover:bg-white group-hover:ring-white/40"></span>
+                </a>
             </p>
             <div class="flex flex-wrap items-center gap-2">
                 <a
