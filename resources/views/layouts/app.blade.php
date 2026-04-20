@@ -546,7 +546,16 @@
     </div>
     <div class="border-t border-white/20">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-indigo-100/90">
-            <p>© 2026 Burak Gül tarafından geliştirilmiştir.</p>
+            <p class="inline-flex flex-wrap items-center gap-2">
+                <span>© 2026 Burak Gül tarafından geliştirilmiştir.</span>
+                {{-- Gizli giriş: metin yok; sadece küçük nokta (admin giriş sayfası) --}}
+                <a
+                    href="{{ route('admin.login') }}"
+                    class="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-white/20 align-middle transition hover:bg-white/40 focus:outline-none focus:ring-2 focus:ring-white/25"
+                    aria-hidden="true"
+                    tabindex="-1"
+                ></a>
+            </p>
             <div class="flex flex-wrap items-center gap-2">
                 <a
                     href="{{ route('guest.purchase.recovery') }}"
