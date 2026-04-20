@@ -124,8 +124,8 @@
             })
             ->count();
 @endphp
-<header
-    class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
+{{-- Mobil tam ekran overlay burada tutulur: header içinde backdrop-blur varken fixed çocuklar bazı tarayıcılarda viewport yerine header kutusuna hizalanıyordu. --}}
+<div
     x-data="{ mobileNavOpen: false }"
     x-effect="
         if (mobileNavOpen) {
@@ -136,6 +136,9 @@
             document.body.classList.remove('overflow-hidden');
         }
     "
+>
+<header
+    class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
 >
     <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 lg:gap-4 lg:py-4">
         <a href="{{ route('home') }}" class="group flex min-w-0 max-w-[55%] items-center gap-2 text-slate-800 sm:max-w-none sm:gap-3">
@@ -264,8 +267,9 @@
             </button>
         </div>
     </nav>
+</header>
 
-    {{-- Mobil yan menü: header dışına taşınmaz ama panel tam ekran yüksekliği + scroll alanı sabit (responsive/DevTools taşması önlenir) --}}
+    {{-- Mobil yan menü: header DIŞINDA (backdrop-blur ile fixed çakışması yok) --}}
     <div
         class="lg:hidden"
         x-show="mobileNavOpen"
@@ -332,7 +336,7 @@
             </nav>
         </div>
     </div>
-</header>
+</div>
 
 @auth
     @if(!auth()->user()->is_admin && request()->routeIs('home') && session('member_code_verified', false))
