@@ -19,7 +19,10 @@
                     @endforeach
                 </select>
             </label>
-            <input class="input-ui" name="order_no" value="{{ old('order_no') }}" placeholder="Shopier Sipariş No" required>
+            <div>
+                <input class="input-ui w-full" name="order_no" value="{{ old('order_no') }}" placeholder="Shopier Sipariş No (örn: #492666041)" required>
+                <p class="mt-1 text-xs text-slate-500">Sipariş numarasını Shopier hesabınızda <strong>Siparişler</strong> ekranında, sipariş detayında en üstte görebilirsiniz.</p>
+            </div>
             <input class="input-ui" name="customer_name" value="{{ old('customer_name') }}" placeholder="Ad Soyad (opsiyonel)">
             <input type="email" class="input-ui" name="email" value="{{ old('email') }}" placeholder="Shopier'de kullandığınız e-posta" required>
             <input class="input-ui" name="phone" value="{{ old('phone') }}" placeholder="Shopier'de kullandığınız telefon (opsiyonel)">

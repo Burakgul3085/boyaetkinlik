@@ -561,12 +561,6 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a
-                    href="{{ route('purchase.verification.show') }}"
-                    class="rounded-md px-2 py-1 font-medium text-indigo-100/90 transition hover:bg-white/10 hover:text-white"
-                >
-                    Satın alım doğrulama
-                </a>
-                <a
                     href="mailto:burakgul3085@gmail.com"
                     class="rounded-md px-2 py-1 font-medium text-white/90 transition hover:bg-white/10 hover:text-white"
                 >

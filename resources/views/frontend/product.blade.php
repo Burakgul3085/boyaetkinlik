@@ -144,6 +144,8 @@
                     @php
                         $shopierProductUrl = trim((string) ($coloringPage->shopier_product_url ?? ''));
                     @endphp
+                    <a href="{{ route('purchase.verification.show') }}" class="btn-secondary mt-5 w-full text-center">Satın Alım Doğrula</a>
+                    <p class="mt-2 text-xs text-slate-500">Shopier sipariş numaranız ile ödeme doğrulayıp bu ürünü tekrar indirebilir veya e-posta bağlantısı alabilirsiniz.</p>
                     @auth
                         @if(!auth()->user()->is_admin && session('member_code_verified', false))
                             <form method="post" action="{{ route('member.cart.add') }}" class="mt-5">
