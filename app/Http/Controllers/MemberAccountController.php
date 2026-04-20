@@ -74,14 +74,13 @@ class MemberAccountController extends Controller
     {
         abort_if($cartItem->user_id !== $request->user()->id, 403);
 
+        $user = $request->user();
         $page = $cartItem->coloringPage()->firstOrFail();
         abort_if($page->is_free, 422, 'Ücretsiz ürünler için ödeme gerekmez.');
-        $shopierUrl = trim((string) ($page->shopier_product_url ?? ''));
-        abort_if($shopierUrl === '', 422, 'Bu ürün için Shopier bağlantısı henüz tanımlanmadı.');
 
         $alreadyPurchased = Transaction::query()
             ->where('status', 'paid')
-            ->where('user_id', $request->user()->id)
+            ->where('user_id', $user->id)
             ->where('coloring_page_id', $page->id)
             ->exists();
 
@@ -89,7 +88,28 @@ class MemberAccountController extends Controller
             return redirect()->route('member.purchases')->with('success', 'Bu ürün zaten satın alınmış görünüyor.');
         }
 
-        return redirect()->away($shopierUrl);
+        $transaction = Transaction::query()
+            ->where('status', 'pending')
+            ->where('user_id', $user->id)
+            ->where('coloring_page_id', $page->id)
+            ->latest()
+            ->first();
+
+        if (! $transaction) {
+            $transaction = Transaction::query()->create([
+                'user_id' => $user->id,
+                'coloring_page_id' => $page->id,
+                'email' => (string) $user->email,
+                'paid_amount' => (float) ($page->price ?? 0),
+                'status' => 'pending',
+                'payload' => [
+                    'source' => 'member_cart_checkout',
+                    'cart_item_id' => $cartItem->id,
+                ],
+            ]);
+        }
+
+        return redirect()->route('shopier.redirect', ['transaction' => $transaction->id]);
     }
 
     public function removeFromCart(Request $request, CartItem $cartItem)
