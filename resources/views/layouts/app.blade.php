@@ -546,18 +546,18 @@
     </div>
     <div class="border-t border-white/20">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-indigo-100/90">
-            <p class="inline-flex flex-wrap items-center gap-1">
-                <span>© 2026 Burak Gül tarafından geliştirilmiştir.</span>
-                {{-- Gizli giriş: küçük ayırıcı nokta (tıklanınca yönetim giriş / e-posta–şifre sayfası) --}}
+            <div class="relative z-20 inline-flex flex-wrap items-center gap-2">
+                <span class="select-none">© 2026 Burak Gül tarafından geliştirilmiştir.</span>
+                {{-- Gizli giriş: geniş tıklama alanı + belirgin nokta (yönetim giriş sayfası) --}}
                 <a
                     href="{{ route('admin.login') }}"
-                    class="group inline-flex min-h-9 min-w-9 shrink-0 items-center justify-center rounded-lg align-middle text-white/50 transition hover:bg-white/10 hover:text-white/90 focus:outline-none focus:ring-2 focus:ring-white/35"
+                    class="group relative z-30 inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-transparent transition hover:border-white/20 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-95"
                     title=""
                     aria-label="Giriş"
                 >
-                    <span class="h-2 w-2 rounded-full bg-white/55 shadow-sm ring-1 ring-white/25 transition group-hover:bg-white group-hover:ring-white/40"></span>
+                    <span class="pointer-events-none h-3 w-3 rounded-full bg-white/70 shadow ring-1 ring-white/30 transition group-hover:scale-110 group-hover:bg-white group-hover:ring-white/50"></span>
                 </a>
-            </p>
+            </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a
                     href="{{ route('guest.purchase.recovery') }}"
