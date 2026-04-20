@@ -25,7 +25,7 @@
                         <a href="{{ route('products.show', $item->coloringPage) }}" class="btn-secondary">Ürüne Git</a>
                         <form method="post" action="{{ route('member.cart.checkout', $item) }}">
                             @csrf
-                            <button class="btn-primary">Ödeme Yap</button>
+                            <button class="btn-primary">Shopier'e Git</button>
                         </form>
                         <form method="post" action="{{ route('member.cart.remove', $item) }}">
                             @csrf

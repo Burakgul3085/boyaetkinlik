@@ -17,6 +17,7 @@
             @endforeach
         </select>
         <input type="number" step="0.01" name="price" placeholder="Fiyat" class="input-ui">
+        <input type="url" name="shopier_product_url" placeholder="Shopier ürün linki (https://...)" class="input-ui md:col-span-2">
         <label class="input-ui">Kapak (PNG/JPG/JPEG) <input type="file" name="cover_image" accept=".png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
         <label class="input-ui md:col-span-2">Dosya (PDF/PNG/JPG/JPEG) <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
         <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-2"></textarea>
@@ -27,13 +28,20 @@
 
     <div class="card mt-6 overflow-x-auto p-4">
         <table class="min-w-full text-sm">
-            <thead><tr class="text-left text-slate-500"><th class="py-2">Başlık</th><th>Kategori</th><th>Fiyat</th><th>Tip</th><th>İşlem</th></tr></thead>
+            <thead><tr class="text-left text-slate-500"><th class="py-2">Başlık</th><th>Kategori</th><th>Fiyat</th><th>Shopier Link</th><th>Tip</th><th>İşlem</th></tr></thead>
             <tbody>
             @foreach($pages as $page)
                 <tr class="border-t">
                     <td class="py-2">{{ $page->title }}</td>
                     <td>{{ $page->category?->name ?? '— (kategori yok)' }}</td>
                     <td>{{ number_format($page->price, 2) }} TL</td>
+                    <td>
+                        @if($page->shopier_product_url)
+                            <a href="{{ $page->shopier_product_url }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-violet-700 underline-offset-2 hover:underline">Aç</a>
+                        @else
+                            <span class="text-xs text-slate-400">Tanımlı değil</span>
+                        @endif
+                    </td>
                     <td>{{ $page->is_free ? 'Ücretsiz' : 'Ücretli' }}</td>
                     <td class="py-2">
                         <div class="flex flex-wrap items-center gap-2">
@@ -55,6 +63,7 @@
                                             @endforeach
                                         </select>
                                         <input type="number" step="0.01" name="price" value="{{ $page->price }}" placeholder="Fiyat" class="input-ui">
+                                        <input type="url" name="shopier_product_url" value="{{ $page->shopier_product_url }}" placeholder="Shopier ürün linki (https://...)" class="input-ui md:col-span-2">
                                         <label class="input-ui">Kapak (PNG/JPG/JPEG) <input type="file" name="cover_image" accept=".png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
                                         <label class="input-ui md:col-span-2">Dosya (PDF/PNG/JPG/JPEG) <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
                                         <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-2">{{ $page->description }}</textarea>

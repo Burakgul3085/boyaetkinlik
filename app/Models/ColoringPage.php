@@ -20,6 +20,7 @@ class ColoringPage extends Model
         'cover_image_path',
         'pdf_path',
         'price',
+        'shopier_product_url',
         'is_free',
         'is_featured',
     ];

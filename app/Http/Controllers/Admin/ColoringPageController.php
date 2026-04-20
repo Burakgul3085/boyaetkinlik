@@ -55,6 +55,7 @@ class ColoringPageController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['nullable', 'numeric', 'min:0'],
+            'shopier_product_url' => ['nullable', 'url', 'max:1000'],
             'is_free' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
             'cover_image' => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:8192'],

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\ColoringPage;
 use App\Models\Setting;
 use App\Support\PhpmailerSmtp;
-use App\Models\Transaction;
 use App\Support\FileFormatDownloadService;
 use Exception;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -215,22 +214,9 @@ HTML;
     public function buy(Request $request, ColoringPage $coloringPage)
     {
         abort_if($coloringPage->is_free, 403);
+        $shopierUrl = trim((string) ($coloringPage->shopier_product_url ?? ''));
+        abort_if($shopierUrl === '', 422, 'Bu ürün için Shopier bağlantısı henüz tanımlanmadı.');
 
-        $data = $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        $transaction = Transaction::query()->create([
-            'user_id' => (auth()->check() && ! auth()->user()->is_admin && $request->session()->get('member_code_verified', false))
-                ? auth()->id()
-                : null,
-            'coloring_page_id' => $coloringPage->id,
-            'email' => $data['email'],
-            'paid_amount' => $coloringPage->price,
-            'status' => 'pending',
-        ]);
-
-        // Gerçek Shopier entegrasyonu için gerekli parametreler .env üzerinden doldurulmalıdır.
-        return redirect()->route('shopier.redirect', $transaction);
+        return redirect()->away($shopierUrl);
     }
 }

@@ -48,7 +48,7 @@
             </div>
             </div>
 
-            <div class="min-w-0 lg:col-span-4 card p-5" x-data="{ open: false }">
+            <div class="min-w-0 lg:col-span-4 card p-5">
                 <p class="text-sm text-slate-500">Kategori: {{ $coloringPage->category?->name ?? 'Kategorisiz' }}</p>
                 <p class="mt-3 text-2xl font-bold {{ $coloringPage->is_free ? 'text-emerald-600' : 'text-indigo-600' }}">
                     {{ $coloringPage->is_free ? 'Ücretsiz' : number_format($coloringPage->price, 2).' TL' }}
@@ -141,6 +141,9 @@
                     </div>
                 @endguest
                 @else
+                    @php
+                        $shopierProductUrl = trim((string) ($coloringPage->shopier_product_url ?? ''));
+                    @endphp
                     @auth
                         @if(!auth()->user()->is_admin && session('member_code_verified', false))
                             <form method="post" action="{{ route('member.cart.add') }}" class="mt-5">
@@ -150,26 +153,18 @@
                             </form>
                             <a href="{{ route('member.cart') }}" class="btn-primary mt-3 w-full">Sepetime Git</a>
                         @else
-                            <button @click="open = true" class="btn-primary mt-5 w-full">Satın Al (Shopier)</button>
-                            <div x-show="open" class="mt-4 rounded-xl border border-violet-100 bg-violet-50/50 p-3">
-                                <form method="post" action="{{ route('products.buy', $coloringPage) }}">
-                                    @csrf
-                                    <label class="mb-2 block text-sm font-medium">E-posta</label>
-                                    <input type="email" name="email" required class="input-ui" value="{{ auth()->check() ? auth()->user()->email : old('email') }}">
-                                    <button class="btn-primary mt-3 w-full">Shopier'e Git</button>
-                                </form>
-                            </div>
+                            @if($shopierProductUrl !== '')
+                                <a href="{{ $shopierProductUrl }}" target="_blank" rel="noopener noreferrer" class="btn-primary mt-5 w-full text-center">Satın Al (Shopier)</a>
+                            @else
+                                <div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Bu ürün için Shopier satış linki henüz tanımlanmadı.</div>
+                            @endif
                         @endif
                     @else
-                        <button @click="open = true" class="btn-primary mt-5 w-full">Satın Al (Shopier)</button>
-                        <div x-show="open" class="mt-4 rounded-xl border border-violet-100 bg-violet-50/50 p-3">
-                            <form method="post" action="{{ route('products.buy', $coloringPage) }}">
-                                @csrf
-                                <label class="mb-2 block text-sm font-medium">E-posta</label>
-                                <input type="email" name="email" required class="input-ui" value="{{ old('email') }}">
-                                <button class="btn-primary mt-3 w-full">Shopier'e Git</button>
-                            </form>
-                        </div>
+                        @if($shopierProductUrl !== '')
+                            <a href="{{ $shopierProductUrl }}" target="_blank" rel="noopener noreferrer" class="btn-primary mt-5 w-full text-center">Satın Al (Shopier)</a>
+                        @else
+                            <div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Bu ürün için Shopier satış linki henüz tanımlanmadı.</div>
+                        @endif
                     @endauth
                 @endif
             </div>
