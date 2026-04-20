@@ -32,7 +32,7 @@
             @foreach($pages as $page)
                 <tr class="border-t">
                     <td class="py-2">{{ $page->title }}</td>
-                    <td>{{ $page->category->name }}</td>
+                    <td>{{ $page->category?->name ?? '— (kategori yok)' }}</td>
                     <td>{{ number_format($page->price, 2) }} TL</td>
                     <td>{{ $page->is_free ? 'Ücretsiz' : 'Ücretli' }}</td>
                     <td class="py-2">
