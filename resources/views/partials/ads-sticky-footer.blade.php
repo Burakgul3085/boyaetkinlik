@@ -54,8 +54,9 @@
     }
 
     /* Otomatik anchor reklam (2-3 sn sonra altta beliren ikinci bar) kapatılır. */
-    ins.adsbygoogle[data-ad-format="anchor"],
-    ins.adsbygoogle[data-anchor-status] {
+    body > ins.adsbygoogle[data-ad-format="anchor"],
+    body > ins.adsbygoogle[data-anchor-status],
+    body > .google-auto-placed {
         display: none !important;
         visibility: hidden !important;
     }
@@ -73,12 +74,34 @@
         } catch (e) {}
         var btn = root.querySelector('[data-sticky-ad-close]');
         if (!btn) return;
+
+        var slot = root.querySelector('ins.adsbygoogle');
+
+        function hideStickyAd() {
+            root.remove();
+            document.getElementById('site-main')?.classList.remove('pb-28', 'lg:pb-24');
+        }
+
+        // Reklam dolmazsa (unfilled) beyaz boş kutu görünmesin.
+        function syncAdVisibility() {
+            if (!slot) return;
+            var status = slot.getAttribute('data-ad-status');
+            if (status === 'unfilled') {
+                hideStickyAd();
+            }
+        }
+
+        if (slot && 'MutationObserver' in window) {
+            var observer = new MutationObserver(syncAdVisibility);
+            observer.observe(slot, { attributes: true, attributeFilter: ['data-ad-status'] });
+            setTimeout(syncAdVisibility, 3500);
+        }
+
         btn.addEventListener('click', function () {
             try {
                 sessionStorage.setItem('sticky-ad-dismissed', '1');
             } catch (e) {}
-            root.remove();
-            document.getElementById('site-main')?.classList.remove('pb-28', 'lg:pb-24');
+            hideStickyAd();
         });
     })();
 </script>

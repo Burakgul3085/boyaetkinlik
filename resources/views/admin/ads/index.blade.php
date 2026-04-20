@@ -8,6 +8,9 @@
         Buraya yapıştırdığınız kodlar (Google AdSense, manuel banner vb.) <strong>otomatik olarak ziyaretçi arayüzündeki sabit yerlere</strong> yerleşir.
         Yeni kategori veya boyama sayfası eklendiğinde ekstra ayar gerekmez; aynı bileşen tüm ilgili sayfalarda kullanılır.
     </p>
+    <p class="mt-2 max-w-3xl text-xs font-medium text-violet-700">
+        Not: AdSense genel scripti layout içinde zaten yüklüdür. Alanlara yalnızca reklam birimi kodunu (ins + push) yapıştırmanız yeterlidir.
+    </p>
 
     <div class="card mt-5 space-y-4 p-5">
         <h2 class="text-lg font-semibold text-slate-900">Nereye ne düşer?</h2>

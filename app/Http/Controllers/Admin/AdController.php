@@ -8,6 +8,24 @@ use Illuminate\Http\Request;
 
 class AdController extends Controller
 {
+    /**
+     * Tekrarlanan adsbygoogle.js scriptlerini alan kodlarından temizler.
+     */
+    private function normalizeAdMarkup(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = preg_replace(
+            '/<script[^>]*src=["\']https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js[^"\']*["\'][^>]*>\s*<\/script>/i',
+            '',
+            $value
+        );
+
+        return is_string($normalized) ? trim($normalized) : trim($value);
+    }
+
     public function index()
     {
         return view('admin.ads.index', [
@@ -26,7 +44,7 @@ class AdController extends Controller
         ]);
 
         foreach ($data as $key => $value) {
-            Setting::query()->updateOrCreate(['key' => $key], ['value' => $value]);
+            Setting::query()->updateOrCreate(['key' => $key], ['value' => $this->normalizeAdMarkup($value)]);
         }
 
         return back()->with('success', 'Reklam alanları güncellendi.');
