@@ -11,7 +11,7 @@
         <form method="post" action="{{ route('purchase.verification.store') }}" class="mt-5 grid gap-3 md:grid-cols-2">
             @csrf
             <label class="input-ui md:col-span-2">
-                Ürün
+                Ürün adı
                 <select name="coloring_page_id" class="mt-1 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm" required>
                     <option value="">Ürün seçin</option>
                     @foreach($pages as $page)
@@ -23,9 +23,8 @@
                 <input class="input-ui w-full" name="order_no" value="{{ old('order_no') }}" placeholder="Shopier Sipariş No (örn: #492666041)" required>
                 <p class="mt-1 text-xs text-slate-500">Sipariş numarasını Shopier hesabınızda <strong>Siparişler</strong> ekranında, sipariş detayında en üstte görebilirsiniz.</p>
             </div>
-            <input class="input-ui" name="customer_name" value="{{ old('customer_name') }}" placeholder="Ad Soyad (opsiyonel)">
             <input type="email" class="input-ui" name="email" value="{{ old('email') }}" placeholder="Shopier'de kullandığınız e-posta" required>
-            <input class="input-ui" name="phone" value="{{ old('phone') }}" placeholder="Shopier'de kullandığınız telefon (opsiyonel)">
+            <input class="input-ui" name="phone" value="{{ old('phone') }}" placeholder="Shopier'de kullandığınız telefon" required>
             <div class="md:col-span-2 flex justify-end">
                 <button class="btn-primary px-5">Doğrulama Talebi Gönder</button>
             </div>

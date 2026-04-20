@@ -29,8 +29,7 @@ class PurchaseVerificationController extends Controller
             'coloring_page_id' => ['required', 'integer', 'exists:coloring_pages,id'],
             'order_no' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:40'],
-            'customer_name' => ['nullable', 'string', 'max:160'],
+            'phone' => ['required', 'string', 'max:40'],
         ]);
 
         $orderNo = Str::upper(trim((string) $data['order_no']));
@@ -51,8 +50,8 @@ class PurchaseVerificationController extends Controller
             'coloring_page_id' => $data['coloring_page_id'],
             'order_no' => $orderNo,
             'email' => $email,
-            'phone' => trim((string) ($data['phone'] ?? '')),
-            'customer_name' => trim((string) ($data['customer_name'] ?? '')),
+            'phone' => trim((string) $data['phone']),
+            'customer_name' => null,
             'status' => 'pending',
             'verification_token' => Str::random(48),
             'payload' => ['source' => 'web-form'],

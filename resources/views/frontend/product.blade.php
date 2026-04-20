@@ -48,7 +48,7 @@
             </div>
             </div>
 
-            <div class="min-w-0 lg:col-span-4 card p-5">
+            <div class="min-w-0 lg:col-span-4 card p-5" x-data="{ verificationInfoOpen: false }">
                 <p class="text-sm text-slate-500">Kategori: {{ $coloringPage->category?->name ?? 'Kategorisiz' }}</p>
                 <p class="mt-3 text-2xl font-bold {{ $coloringPage->is_free ? 'text-emerald-600' : 'text-indigo-600' }}">
                     {{ $coloringPage->is_free ? 'Ücretsiz' : number_format($coloringPage->price, 2).' TL' }}
@@ -145,7 +145,29 @@
                         $shopierProductUrl = trim((string) ($coloringPage->shopier_product_url ?? ''));
                     @endphp
                     <a href="{{ route('purchase.verification.show') }}" class="btn-secondary mt-5 w-full text-center">Satın Alım Doğrula</a>
-                    <p class="mt-2 text-xs text-slate-500">Shopier sipariş numaranız ile ödeme doğrulayıp bu ürünü tekrar indirebilir veya e-posta bağlantısı alabilirsiniz.</p>
+                    <div class="mt-2">
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-3 py-1.5 text-xs font-medium text-violet-700 transition hover:bg-violet-50"
+                            @click="verificationInfoOpen = !verificationInfoOpen"
+                            :aria-expanded="verificationInfoOpen ? 'true' : 'false'"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M18 10A8 8 0 1 1 2 10a8 8 0 0 1 16 0ZM9.25 7a.75.75 0 0 1 1.5 0v.25a.75.75 0 0 1-1.5 0V7Zm0 3a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 0 1.5H10a.75.75 0 0 1-.75-.75Zm.75 2.5a.75.75 0 0 1 .75.75v1.25a.75.75 0 0 1-1.5 0v-1.25a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd"/>
+                            </svg>
+                            Satın alım doğrulama bilgisi
+                        </button>
+                        <div
+                            x-show="verificationInfoOpen"
+                            x-transition.opacity.duration.150ms
+                            x-cloak
+                            class="mt-2 rounded-xl border border-violet-100 bg-violet-50/60 p-3 text-xs leading-relaxed text-slate-700"
+                        >
+                            Bu ürünü satın aldığınızda Shopier ürünü otomatik olarak e-posta adresinize gönderir.
+                            Ayrıca buradan doğrulama yaparak ürünü tekrar tekrar indirebilir veya indirme bağlantısını e-posta ile alabilirsiniz.
+                            Doğrulama için Shopier sipariş no, ürün adı, ödeme sırasında kullandığınız e-posta ve telefon bilgileri gereklidir.
+                        </div>
+                    </div>
                     @auth
                         @if(!auth()->user()->is_admin && session('member_code_verified', false))
                             <form method="post" action="{{ route('member.cart.add') }}" class="mt-5">
