@@ -561,12 +561,6 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a
-                    href="{{ route('guest.purchase.recovery') }}"
-                    class="rounded-md px-2 py-1 font-medium text-indigo-100/90 transition hover:bg-white/10 hover:text-white"
-                >
-                    Misafir indirme linki
-                </a>
-                <a
                     href="{{ route('purchase.verification.show') }}"
                     class="rounded-md px-2 py-1 font-medium text-indigo-100/90 transition hover:bg-white/10 hover:text-white"
                 >
