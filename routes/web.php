@@ -159,6 +159,8 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/ads', [AdminAdController::class, 'update'])->name('ads.update');
 
         Route::get('/transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
+        Route::post('/transactions/{transaction}/approve', [AdminTransactionController::class, 'approve'])->name('transactions.approve');
+        Route::post('/transactions/{transaction}/reject', [AdminTransactionController::class, 'reject'])->name('transactions.reject');
         Route::get('/purchase-verifications', [AdminPurchaseVerificationController::class, 'index'])->name('purchase-verifications.index');
         Route::post('/purchase-verifications/{purchaseVerification}/approve', [AdminPurchaseVerificationController::class, 'approve'])->name('purchase-verifications.approve');
         Route::post('/purchase-verifications/{purchaseVerification}/reject', [AdminPurchaseVerificationController::class, 'reject'])->name('purchase-verifications.reject');

@@ -23,6 +23,13 @@ class ShopierController extends Controller
         $websiteIndex = $shopierConfig['website_index'];
 
         if ($apiKey === '' || $apiSecret === '' || $websiteIndex === '') {
+            $directProductUrl = trim((string) ($transaction->coloringPage->shopier_product_url ?? ''));
+
+            // API ayarları eksikse ürün kartındaki doğrudan Shopier bağlantısına düş.
+            if ($directProductUrl !== '') {
+                return redirect()->away($directProductUrl);
+            }
+
             return view('frontend.shopier-unavailable', [
                 'transaction' => $transaction,
             ]);

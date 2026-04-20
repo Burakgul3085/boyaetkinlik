@@ -58,6 +58,19 @@
                                     <p><span class="font-semibold text-slate-700">Kayıt:</span> {{ $transaction->created_at?->format('d.m.Y H:i') ?: '-' }}</p>
                                 </div>
 
+                                @if($transaction->status === 'pending')
+                                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                                        <form method="post" action="{{ route('admin.transactions.approve', $transaction) }}">
+                                            @csrf
+                                            <button class="btn-primary px-3 py-1.5 text-xs">Ödemeyi Onayla</button>
+                                        </form>
+                                        <form method="post" action="{{ route('admin.transactions.reject', $transaction) }}" onsubmit="return confirm('Bu işlemi başarısız olarak işaretlemek istediğinize emin misiniz?')">
+                                            @csrf
+                                            <button class="btn-danger px-3 py-1.5 text-xs">Ödemeyi Reddet</button>
+                                        </form>
+                                    </div>
+                                @endif
+
                                 <div class="mt-3">
                                     <div class="mb-1 flex items-center justify-between gap-2">
                                         <p class="text-xs font-semibold text-slate-700">Callback Payload</p>
