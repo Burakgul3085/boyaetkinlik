@@ -20,7 +20,7 @@ class AdController extends Controller
         $normalized = preg_replace(
             [
                 '/<script[^>]*src=["\']https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js[^"\']*["\'][^>]*>\s*<\/script>/i',
-                '/<script\b[^>]*>\s*\(adsbygoogle\s*=\s*window\.adsbygoogle\s*\|\|\s*\[\]\)\.push\(\{\}\);\s*<\/script>/i',
+                '/<script\b[^>]*>\s*\(adsbygoogle\s*=\s*window\.adsbygoogle\s*\|\|\s*\[\]\)\.push\(\s*(?:\{[\s\S]*?\})?\s*\)\s*;?\s*<\/script>/i',
             ],
             '',
             $value

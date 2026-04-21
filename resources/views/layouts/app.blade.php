@@ -713,7 +713,7 @@
 
         function initAdsByGoogle(scope) {
             var root = scope || document;
-            var adSlots = root.querySelectorAll('ins.adsbygoogle:not([data-ads-init="1"])');
+            var adSlots = root.querySelectorAll('ins.adsbygoogle[data-ad-client][data-ad-slot]:not([data-ads-init])');
             if (!adSlots.length) return;
 
             adSlots.forEach(function (slot) {
@@ -721,6 +721,12 @@
                 var minWidth = Number(slot.getAttribute('data-min-width') || 160);
                 var width = Math.floor(host.getBoundingClientRect().width || slot.getBoundingClientRect().width || 0);
                 var isVisible = !!(slot.offsetParent || slot.getClientRects().length);
+                var alreadyInitialized = !!slot.getAttribute('data-ad-status') || !!slot.querySelector('iframe');
+
+                if (alreadyInitialized) {
+                    slot.setAttribute('data-ads-init', '1');
+                    return;
+                }
 
                 if (!isVisible || width < minWidth) {
                     slot.style.display = 'none';
@@ -729,6 +735,7 @@
                 }
 
                 slot.style.display = '';
+                slot.setAttribute('data-ads-init', 'pending');
                 try {
                     (window.adsbygoogle = window.adsbygoogle || []).push({});
                     slot.setAttribute('data-ads-init', '1');
