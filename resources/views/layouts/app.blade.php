@@ -58,26 +58,7 @@
         return ['label' => $label, 'url' => $url];
     })->filter()->values();
 
-    $dynamicMenuItems = \App\Models\Category::query()
-        ->whereNull('parent_id')
-        ->where('show_in_nav', true)
-        ->with(['children' => fn ($query) => $query->where('show_in_nav', true)->orderBy('nav_order')->orderBy('name')])
-        ->orderBy('nav_order')
-        ->orderBy('name')
-        ->get()
-        ->map(function ($category) {
-            return [
-                'label' => $category->name,
-                'url' => route('categories.show', ['slug' => $category->slug]),
-                'children' => $category->children->map(function ($child) {
-                    return [
-                        'label' => $child->name,
-                        'url' => route('categories.show', ['slug' => $child->slug]),
-                    ];
-                })->values()->all(),
-            ];
-        })
-        ->values();
+    $dynamicMenuItems = \App\Models\Category::navMenuRoots();
 
     $hasHome = $links->contains(fn ($item) => $item['url'] === '/');
     $hasContact = $links->contains(fn ($item) => $item['url'] === '/iletisim');
@@ -91,8 +72,8 @@
         $menuItems->push(['label' => 'Anasayfa', 'url' => '/', 'children' => []]);
     }
 
-    foreach ($dynamicMenuItems as $item) {
-        $menuItems->push($item);
+    foreach ($dynamicMenuItems as $navItem) {
+        $menuItems->push($navItem);
     }
 
     if ($hasContact) {
@@ -165,16 +146,9 @@
                                 <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.512a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
                             </svg>
                         </a>
-                        <div class="invisible pointer-events-none absolute left-0 top-full z-50 w-52 pt-2 opacity-0 transition duration-150 group-hover:visible group-hover:pointer-events-auto group-hover:opacity-100">
-                            <div class="translate-y-1 rounded-xl border border-violet-200 bg-white p-2 shadow-lg transition duration-150 group-hover:translate-y-0">
-                                @foreach($item['children'] as $child)
-                                    <a
-                                        href="{{ $child['url'] }}"
-                                        class="block rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-violet-50 hover:text-violet-700"
-                                    >
-                                        {{ $child['label'] }}
-                                    </a>
-                                @endforeach
+                        <div class="invisible pointer-events-none absolute left-0 top-full z-50 min-w-[13rem] pt-2 opacity-0 transition duration-150 group-hover:visible group-hover:pointer-events-auto group-hover:opacity-100">
+                            <div class="translate-y-1 rounded-xl border border-violet-200 bg-white p-2 shadow-lg transition duration-150 group-hover:translate-y-0 dark:border-slate-600 dark:bg-slate-800">
+                                @include('partials.nav-category-desktop-nodes', ['nodes' => $item['children']])
                             </div>
                         </div>
                     </div>
@@ -300,11 +274,7 @@
                     @if(! empty($item['children']))
                         <div class="mb-3">
                             <a href="{{ $item['url'] }}" class="block rounded-xl px-3 py-2.5 text-base font-semibold text-slate-800 transition hover:bg-violet-50 dark:text-slate-100 dark:hover:bg-slate-800" @click="mobileNavOpen = false">{{ $item['label'] }}</a>
-                            <div class="ml-2 mt-1 space-y-0.5 border-l-2 border-violet-100 pl-3 dark:border-slate-600">
-                                @foreach($item['children'] as $child)
-                                    <a href="{{ $child['url'] }}" class="block rounded-lg py-2 pl-1 text-sm text-slate-600 transition hover:text-violet-700 dark:text-slate-300 dark:hover:text-violet-300" @click="mobileNavOpen = false">{{ $child['label'] }}</a>
-                                @endforeach
-                            </div>
+                            @include('partials.nav-category-mobile-nodes', ['nodes' => $item['children']])
                         </div>
                     @else
                         <a href="{{ $item['url'] }}" class="mb-1 block rounded-xl px-3 py-2.5 text-base font-medium text-slate-800 transition hover:bg-violet-50 dark:text-slate-100 dark:hover:bg-slate-800" @click="mobileNavOpen = false">{{ $item['label'] }}</a>
@@ -443,15 +413,8 @@
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.512a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
                                 </svg>
                             </a>
-                            <div class="max-h-0 overflow-hidden px-2 opacity-0 transition-all duration-200 group-hover:max-h-80 group-hover:pb-2 group-hover:opacity-100 group-focus-within:max-h-80 group-focus-within:pb-2 group-focus-within:opacity-100">
-                                @foreach($item['children'] as $child)
-                                    <a
-                                        href="{{ $child['url'] }}"
-                                        class="mt-1 block rounded-lg bg-white/10 px-3 py-2 text-slate-100 transition hover:bg-white/20 hover:text-white"
-                                    >
-                                        - {{ $child['label'] }}
-                                    </a>
-                                @endforeach
+                            <div class="max-h-0 overflow-hidden px-2 opacity-0 transition-all duration-200 group-hover:max-h-[28rem] group-hover:pb-2 group-hover:opacity-100 group-focus-within:max-h-[28rem] group-focus-within:pb-2 group-focus-within:opacity-100">
+                                @include('partials.footer-nav-category-nodes', ['nodes' => $item['children'], 'depth' => 0])
                             </div>
                         </div>
                     @else

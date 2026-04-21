@@ -13,7 +13,7 @@ class CategoryController extends Controller
         $category = Category::query()->where('slug', $slug)->firstOrFail();
         $category->load('children');
 
-        $categoryIds = $category->children->pluck('id')->push($category->id)->all();
+        $categoryIds = Category::subtreeIdsIncludingSelf($category->id);
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:120'],
             'pricing' => ['nullable', 'in:all,free,paid'],
@@ -77,8 +77,19 @@ class CategoryController extends Controller
         $categoryPaidCount = (clone $categoryStatsBase)->where('is_free', false)->count();
         $categoryFeaturedCount = (clone $categoryStatsBase)->where('is_featured', true)->count();
 
+        $breadcrumbItems = $category->ancestorChain()->map(function ($ancestor) {
+            return [
+                'label' => $ancestor->name,
+                'url' => route('categories.show', ['slug' => $ancestor->slug]),
+            ];
+        })->push([
+            'label' => $category->name,
+            'url' => null,
+        ])->all();
+
         return view('frontend.category', [
             'category' => $category,
+            'breadcrumbItems' => $breadcrumbItems,
             'coloringPages' => $coloringPages,
             'categoryTotalCount' => $categoryTotalCount,
             'categoryFreeCount' => $categoryFreeCount,

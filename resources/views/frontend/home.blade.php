@@ -48,7 +48,7 @@
             <div class="grid grid-cols-2 gap-3">
                 <div class="rounded-2xl border border-indigo-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
                     <p class="text-xs font-medium text-slate-500">Toplam Kategori</p>
-                    <p class="js-animated-counter mt-1 text-3xl font-bold text-violet-700" data-counter-target="{{ $categories->count() }}">0</p>
+                    <p class="js-animated-counter mt-1 text-3xl font-bold text-violet-700" data-counter-target="{{ $totalCategoryCount }}">0</p>
                     <p class="mt-2 text-[11px] font-medium text-violet-500">Aktif kategori sayısı</p>
                 </div>
                 <div class="rounded-2xl border border-indigo-100 bg-white/90 p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
@@ -101,7 +101,7 @@
                     name="q"
                     value="{{ $activeFilters['q'] }}"
                     class="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-0 md:text-[15px]"
-                    placeholder="Ne aramak istersiniz? Örn: boyama, kelime kartları, 5-6 yaş, okul öncesi, ortaokul, kaplumbağa..."
+                    placeholder="Ne aramak istersiniz? Örn: boyama, meyve, harf çalışması, 5-6 yaş, okul öncesi, ortaokul..."
                 >
                 <button
                     type="submit"
@@ -114,7 +114,7 @@
                 </button>
             </div>
             <p class="mt-3 text-center text-xs text-violet-900/60">
-                Yaş grubu, seviye, kategori veya yüklediğiniz boyama başlığıyla arayın; sonuçlar aşağıda listelenir.
+                Yaş, seviye, ana veya alt kategori adı ya da boyama başlığıyla arayın; sonuçlar aşağıda listelenir.
             </p>
         </form>
     </section>
@@ -228,12 +228,15 @@
         <div class="space-y-7">
             <div class="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm md:p-5">
                 <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
-                    <h2 class="min-w-0 break-words text-xl font-bold text-slate-900 sm:text-2xl">Yaş ve Seviye Kategorileri</h2>
-                    <span class="w-fit shrink-0 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $categories->count() }} kategori</span>
+                    <div class="min-w-0">
+                        <h2 class="break-words text-xl font-bold text-slate-900 sm:text-2xl">Yaş ve Seviye Kategorileri</h2>
+                        <p class="mt-1 max-w-2xl text-sm text-slate-600">Ana başlıklar burada listelenir. Bir karta tıklayınca alt kategorilere ve içeriklere o sayfadan devam edersiniz.</p>
+                    </div>
+                    <span class="w-fit shrink-0 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $homeRootCategories->count() }} ana kategori</span>
                 </div>
 
                 <div class="mt-4 grid gap-3 md:grid-cols-2">
-                    @foreach($categories as $category)
+                    @forelse($homeRootCategories as $category)
                         @php
                             $icon = $categoryIcons[mb_strtolower($category->name)] ?? '⭐';
                         @endphp
@@ -255,7 +258,11 @@
                                 {{ $category->description ?: 'Yaşa ve seviyeye uygun boyama, çizgi ve etkinlik içeriklerini keşfedin.' }}
                             </p>
                         </a>
-                    @endforeach
+                    @empty
+                        <p class="col-span-full rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-center text-sm text-slate-600">
+                            Henüz ana kategori tanımlanmadı. Yönetim panelinden kök kategori ekleyebilirsiniz.
+                        </p>
+                    @endforelse
                 </div>
             </div>
 
@@ -294,13 +301,11 @@
                             Kategori
                             <select name="category_id" class="mt-1 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm">
                                 <option value="">Tüm Kategoriler</option>
-                                @foreach($allCategories as $menuCategory)
-                                    <option value="{{ $menuCategory->id }}" @selected((int) $activeFilters['category_id'] === $menuCategory->id)>{{ $menuCategory->name }} (Ana)</option>
-                                    @foreach($menuCategory->children as $childCategory)
-                                        <option value="{{ $childCategory->id }}" @selected((int) $activeFilters['category_id'] === $childCategory->id)>- {{ $childCategory->name }} (Alt)</option>
-                                    @endforeach
+                                @foreach($categoryFilterOptions as $opt)
+                                    <option value="{{ $opt['id'] }}" @selected((int) $activeFilters['category_id'] === $opt['id'])>{{ str_repeat('— ', $opt['depth']) }}{{ $opt['name'] }}</option>
                                 @endforeach
                             </select>
+                            <span class="mt-1 block text-[11px] leading-snug text-slate-500">Girinti alt kategorileri gösterir; seçim o başlık ve altındaki tüm içerikleri kapsar.</span>
                         </label>
 
                         <label class="input-ui">

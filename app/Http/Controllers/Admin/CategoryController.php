@@ -12,18 +12,19 @@ class CategoryController extends Controller
 {
     public function index()
     {
+        $categories = Category::query()
+            ->with('parent')
+            ->orderBy('parent_id')
+            ->orderBy('nav_order')
+            ->orderBy('name')
+            ->get();
+
         return view('admin.categories.index', [
-            'categories' => Category::query()
-                ->with('parent')
-                ->orderBy('parent_id')
-                ->orderBy('nav_order')
-                ->orderBy('name')
-                ->get(),
-            'parentCategories' => Category::query()
-                ->whereNull('parent_id')
-                ->orderBy('nav_order')
-                ->orderBy('name')
-                ->get(),
+            'categories' => $categories,
+            'parentSelectOptionsCreate' => Category::orderedFlatForParentSelect(null),
+            'parentSelectOptionsForEdit' => $categories->mapWithKeys(
+                fn (Category $c) => [$c->id => Category::orderedFlatForParentSelect($c)]
+            ),
         ]);
     }
 
@@ -51,6 +52,11 @@ class CategoryController extends Controller
         }
         unset($data['icon_file']);
         unset($data['cover_image_file']);
+        if (! empty($data['parent_id'])) {
+            $data['parent_id'] = (int) $data['parent_id'];
+        } else {
+            $data['parent_id'] = null;
+        }
         Category::query()->create($data);
 
         return back()->with('success', 'Kategori eklendi.');
@@ -72,6 +78,15 @@ class CategoryController extends Controller
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
         $data['show_in_nav'] = (bool) ($data['show_in_nav'] ?? false);
         $data['nav_order'] = (int) ($data['nav_order'] ?? 0);
+        if (! empty($data['parent_id'])) {
+            $pid = (int) $data['parent_id'];
+            if (in_array($pid, Category::forbiddenParentIdsFor($category), true)) {
+                return back()->withErrors(['parent_id' => 'Üst kategori geçersiz: kendi alt kategorinizi seçemezsiniz.'])->withInput();
+            }
+            $data['parent_id'] = $pid;
+        } else {
+            $data['parent_id'] = null;
+        }
         if ($request->hasFile('icon_file')) {
             if ($category->icon_path) {
                 Storage::disk('public')->delete($category->icon_path);

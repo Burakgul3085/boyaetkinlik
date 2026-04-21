@@ -4,16 +4,20 @@
 
 @section('content')
     <h1 class="text-3xl font-bold text-slate-900">Kategori Yönetimi</h1>
-    <p class="mt-1 text-sm text-slate-500">Header ana kartları ve alt kartları buradan dinamik olarak yönetebilirsiniz.</p>
+    <p class="mt-1 text-sm text-slate-500">İç içe kategori yapısı: üst kategori olarak herhangi bir düzey seçebilirsiniz (döngü oluşturmayacak şekilde).</p>
+
+    @error('parent_id')
+        <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{{ $message }}</div>
+    @enderror
 
     <form method="post" action="{{ route('admin.categories.store') }}" enctype="multipart/form-data" class="card mt-5 grid gap-3 p-5 md:grid-cols-4">
         @csrf
         <input name="name" placeholder="Kategori adı" class="input-ui">
         <input name="slug" placeholder="Slug (opsiyonel)" class="input-ui">
-        <select name="parent_id" class="input-ui">
+        <select name="parent_id" class="input-ui @error('parent_id') border-rose-300 @enderror">
             <option value="">Ana kategori</option>
-            @foreach($parentCategories as $parentCategory)
-                <option value="{{ $parentCategory->id }}">{{ $parentCategory->name }}</option>
+            @foreach($parentSelectOptionsCreate as $opt)
+                <option value="{{ $opt['id'] }}" @selected((string) old('parent_id') === (string) $opt['id'])>{{ str_repeat('— ', $opt['depth']) }}{{ $opt['name'] }}</option>
             @endforeach
         </select>
         <input type="number" name="nav_order" value="0" min="0" class="input-ui" placeholder="Menü sırası">
@@ -43,10 +47,8 @@
                     <input name="slug" value="{{ $category->slug }}" class="input-ui">
                     <select name="parent_id" class="input-ui">
                         <option value="">Ana kategori</option>
-                        @foreach($parentCategories as $parentCategory)
-                            @if($parentCategory->id !== $category->id)
-                                <option value="{{ $parentCategory->id }}" @selected($category->parent_id === $parentCategory->id)>{{ $parentCategory->name }}</option>
-                            @endif
+                        @foreach(($parentSelectOptionsForEdit[$category->id] ?? []) as $opt)
+                            <option value="{{ $opt['id'] }}" @selected($category->parent_id === $opt['id'])>{{ str_repeat('— ', $opt['depth']) }}{{ $opt['name'] }}</option>
                         @endforeach
                     </select>
                     <input type="number" name="nav_order" value="{{ $category->nav_order ?? 0 }}" min="0" class="input-ui" placeholder="Menü sırası">
@@ -80,7 +82,7 @@
                 <textarea name="description" class="input-ui mt-3">{{ $category->description }}</textarea>
                 <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                        <span class="rounded-full bg-slate-100 px-2 py-1">{{ $category->parent?->name ? 'Alt: '.$category->parent->name : 'Ana kategori' }}</span>
+                        <span class="rounded-full bg-slate-100 px-2 py-1">{{ $category->parentBreadcrumbLabel() }}</span>
                         <label class="inline-flex items-center gap-2 text-sm text-slate-700">
                             <input type="hidden" name="show_in_nav" value="0">
                             <input type="checkbox" name="show_in_nav" value="1" @checked($category->show_in_nav)>

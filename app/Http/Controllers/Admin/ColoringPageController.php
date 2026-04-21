@@ -11,16 +11,9 @@ class ColoringPageController extends Controller
 {
     public function index()
     {
-        $categories = Category::query()
-            ->with('children')
-            ->whereNull('parent_id')
-            ->orderBy('nav_order')
-            ->orderBy('name')
-            ->get();
-
         return view('admin.pages.index', [
             'pages' => ColoringPage::query()->with('category')->latest()->get(),
-            'categories' => $categories,
+            'categoryAssignmentOptions' => Category::orderedFlatWithDepth(),
         ]);
     }
 

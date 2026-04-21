@@ -21,19 +21,14 @@ class HomeController extends Controller
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
         ]);
 
-        $allCategories = Category::query()
-            ->with('children')
-            ->whereNull('parent_id')
-            ->orderBy('nav_order')
-            ->orderBy('name')
-            ->get();
+        $categoryFilterOptions = Category::orderedFlatWithDepth();
 
         $selectedCategory = null;
         $categoryIds = [];
         if (! empty($filters['category_id'])) {
-            $selectedCategory = Category::query()->with('children')->find($filters['category_id']);
+            $selectedCategory = Category::query()->find($filters['category_id']);
             if ($selectedCategory) {
-                $categoryIds = $selectedCategory->children->pluck('id')->push($selectedCategory->id)->all();
+                $categoryIds = Category::subtreeIdsIncludingSelf($selectedCategory->id);
             }
         }
 
@@ -44,24 +39,20 @@ class HomeController extends Controller
         }
 
         $searchTerm = trim((string) ($filters['q'] ?? ''));
+        $searchVariants = [];
+        $treeMatchCategoryIds = [];
         if ($searchTerm !== '') {
-            $variants = $this->searchLikeVariants($searchTerm);
-            $query->where(function ($outer) use ($variants) {
-                foreach ($variants as $term) {
+            $searchVariants = $this->searchLikeVariants($searchTerm);
+            $treeMatchCategoryIds = Category::idsWhereSelfOrAnyAncestorMatchesVariants($searchVariants);
+
+            $query->where(function ($outer) use ($searchVariants, $treeMatchCategoryIds) {
+                foreach ($searchVariants as $term) {
                     $pattern = '%'.$this->escapeLike($term).'%';
-                    $outer->orWhere(function ($q) use ($pattern) {
-                        $q->where('coloring_pages.title', 'like', $pattern)
-                            ->orWhere('coloring_pages.description', 'like', $pattern)
-                            ->orWhereHas('category', function ($cq) use ($pattern) {
-                                $cq->where('name', 'like', $pattern)
-                                    ->orWhere('description', 'like', $pattern)
-                                    ->orWhere('slug', 'like', $pattern);
-                            })
-                            ->orWhereHas('category.parent', function ($pq) use ($pattern) {
-                                $pq->where('name', 'like', $pattern)
-                                    ->orWhere('description', 'like', $pattern);
-                            });
-                    });
+                    $outer->orWhere('coloring_pages.title', 'like', $pattern)
+                        ->orWhere('coloring_pages.description', 'like', $pattern);
+                }
+                if ($treeMatchCategoryIds !== []) {
+                    $outer->orWhereIn('coloring_pages.category_id', $treeMatchCategoryIds);
                 }
             });
         }
@@ -108,24 +99,21 @@ class HomeController extends Controller
         $searchCategoryMatches = collect();
         $searchPageMatches = collect();
         if ($searchTerm !== '') {
-            $variants = $this->searchLikeVariants($searchTerm);
-
             $searchCategoryMatches = Category::query()
                 ->with('parent')
-                ->where(function ($q) use ($variants) {
-                    foreach ($variants as $term) {
-                        $pattern = '%'.$this->escapeLike($term).'%';
-                        $q->orWhere('name', 'like', $pattern)
-                            ->orWhere('description', 'like', $pattern)
-                            ->orWhere('slug', 'like', $pattern)
-                            ->orWhereHas('parent', function ($parentQuery) use ($pattern) {
-                                $parentQuery->where('name', 'like', $pattern);
-                            })
-                            ->orWhereHas('coloringPages', function ($pageQuery) use ($pattern) {
-                                $pageQuery->where('title', 'like', $pattern)
-                                    ->orWhere('description', 'like', $pattern);
-                            });
+                ->where(function ($q) use ($searchVariants, $treeMatchCategoryIds) {
+                    if ($treeMatchCategoryIds !== []) {
+                        $q->whereIn('id', $treeMatchCategoryIds);
                     }
+                    $q->orWhereHas('coloringPages', function ($pageQuery) use ($searchVariants) {
+                        $pageQuery->where(function ($pq) use ($searchVariants) {
+                            foreach ($searchVariants as $term) {
+                                $pattern = '%'.$this->escapeLike($term).'%';
+                                $pq->orWhere('title', 'like', $pattern)
+                                    ->orWhere('description', 'like', $pattern);
+                            }
+                        });
+                    });
                 })
                 ->orderBy('name')
                 ->limit(8)
@@ -133,18 +121,14 @@ class HomeController extends Controller
 
             $searchPageMatches = ColoringPage::query()
                 ->with('category')
-                ->where(function ($q) use ($variants) {
-                    foreach ($variants as $term) {
+                ->where(function ($q) use ($searchVariants, $treeMatchCategoryIds) {
+                    foreach ($searchVariants as $term) {
                         $pattern = '%'.$this->escapeLike($term).'%';
                         $q->orWhere('title', 'like', $pattern)
-                            ->orWhere('description', 'like', $pattern)
-                            ->orWhereHas('category', function ($categoryQuery) use ($pattern) {
-                                $categoryQuery->where('name', 'like', $pattern)
-                                    ->orWhere('description', 'like', $pattern)
-                                    ->orWhereHas('parent', function ($parentQuery) use ($pattern) {
-                                        $parentQuery->where('name', 'like', $pattern);
-                                    });
-                            });
+                            ->orWhere('description', 'like', $pattern);
+                    }
+                    if ($treeMatchCategoryIds !== []) {
+                        $q->orWhereIn('category_id', $treeMatchCategoryIds);
                     }
                 })
                 ->latest()
@@ -163,14 +147,19 @@ class HomeController extends Controller
 
         return view('frontend.home', [
             'approvedVisitorFeedback' => VisitorFeedback::query()->approvedForPublic()->limit(80)->get(),
-            'categories' => Category::query()->latest()->get(),
+            'totalCategoryCount' => Category::query()->count(),
+            'homeRootCategories' => Category::query()
+                ->whereNull('parent_id')
+                ->orderBy('nav_order')
+                ->orderBy('name')
+                ->get(),
             'featuredPages' => ColoringPage::query()->latest()->take(8)->get(),
             'featuredCount' => ColoringPage::query()->where('is_featured', true)->count(),
             'totalPagesCount' => $totalPagesCount,
             'totalFreePagesCount' => $totalFreePagesCount,
             'totalPaidPagesCount' => $totalPaidPagesCount,
             'paidMarqueePages' => $paidMarqueePages,
-            'allCategories' => $allCategories,
+            'categoryFilterOptions' => $categoryFilterOptions,
             'filteredPages' => $filteredPages,
             'searchCategoryMatches' => $searchCategoryMatches,
             'searchPageMatches' => $searchPageMatches,
