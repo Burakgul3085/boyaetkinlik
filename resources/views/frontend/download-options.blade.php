@@ -77,4 +77,34 @@
         </div>
     </section>
     </x-public-ad-rail>
+    <script>
+        (function () {
+            if (typeof window.gtag !== 'function') return;
+
+            var transactionId = @json((string) $transaction->order_id);
+            var purchaseKey = 'ga4_purchase_sent_' + transactionId;
+
+            try {
+                if (localStorage.getItem(purchaseKey) === '1') return;
+            } catch (e) {}
+
+            window.gtag('event', 'purchase', {
+                transaction_id: transactionId,
+                value: @json((float) $transaction->paid_amount),
+                currency: 'TRY',
+                items: [
+                    {
+                        item_id: @json((string) $transaction->coloring_page_id),
+                        item_name: @json((string) ($transaction->coloringPage->title ?? 'Boyama Sayfasi')),
+                        quantity: 1,
+                        price: @json((float) $transaction->paid_amount)
+                    }
+                ]
+            });
+
+            try {
+                localStorage.setItem(purchaseKey, '1');
+            } catch (e) {}
+        })();
+    </script>
 @endsection
