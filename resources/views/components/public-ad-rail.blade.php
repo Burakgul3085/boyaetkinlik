@@ -6,6 +6,23 @@
     $adsHeader = \App\Models\Setting::getValue('ads_header');
     $adsLeft = \App\Models\Setting::getValue('ads_left');
     $adsRight = \App\Models\Setting::getValue('ads_right');
+    $stripAdsScripts = static function (?string $markup): string {
+        if (! is_string($markup) || trim($markup) === '') {
+            return '';
+        }
+        $cleaned = preg_replace(
+            [
+                '/<script[^>]*src=["\']https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js[^"\']*["\'][^>]*>\s*<\/script>/i',
+                '/<script\b[^>]*>\s*\(adsbygoogle\s*=\s*window\.adsbygoogle\s*\|\|\s*\[\]\)\.push\(\{\}\);\s*<\/script>/i',
+            ],
+            '',
+            $markup
+        );
+        return is_string($cleaned) ? trim($cleaned) : trim($markup);
+    };
+    $adsHeaderMarkup = $stripAdsScripts($adsHeader);
+    $adsLeftMarkup = $stripAdsScripts($adsLeft);
+    $adsRightMarkup = $stripAdsScripts($adsRight);
     $headerMin = $tight ? 'min-h-[96px]' : 'min-h-[128px]';
     $railMin = $tight ? 'min-h-[440px] xl:min-h-[520px]' : 'min-h-[600px] xl:min-h-[680px]';
 @endphp
@@ -14,7 +31,7 @@
     <section class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
         <div class="overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-400 [&_*]:max-w-full">
             <div class="{{ $headerMin }} w-full overflow-hidden rounded-lg bg-white dark:bg-slate-900">
-                {!! $adsHeader ?: '<div class="flex '.$headerMin.' items-center justify-center px-3">Üst reklam alanı (Admin → Reklam Alanları → Üst bant)</div>' !!}
+                {!! $adsHeaderMarkup ?: '<div class="flex '.$headerMin.' items-center justify-center px-3">Üst reklam alanı (Admin → Reklam Alanları → Üst bant)</div>' !!}
             </div>
         </div>
     </section>
@@ -26,7 +43,7 @@
                 <div class="max-h-[calc(100dvh-6.5rem)] overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
                     <p class="mb-2 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sol sütun</p>
                     <div class="{{ $railMin }} min-h-0 overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-400 [&_*]:max-w-full">
-                        {!! $adsLeft ?: '<div class="flex '.$railMin.' items-center justify-center px-2">Sol reklam alanı</div>' !!}
+                        {!! $adsLeftMarkup ?: '<div class="flex '.$railMin.' items-center justify-center px-2">Sol reklam alanı</div>' !!}
                     </div>
                 </div>
             </div>
@@ -41,7 +58,7 @@
                 <div class="max-h-[calc(100dvh-6.5rem)] overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
                     <p class="mb-2 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sağ sütun</p>
                     <div class="{{ $railMin }} min-h-0 overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-400 [&_*]:max-w-full">
-                        {!! $adsRight ?: '<div class="flex '.$railMin.' items-center justify-center px-2">Sağ reklam alanı</div>' !!}
+                        {!! $adsRightMarkup ?: '<div class="flex '.$railMin.' items-center justify-center px-2">Sağ reklam alanı</div>' !!}
                     </div>
                 </div>
             </div>

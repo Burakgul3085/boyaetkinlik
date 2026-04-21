@@ -1,4 +1,21 @@
 {{-- Sabit alt şerit: yalnızca ads_footer doluysa ve genel site yüzeyinde gösterilir (layouts.app). --}}
+@php
+    $stripAdsScripts = static function (?string $markup): string {
+        if (! is_string($markup) || trim($markup) === '') {
+            return '';
+        }
+        $cleaned = preg_replace(
+            [
+                '/<script[^>]*src=["\']https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js[^"\']*["\'][^>]*>\s*<\/script>/i',
+                '/<script\b[^>]*>\s*\(adsbygoogle\s*=\s*window\.adsbygoogle\s*\|\|\s*\[\]\)\.push\(\{\}\);\s*<\/script>/i',
+            ],
+            '',
+            $markup
+        );
+        return is_string($cleaned) ? trim($cleaned) : trim($markup);
+    };
+    $stickyAdMarkup = $stripAdsScripts($html ?? '');
+@endphp
 <div
     id="site-sticky-ad"
     class="pointer-events-auto fixed inset-x-0 bottom-0 z-30 h-[72px] border-t border-violet-100/70 bg-white/90 pb-[env(safe-area-inset-bottom,0px)] pt-1 shadow-[0_-8px_20px_rgba(76,29,149,0.10)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-950/88 dark:shadow-[0_-10px_24px_rgba(0,0,0,0.45)]"
@@ -8,7 +25,7 @@
     <div class="mx-auto flex h-full w-[min(92vw,820px)] items-center gap-1.5 px-2 pb-1 sm:px-3">
         <div class="flex h-[52px] flex-1 items-center rounded-xl border border-violet-100/80 bg-gradient-to-r from-white via-violet-50/20 to-white px-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
             <div class="sticky-ad-mini-slot w-full overflow-hidden text-center text-xs leading-tight text-slate-700 dark:text-slate-200 [&_*]:max-w-full">
-                {!! $html !!}
+                {!! $stickyAdMarkup !!}
             </div>
         </div>
         <button

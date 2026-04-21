@@ -664,6 +664,7 @@
                         }
                     }
 
+                    initAdsByGoogle(document);
                     initAnimatedCounters(document);
                 })
                 .catch(function (error) {
@@ -710,6 +711,48 @@
             fetchAndSwap(link.href, '#' + container.id, link.href);
         });
 
+        function initAdsByGoogle(scope) {
+            var root = scope || document;
+            var adSlots = root.querySelectorAll('ins.adsbygoogle:not([data-ads-init="1"])');
+            if (!adSlots.length) return;
+
+            adSlots.forEach(function (slot) {
+                var host = slot.parentElement || slot;
+                var minWidth = Number(slot.getAttribute('data-min-width') || 160);
+                var width = Math.floor(host.getBoundingClientRect().width || slot.getBoundingClientRect().width || 0);
+                var isVisible = !!(slot.offsetParent || slot.getClientRects().length);
+
+                if (!isVisible || width < minWidth) {
+                    slot.style.display = 'none';
+                    slot.setAttribute('data-ads-init', 'skip');
+                    return;
+                }
+
+                slot.style.display = '';
+                try {
+                    (window.adsbygoogle = window.adsbygoogle || []).push({});
+                    slot.setAttribute('data-ads-init', '1');
+                } catch (error) {
+                    slot.setAttribute('data-ads-init', 'skip');
+                    console.warn('Adsense slot başlatılamadı:', error);
+                }
+            });
+        }
+
+        function retrySkippedAds() {
+            document.querySelectorAll('ins.adsbygoogle[data-ads-init="skip"]').forEach(function (slot) {
+                slot.removeAttribute('data-ads-init');
+                slot.style.display = '';
+            });
+            initAdsByGoogle(document);
+        }
+
+        var adRetryTimer = null;
+        window.addEventListener('resize', function () {
+            clearTimeout(adRetryTimer);
+            adRetryTimer = setTimeout(retrySkippedAds, 250);
+        });
+
 
         function applyThemeButtonLabel() {
             var isDark = document.documentElement.classList.contains('dark');
@@ -742,6 +785,7 @@
         });
 
         applyThemeButtonLabel();
+        initAdsByGoogle(document);
         initAnimatedCounters(document);
     })();
 </script>
