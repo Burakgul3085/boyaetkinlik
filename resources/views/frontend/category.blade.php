@@ -6,17 +6,12 @@
     <section class="overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-fuchsia-50/80 to-indigo-50 shadow-sm">
         <div class="grid gap-5 p-6 md:grid-cols-2 md:p-8">
             <div>
-                <nav class="mb-4 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-slate-600 dark:text-slate-400" aria-label="Sayfa konumu">
-                    <a href="{{ route('home') }}" class="transition hover:text-violet-700 dark:hover:text-violet-300">Anasayfa</a>
-                    @foreach ($breadcrumbItems as $crumb)
-                        <span class="text-slate-300 dark:text-slate-600" aria-hidden="true">/</span>
-                        @if (! empty($crumb['url']))
-                            <a href="{{ $crumb['url'] }}" class="transition hover:text-violet-700 dark:hover:text-violet-300">{{ $crumb['label'] }}</a>
-                        @else
-                            <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $crumb['label'] }}</span>
-                        @endif
-                    @endforeach
-                </nav>
+                <div class="mb-4">
+                    @include('partials.category-breadcrumb-nav', [
+                        'breadcrumbItems' => $breadcrumbItems,
+                        'wrapperClass' => 'flex flex-wrap items-center gap-x-0.5 gap-y-1 text-sm text-slate-600 dark:text-slate-400',
+                    ])
+                </div>
                 <p class="inline-flex items-center rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 dark:bg-violet-900/50 dark:text-violet-200">
                     Kategori Detayı
                 </p>
@@ -72,7 +67,14 @@
 
     @if($category->children->isNotEmpty())
         <section class="mt-6 overflow-hidden rounded-2xl border border-violet-100 bg-white/90 p-5 shadow-sm">
-            <h2 class="text-lg font-bold text-slate-900">Alt kategoriler</h2>
+            <div class="mb-4 rounded-xl border border-violet-100 bg-gradient-to-r from-violet-50/90 to-white px-3 py-2.5 shadow-sm dark:border-violet-900/50 dark:from-violet-950/40 dark:to-slate-900/80">
+                <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400">Konumunuz</p>
+                @include('partials.category-breadcrumb-nav', [
+                    'breadcrumbItems' => $breadcrumbItems,
+                    'wrapperClass' => 'flex flex-wrap items-center gap-x-0.5 gap-y-1 text-sm text-slate-700 dark:text-slate-300',
+                ])
+            </div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Alt kategoriler</h2>
             <p class="mt-1 text-sm text-slate-600">Bu başlığın altındaki konulara geçmek için bir kart seçin.</p>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach($category->children as $child)
@@ -89,6 +91,14 @@
                 @endforeach
             </div>
         </section>
+    @else
+        <div class="mt-6 rounded-xl border border-violet-100 bg-gradient-to-r from-violet-50/90 to-white px-4 py-3 shadow-sm dark:border-violet-900/50 dark:from-violet-950/40 dark:to-slate-900/80">
+            <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400">Konumunuz</p>
+            @include('partials.category-breadcrumb-nav', [
+                'breadcrumbItems' => $breadcrumbItems,
+                'wrapperClass' => 'flex flex-wrap items-center gap-x-0.5 gap-y-1 text-sm text-slate-700 dark:text-slate-300',
+            ])
+        </div>
     @endif
 
     <x-public-ad-rail>
