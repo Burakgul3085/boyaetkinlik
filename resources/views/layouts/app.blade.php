@@ -146,8 +146,8 @@
                                 <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.512a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
                             </svg>
                         </a>
-                        <div class="invisible pointer-events-none absolute left-0 top-full z-50 min-w-[13rem] pt-2 opacity-0 transition duration-150 group-hover:visible group-hover:pointer-events-auto group-hover:opacity-100">
-                            <div class="translate-y-1 rounded-xl border border-violet-200 bg-white p-2 shadow-lg transition duration-150 group-hover:translate-y-0 dark:border-slate-600 dark:bg-slate-800">
+                        <div class="invisible pointer-events-none absolute right-0 top-full z-50 min-w-[14rem] w-max max-w-[min(22rem,calc(100vw-1.5rem))] pt-2 opacity-0 transition duration-150 group-hover:visible group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:visible group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+                            <div class="max-h-[min(70vh,28rem)] translate-y-1 overflow-y-auto overscroll-y-contain rounded-xl border border-violet-200 bg-white p-2 shadow-lg transition duration-150 [-webkit-overflow-scrolling:touch] group-hover:translate-y-0 group-focus-within:translate-y-0 dark:border-slate-600 dark:bg-slate-800">
                                 @include('partials.nav-category-desktop-nodes', ['nodes' => $item['children']])
                             </div>
                         </div>
