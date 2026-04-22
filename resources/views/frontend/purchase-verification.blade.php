@@ -7,6 +7,23 @@
     <div class="card p-5 md:p-6">
         <h1 class="text-2xl font-bold text-slate-900">Satın Alım Doğrulama</h1>
         <p class="mt-2 text-sm text-slate-600">Shopier üzerinden ödediğiniz siparişi burada doğrulama talebine gönderebilirsiniz.</p>
+        <div class="mt-3 space-y-3 rounded-xl border border-violet-100 bg-violet-50/70 p-3 text-[13px] leading-6 text-slate-700 sm:p-4 sm:text-sm md:text-[15px]">
+            <p>
+                Shopier üzerinden satın alma işlemini tamamladığınız anda ürününüzü indirme bağlantısı anlık olarak oluşturulur ve ödeme sırasında girdiğiniz e-posta adresine otomatik şekilde gönderilir. Böylece ilk satın alım sonrasında bekleme yaşamadan içeriklerinize hızlıca erişebilirsiniz.
+            </p>
+            <p>
+                Zaman içinde e-posta kutunuzda bağlantıyı bulamamanız, yeni bir cihazdan tekrar indirme yapmak istemeniz veya aynı satın alım için yeniden erişim talep etmeniz durumunda bu sayfa üzerinden doğrulama talebi oluşturabilirsiniz. Sistemimizin sizi doğru siparişle eşleştirebilmesi için satın alım sırasında kullandığınız bilgilerin doğru girilmesi çok önemlidir.
+            </p>
+            <p class="font-medium text-slate-800">Talep gönderirken aşağıdaki bilgileri eksiksiz girmeniz gerekir:</p>
+            <ul class="list-disc space-y-1 pl-5 marker:text-violet-500">
+                <li>Shopier sipariş numarası</li>
+                <li>Satın alım sırasında kullandığınız e-posta adresi</li>
+                <li>Satın alım sırasında kullandığınız telefon numarası</li>
+            </ul>
+            <p>
+                Talebiniz bize ulaştıktan sonra ekibimiz tarafından kontrol edilir ve ortalama 2 saat içinde satın alım doğrulaması tamamlanır. Onay sonrası indirme sayfasına tekrar erişebilir, ürünü dilediğiniz zaman yeniden indirebilir ve isterseniz bağlantının e-posta adresinize tekrar gönderilmesini sağlayabilirsiniz.
+            </p>
+        </div>
 
         <form method="post" action="{{ route('purchase.verification.store') }}" class="mt-5 grid gap-3 md:grid-cols-2">
             @csrf
