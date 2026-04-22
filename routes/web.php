@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdController as AdminAdController;
+use App\Http\Controllers\Admin\AdminManagementController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ColoringPageController as AdminColoringPageController;
@@ -123,6 +124,10 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/giris', [AdminAuthController::class, 'showLogin'])->name('login');
         Route::post('/giris', [AdminAuthController::class, 'login'])->name('login.submit');
+        Route::get('/sifremi-unuttum', [AdminAuthController::class, 'showForgotPassword'])->name('forgot-password');
+        Route::post('/sifremi-unuttum', [AdminAuthController::class, 'sendForgotPassword'])
+            ->middleware('throttle:5,1')
+            ->name('forgot-password.submit');
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {
@@ -177,6 +182,15 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/visitor-feedback/{visitorFeedback}/yanit', [AdminVisitorFeedbackController::class, 'updateReply'])->name('visitor-feedback.reply');
         Route::post('/visitor-feedback/{visitorFeedback}/yanit-yayinla', [AdminVisitorFeedbackController::class, 'publishReply'])->name('visitor-feedback.publish-reply');
         Route::delete('/visitor-feedback/{visitorFeedback}', [AdminVisitorFeedbackController::class, 'destroy'])->name('visitor-feedback.destroy');
+
+        Route::get('/admin-yonetimi', [AdminManagementController::class, 'index'])->name('admin-users.index');
+        Route::post('/admin-yonetimi/{user}/sifre', [AdminManagementController::class, 'updatePassword'])->name('admin-users.password.update');
+        Route::get('/admin-uye-ol', [AdminManagementController::class, 'create'])->name('admin-users.create');
+        Route::post('/admin-uye-ol', [AdminManagementController::class, 'store'])->name('admin-users.create.submit');
+        Route::get('/admin-uye-ol/dogrulama', [AdminManagementController::class, 'showCreateVerify'])->name('admin-users.create.verify.form');
+        Route::post('/admin-uye-ol/dogrulama', [AdminManagementController::class, 'verifyCreate'])
+            ->middleware('throttle:24,1')
+            ->name('admin-users.create.verify.submit');
     });
 });
 

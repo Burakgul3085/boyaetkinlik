@@ -45,6 +45,8 @@
             <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.purchase-verifications.index') }}">Satın alım doğrulama</a>
             <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.newsletter.index') }}">E-Bülten</a>
             <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.visitor-feedback.index') }}">Ziyaretçi yorumları</a>
+            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.admin-users.index') }}">Admin yönetimi</a>
+            <a class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white" href="{{ route('admin.admin-users.create') }}">Admin üye ol</a>
         </div>
         <form method="post" action="{{ route('admin.logout') }}" class="mt-8">
             @csrf

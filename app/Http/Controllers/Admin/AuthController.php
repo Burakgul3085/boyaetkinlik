@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 class AuthController extends Controller
@@ -17,6 +18,85 @@ class AuthController extends Controller
     public function showLogin()
     {
         return view('admin.auth.login');
+    }
+
+    public function showForgotPassword()
+    {
+        return view('admin.auth.forgot-password');
+    }
+
+    public function sendForgotPassword(Request $request)
+    {
+        $loginValue = trim((string) $request->input('login', ''));
+
+        $request->merge([
+            'login' => $loginValue,
+        ]);
+
+        $request->validate([
+            'login' => ['required', 'string', 'max:255'],
+        ]);
+
+        $admin = $this->resolveAdminByEmailOrPhone($loginValue);
+
+        if ($admin !== null) {
+            $newPassword = $this->generateNumericPassword(8);
+            $admin->password = $newPassword;
+            $admin->save();
+
+            $recipientEmail = trim((string) (Setting::getValue('contact_email', '') ?? ''));
+            if ($recipientEmail === '') {
+                return back()->withErrors(['login' => 'İletişim e-postası (contact_email) ayarı bulunamadı.']);
+            }
+
+            $adminName = $admin->display_name !== '' ? $admin->display_name : $admin->email;
+            $safeName = e($adminName);
+            $safeEmail = e($admin->email);
+            $safePhone = e((string) ($admin->phone ?: '-'));
+
+            $html = <<<HTML
+<!doctype html>
+<html lang="tr">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Inter,Arial,sans-serif;color:#0f172a;line-height:1.6;padding:16px;">
+    <p>Admin şifre sıfırlama talebi oluşturuldu.</p>
+    <ul>
+        <li><strong>Admin:</strong> {$safeName}</li>
+        <li><strong>E-posta:</strong> {$safeEmail}</li>
+        <li><strong>Telefon:</strong> {$safePhone}</li>
+    </ul>
+    <p>Yeni geçici şifre:</p>
+    <p style="font-size:22px;font-weight:700;letter-spacing:0.15em;">{$newPassword}</p>
+    <p style="font-size:13px;color:#475569;">Giriş yaptıktan sonra Admin Yönetimi bölümünden şifreyi güncelleyin.</p>
+</body>
+</html>
+HTML;
+
+            $text = "Admin şifre sıfırlama talebi\n"
+                ."Admin: {$adminName}\n"
+                ."E-posta: {$admin->email}\n"
+                ."Telefon: ".($admin->phone ?: '-')."\n\n"
+                ."Yeni geçici şifre: {$newPassword}\n"
+                ."Giriş yaptıktan sonra Admin Yönetimi bölümünden şifreyi güncelleyin.\n";
+
+            try {
+                SiteMailer::send(
+                    $recipientEmail,
+                    'Admin şifre sıfırlama talebi',
+                    $html,
+                    $text
+                );
+            } catch (Throwable $exception) {
+                report($exception);
+
+                return back()->withErrors([
+                    'login' => 'Şifre sıfırlama e-postası gönderilemedi. SMTP ayarlarını kontrol edin.',
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.forgot-password')
+            ->with('forgot_status', 'Eşleşen admin hesabı varsa yeni şifre güvenli adrese gönderildi.');
     }
 
     public function login(Request $request)
@@ -235,5 +315,50 @@ class AuthController extends Controller
 </body>
 </html>
 HTML;
+    }
+
+    private function resolveAdminByEmailOrPhone(string $value): ?\App\Models\User
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        $email = Str::lower($value);
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return \App\Models\User::query()
+                ->where('is_admin', true)
+                ->where('email', $email)
+                ->first();
+        }
+
+        $normalizedInputPhone = $this->normalizePhone($value);
+        if ($normalizedInputPhone === '') {
+            return null;
+        }
+
+        return \App\Models\User::query()
+            ->where('is_admin', true)
+            ->whereNotNull('phone')
+            ->get()
+            ->first(function (\App\Models\User $user) use ($normalizedInputPhone) {
+                return $this->normalizePhone((string) $user->phone) === $normalizedInputPhone;
+            });
+    }
+
+    private function normalizePhone(string $phone): string
+    {
+        return preg_replace('/\D+/', '', $phone) ?? '';
+    }
+
+    private function generateNumericPassword(int $length = 8): string
+    {
+        $length = max(6, min(32, $length));
+        $digits = '';
+        for ($i = 0; $i < $length; $i++) {
+            $digits .= (string) random_int(0, 9);
+        }
+
+        return $digits;
     }
 }

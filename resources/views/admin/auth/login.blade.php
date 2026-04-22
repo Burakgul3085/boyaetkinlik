@@ -45,6 +45,7 @@
     <input type="email" name="email" required class="mt-2 w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/30">
     <label class="mt-4 block text-sm font-medium text-slate-200">Şifre</label>
     <input type="password" name="password" required class="mt-2 w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/30">
+    <a href="{{ route('admin.forgot-password') }}" class="mt-3 block text-right text-xs font-medium text-indigo-200 hover:text-indigo-100 hover:underline">Şifremi unuttum</a>
     <button class="btn-primary mt-5 w-full py-3">Giriş Yap</button>
     <a href="{{ route('home') }}" class="mt-3 block text-center text-sm font-medium text-indigo-200 hover:text-indigo-100 hover:underline">Ana sayfaya git</a>
 </form>
