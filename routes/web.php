@@ -124,6 +124,7 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/giris', [AdminAuthController::class, 'showLogin'])->name('login');
         Route::post('/giris', [AdminAuthController::class, 'login'])->name('login.submit');
+        Route::get('/kayit', [AdminAuthController::class, 'showRegister'])->name('register');
         Route::post('/kayit', [AdminAuthController::class, 'register'])
             ->middleware('throttle:8,1')
             ->name('register.submit');

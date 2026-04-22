@@ -23,6 +23,11 @@ class AuthController extends Controller
         return view('admin.auth.login');
     }
 
+    public function showRegister()
+    {
+        return view('admin.auth.register');
+    }
+
     public function register(Request $request)
     {
         $request->merge([
