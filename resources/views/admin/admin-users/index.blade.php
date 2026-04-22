@@ -73,6 +73,30 @@
                         <p class="sm:col-span-2"><strong>Kayıt:</strong> {{ optional($admin->created_at)->format('d.m.Y H:i') }}</p>
                     </div>
 
+                    <form method="post" action="{{ route('admin.admin-users.profile.update', $admin) }}" class="mt-4 grid gap-2 sm:grid-cols-2">
+                        @csrf
+                        @method('put')
+                        <label class="input-ui">
+                            Ad
+                            <input type="text" name="first_name" class="mt-1 w-full" required value="{{ old('first_name', $admin->first_name) }}">
+                        </label>
+                        <label class="input-ui">
+                            Soyad
+                            <input type="text" name="last_name" class="mt-1 w-full" required value="{{ old('last_name', $admin->last_name) }}">
+                        </label>
+                        <label class="input-ui sm:col-span-2">
+                            E-posta
+                            <input type="email" name="email" class="mt-1 w-full" required value="{{ old('email', $admin->email) }}">
+                        </label>
+                        <label class="input-ui sm:col-span-2">
+                            Telefon
+                            <input type="text" name="phone" class="mt-1 w-full" value="{{ old('phone', $admin->phone) }}">
+                        </label>
+                        <div class="sm:col-span-2 flex justify-end">
+                            <button class="btn-secondary">Bilgileri Güncelle</button>
+                        </div>
+                    </form>
+
                     <form method="post" action="{{ route('admin.admin-users.password.update', $admin) }}" class="mt-4 grid gap-2 sm:grid-cols-2">
                         @csrf
                         <label class="input-ui">

@@ -160,6 +160,38 @@ class AdminManagementController extends Controller
             ->with('success', 'Admin şifresi güncellendi: '.$user->display_name);
     }
 
+    public function updateProfile(Request $request, User $user): RedirectResponse
+    {
+        if (! $user->is_admin) {
+            abort(404);
+        }
+
+        $request->merge([
+            'email' => Str::lower(trim((string) $request->input('email', $user->email))),
+            'phone' => $this->normalizePhone($request->input('phone')),
+        ]);
+
+        $data = $request->validate([
+            'first_name' => ['required', 'string', 'max:120'],
+            'last_name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'phone' => ['nullable', 'string', 'max:40', 'unique:users,phone,'.$user->id],
+        ], [
+            'email.unique' => 'Bu e-posta başka bir kullanıcıda kayıtlı.',
+            'phone.unique' => 'Bu telefon numarası başka bir kullanıcıda kayıtlı.',
+        ]);
+
+        $user->first_name = $data['first_name'];
+        $user->last_name = $data['last_name'];
+        $user->name = trim($data['first_name'].' '.$data['last_name']);
+        $user->email = $data['email'];
+        $user->phone = $data['phone'] ?? null;
+        $user->save();
+
+        return redirect()->route('admin.admin-users.index')
+            ->with('success', 'Admin bilgileri güncellendi: '.$user->display_name);
+    }
+
     public function destroy(Request $request, User $user): RedirectResponse
     {
         if (! $user->is_admin) {

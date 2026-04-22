@@ -196,6 +196,7 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/admin-yonetimi/yeni-admin/dogrulama', [AdminManagementController::class, 'verifyCreate'])
             ->middleware('throttle:24,1')
             ->name('admin-users.create.verify.submit');
+        Route::put('/admin-yonetimi/{user}/profil', [AdminManagementController::class, 'updateProfile'])->name('admin-users.profile.update');
         Route::post('/admin-yonetimi/{user}/sifre', [AdminManagementController::class, 'updatePassword'])->name('admin-users.password.update');
         Route::delete('/admin-yonetimi/{user}', [AdminManagementController::class, 'destroy'])->name('admin-users.destroy');
     });
