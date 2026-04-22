@@ -130,7 +130,19 @@ class AdminActivityLogMiddleware
 
     private function buildDescription(string $routeName, string $eventType): string
     {
-        return "Rota: {$routeName} | İşlem: {$eventType}";
+        $eventLabel = match ($eventType) {
+            'create' => 'Ekleme',
+            'update' => 'Güncelleme',
+            'delete' => 'Silme',
+            'approve' => 'Onaylama',
+            'reject' => 'Reddetme',
+            'view' => 'Görüntüleme',
+            'login' => 'Giriş',
+            'logout' => 'Çıkış',
+            default => 'İşlem',
+        };
+
+        return "Rota: {$routeName} | İşlem: {$eventLabel}";
     }
 }
 

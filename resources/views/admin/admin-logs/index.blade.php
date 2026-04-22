@@ -24,7 +24,7 @@
                 <select name="event_type" class="mt-1 w-full">
                     <option value="">Tümü</option>
                     @foreach($eventTypes as $eventType)
-                        <option value="{{ $eventType }}" @selected(request('event_type') === $eventType)>{{ $eventType }}</option>
+                        <option value="{{ $eventType }}" @selected(request('event_type') === $eventType)>{{ $eventTypeLabels[$eventType] ?? $eventType }}</option>
                     @endforeach
                 </select>
             </label>
@@ -33,7 +33,7 @@
                 <select name="module" class="mt-1 w-full">
                     <option value="">Tümü</option>
                     @foreach($modules as $module)
-                        <option value="{{ $module }}" @selected(request('module') === $module)>{{ $module }}</option>
+                        <option value="{{ $module }}" @selected(request('module') === $module)>{{ $moduleLabels[$module] ?? $module }}</option>
                     @endforeach
                 </select>
             </label>
@@ -73,15 +73,15 @@
                         <tr>
                             <td class="px-3 py-2 whitespace-nowrap">{{ optional($log->created_at)->format('d.m.Y H:i:s') }}</td>
                             <td class="px-3 py-2">{{ $log->admin?->display_name }}<br><span class="text-xs text-slate-500">{{ $log->admin?->email }}</span></td>
-                            <td class="px-3 py-2"><span class="rounded-full bg-indigo-100 px-2 py-1 text-xs font-semibold text-indigo-700">{{ $log->event_type }}</span></td>
-                            <td class="px-3 py-2">{{ $log->module }}</td>
-                            <td class="px-3 py-2">{{ $log->description }}</td>
+                            <td class="px-3 py-2"><span class="rounded-full bg-indigo-100 px-2 py-1 text-xs font-semibold text-indigo-700">{{ $eventTypeLabels[$log->event_type] ?? $log->event_type }}</span></td>
+                            <td class="px-3 py-2">{{ $moduleLabels[$log->module] ?? $log->module }}</td>
+                            <td class="px-3 py-2">{{ str_replace(['create','update','delete','approve','reject','view','login','logout'], ['Ekleme','Güncelleme','Silme','Onaylama','Reddetme','Görüntüleme','Giriş','Çıkış'], (string) $log->description) }}</td>
                             <td class="px-3 py-2 text-xs text-slate-600">
                                 <div>Rota: {{ $log->route_name ?: '-' }}</div>
-                                <div>Method: {{ $log->http_method ?: '-' }}</div>
+                                <div>Yöntem: {{ $log->http_method ?: '-' }}</div>
                                 <div>IP: {{ $log->ip_address ?: '-' }}</div>
                                 @if($log->subject_type || $log->subject_id)
-                                    <div>Subject: {{ $log->subject_type ?: '-' }} #{{ $log->subject_id ?: '-' }}</div>
+                                    <div>Konu: {{ $log->subject_type ?: '-' }} #{{ $log->subject_id ?: '-' }}</div>
                                 @endif
                             </td>
                         </tr>

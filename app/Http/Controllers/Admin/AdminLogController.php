@@ -53,10 +53,40 @@ class AdminLogController extends Controller
 
         $logs = $query->paginate(40)->withQueryString();
 
+        $eventTypeLabels = [
+            'login' => 'Giriş',
+            'logout' => 'Çıkış',
+            'view' => 'Görüntüleme',
+            'create' => 'Ekleme',
+            'update' => 'Güncelleme',
+            'delete' => 'Silme',
+            'approve' => 'Onaylama',
+            'reject' => 'Reddetme',
+        ];
+
+        $moduleLabels = [
+            'auth' => 'Kimlik',
+            'members' => 'Üyeler',
+            'categories' => 'Kategoriler',
+            'pages' => 'Boyama Sayfaları',
+            'settings' => 'Sayfa Ayarları',
+            'ads' => 'Reklam Alanları',
+            'transactions' => 'İşlemler',
+            'purchase-verifications' => 'Satın Alım Doğrulama',
+            'newsletter' => 'E-Bülten',
+            'visitor-feedback' => 'Ziyaretçi Yorumları',
+            'admin-users' => 'Admin Yönetimi',
+            'dashboard' => 'Genel Bakış',
+            'logs' => 'Admin Logları',
+            'general' => 'Genel',
+        ];
+
         return view('admin/admin-logs/index', [
             'logs' => $logs,
             'admins' => $admins,
             'eventTypes' => ['login', 'logout', 'view', 'create', 'update', 'delete', 'approve', 'reject'],
+            'eventTypeLabels' => $eventTypeLabels,
+            'moduleLabels' => $moduleLabels,
             'modules' => AdminActivityLog::query()
                 ->select('module')
                 ->distinct()
