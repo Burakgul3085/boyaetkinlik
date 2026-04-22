@@ -29,11 +29,6 @@ class AdminManagementController extends Controller
         return view('admin/admin-users/index', compact('admins'));
     }
 
-    public function create()
-    {
-        return view('admin/admin-users/create');
-    }
-
     public function store(Request $request): RedirectResponse
     {
         $request->merge([
@@ -70,7 +65,7 @@ class AdminManagementController extends Controller
     {
         $pending = (array) $request->session()->get('admin_signup_pending', []);
         if ($pending === []) {
-            return redirect()->route('admin.admin-users.create')
+            return redirect()->route('admin.admin-users.index')
                 ->withErrors(['email' => 'Bekleyen admin üyelik talebi bulunamadı.']);
         }
 
@@ -98,7 +93,7 @@ class AdminManagementController extends Controller
 
         if (now()->timestamp > $expiresAt) {
             $request->session()->forget($this->adminSignupSessionKeys());
-            return redirect()->route('admin.admin-users.create')
+            return redirect()->route('admin.admin-users.index')
                 ->withErrors(['email' => 'Kodun süresi doldu. Lütfen yeniden admin üyeliği başlatın.']);
         }
 
@@ -108,7 +103,7 @@ class AdminManagementController extends Controller
 
             if ($failed >= 3) {
                 $request->session()->forget($this->adminSignupSessionKeys());
-                return redirect()->route('admin.admin-users.create')
+                return redirect()->route('admin.admin-users.index')
                     ->withErrors(['email' => '3 kez hatalı kod girildi. Güvenlik için işlem sıfırlandı.']);
             }
 
@@ -130,12 +125,12 @@ class AdminManagementController extends Controller
             ]);
         } catch (QueryException $exception) {
             if ($this->isDuplicateConstraint($exception, 'email')) {
-                return redirect()->route('admin.admin-users.create')
+                return redirect()->route('admin.admin-users.index')
                     ->withErrors(['email' => 'Bu e-posta ile kayıtlı bir kullanıcı zaten var.']);
             }
 
             if ($this->isDuplicateConstraint($exception, 'phone')) {
-                return redirect()->route('admin.admin-users.create')
+                return redirect()->route('admin.admin-users.index')
                     ->withErrors(['phone' => 'Bu telefon numarası başka bir hesapta kullanılıyor.']);
             }
 
@@ -163,6 +158,23 @@ class AdminManagementController extends Controller
 
         return redirect()->route('admin.admin-users.index')
             ->with('success', 'Admin şifresi güncellendi: '.$user->display_name);
+    }
+
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        if (! $user->is_admin) {
+            abort(404);
+        }
+
+        if ((int) $request->user()->id === (int) $user->id) {
+            return back()->withErrors(['email' => 'Kendi hesabınızı silemezsiniz.']);
+        }
+
+        $name = $user->display_name !== '' ? $user->display_name : $user->email;
+        $user->delete();
+
+        return redirect()->route('admin.admin-users.index')
+            ->with('success', 'Admin hesabı silindi: '.$name);
     }
 
     private function issueAndSendSignupCode(Request $request, array $payload): void

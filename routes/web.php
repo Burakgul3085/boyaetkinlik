@@ -124,6 +124,13 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/giris', [AdminAuthController::class, 'showLogin'])->name('login');
         Route::post('/giris', [AdminAuthController::class, 'login'])->name('login.submit');
+        Route::post('/kayit', [AdminAuthController::class, 'register'])
+            ->middleware('throttle:8,1')
+            ->name('register.submit');
+        Route::get('/kayit-dogrulama', [AdminAuthController::class, 'showRegisterVerify'])->name('register.verify.form');
+        Route::post('/kayit-dogrulama', [AdminAuthController::class, 'verifyRegister'])
+            ->middleware('throttle:24,1')
+            ->name('register.verify.submit');
         Route::get('/sifremi-unuttum', [AdminAuthController::class, 'showForgotPassword'])->name('forgot-password');
         Route::post('/sifremi-unuttum', [AdminAuthController::class, 'sendForgotPassword'])
             ->middleware('throttle:5,1')
@@ -184,13 +191,13 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::delete('/visitor-feedback/{visitorFeedback}', [AdminVisitorFeedbackController::class, 'destroy'])->name('visitor-feedback.destroy');
 
         Route::get('/admin-yonetimi', [AdminManagementController::class, 'index'])->name('admin-users.index');
-        Route::post('/admin-yonetimi/{user}/sifre', [AdminManagementController::class, 'updatePassword'])->name('admin-users.password.update');
-        Route::get('/admin-uye-ol', [AdminManagementController::class, 'create'])->name('admin-users.create');
-        Route::post('/admin-uye-ol', [AdminManagementController::class, 'store'])->name('admin-users.create.submit');
-        Route::get('/admin-uye-ol/dogrulama', [AdminManagementController::class, 'showCreateVerify'])->name('admin-users.create.verify.form');
-        Route::post('/admin-uye-ol/dogrulama', [AdminManagementController::class, 'verifyCreate'])
+        Route::post('/admin-yonetimi/yeni-admin', [AdminManagementController::class, 'store'])->name('admin-users.create.submit');
+        Route::get('/admin-yonetimi/yeni-admin/dogrulama', [AdminManagementController::class, 'showCreateVerify'])->name('admin-users.create.verify.form');
+        Route::post('/admin-yonetimi/yeni-admin/dogrulama', [AdminManagementController::class, 'verifyCreate'])
             ->middleware('throttle:24,1')
             ->name('admin-users.create.verify.submit');
+        Route::post('/admin-yonetimi/{user}/sifre', [AdminManagementController::class, 'updatePassword'])->name('admin-users.password.update');
+        Route::delete('/admin-yonetimi/{user}', [AdminManagementController::class, 'destroy'])->name('admin-users.destroy');
     });
 });
 

@@ -22,7 +22,7 @@
                 </label>
 
                 <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                    <a href="{{ route('admin.admin-users.create') }}" class="btn-secondary text-center">Bilgileri düzenle</a>
+                    <a href="{{ route('admin.admin-users.index') }}" class="btn-secondary text-center">Admin yönetimine dön</a>
                     <button class="btn-primary">Doğrula ve Hesabı Oluştur</button>
                 </div>
             </form>

@@ -29,26 +29,50 @@
 <div class="pointer-events-none absolute inset-0 z-0 bg-gradient-to-br from-slate-950/86 via-slate-900/72 to-indigo-950/82"></div>
 <div class="pointer-events-none absolute inset-0 z-0 backdrop-blur-[1.2px]"></div>
 <button type="button" class="theme-toggle-btn auth-page-toggle" data-theme-toggle>Dark Mode</button>
-<div class="relative z-10 flex w-full items-center justify-center">
-<form method="post" action="{{ route('admin.login.submit') }}" class="w-full max-w-md rounded-3xl border border-white/20 bg-slate-900/55 p-7 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-md">
-    @csrf
-    <p class="inline-flex items-center rounded-full border border-indigo-300/40 bg-indigo-500/20 px-3 py-1 text-[11px] font-semibold tracking-wide text-indigo-100">Yönetim girişi</p>
-    <h1 class="mt-2 text-3xl font-bold text-white">Admin Giriş</h1>
-    <p class="mt-1 text-sm text-slate-300">Yönetim paneline erişmek için giriş yapın.</p>
-    @if(session('success'))
-        <p class="mt-3 rounded-lg bg-emerald-100 p-2 text-sm text-emerald-700">{{ session('success') }}</p>
-    @endif
-    @if($errors->any())
-        <p class="mt-3 rounded-lg bg-rose-100 p-2 text-sm text-rose-700">{{ $errors->first() }}</p>
-    @endif
-    <label class="mt-5 block text-sm font-medium text-slate-200">E-posta</label>
-    <input type="email" name="email" required class="mt-2 w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/30">
-    <label class="mt-4 block text-sm font-medium text-slate-200">Şifre</label>
-    <input type="password" name="password" required class="mt-2 w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/30">
-    <a href="{{ route('admin.forgot-password') }}" class="mt-3 block text-right text-xs font-medium text-indigo-200 hover:text-indigo-100 hover:underline">Şifremi unuttum</a>
-    <button class="btn-primary mt-5 w-full py-3">Giriş Yap</button>
-    <a href="{{ route('home') }}" class="mt-3 block text-center text-sm font-medium text-indigo-200 hover:text-indigo-100 hover:underline">Ana sayfaya git</a>
-</form>
+<div class="relative z-10 w-full max-w-5xl">
+    <div class="grid gap-4 md:grid-cols-2">
+        <form method="post" action="{{ route('admin.login.submit') }}" class="w-full rounded-3xl border border-white/20 bg-slate-900/55 p-7 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-md">
+            @csrf
+            <p class="inline-flex items-center rounded-full border border-indigo-300/40 bg-indigo-500/20 px-3 py-1 text-[11px] font-semibold tracking-wide text-indigo-100">Yönetim girişi</p>
+            <h1 class="mt-2 text-3xl font-bold text-white">Admin Giriş</h1>
+            <p class="mt-1 text-sm text-slate-300">Kayıtlı admin hesabınızla giriş yapın, ardından doğrulama kodunu girin.</p>
+            @if(session('success'))
+                <p class="mt-3 rounded-lg bg-emerald-100 p-2 text-sm text-emerald-700">{{ session('success') }}</p>
+            @endif
+            @if($errors->has('email') || $errors->has('password'))
+                <p class="mt-3 rounded-lg bg-rose-100 p-2 text-sm text-rose-700">{{ $errors->first('email') ?: $errors->first('password') }}</p>
+            @endif
+            <label class="mt-5 block text-sm font-medium text-slate-200">E-posta</label>
+            <input type="email" name="email" value="{{ old('email') }}" required class="mt-2 w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/30">
+            <label class="mt-4 block text-sm font-medium text-slate-200">Şifre</label>
+            <input type="password" name="password" required class="mt-2 w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/30">
+            <a href="{{ route('admin.forgot-password') }}" class="mt-3 block text-right text-xs font-medium text-indigo-200 hover:text-indigo-100 hover:underline">Şifremi unuttum</a>
+            <button class="btn-primary mt-5 w-full py-3">Giriş Yap</button>
+            <a href="{{ route('home') }}" class="mt-3 block text-center text-sm font-medium text-indigo-200 hover:text-indigo-100 hover:underline">Ana sayfaya git</a>
+        </form>
+
+        <form method="post" action="{{ route('admin.register.submit') }}" class="w-full rounded-3xl border border-white/20 bg-slate-900/55 p-7 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-md">
+            @csrf
+            <p class="inline-flex items-center rounded-full border border-violet-300/40 bg-violet-500/20 px-3 py-1 text-[11px] font-semibold tracking-wide text-violet-100">Admin üye ol</p>
+            <h2 class="mt-2 text-2xl font-bold text-white">Yeni Admin Kaydı</h2>
+            <p class="mt-1 text-sm text-slate-300">Bilgileri girin, doğrulama kodu güvenli adrese gönderilsin, kodu girdikten sonra admin hesabınız aktif olsun.</p>
+            @if($errors->has('register_email') || $errors->has('register_phone') || $errors->has('register_first_name') || $errors->has('register_last_name') || $errors->has('register_password'))
+                <p class="mt-3 rounded-lg bg-rose-100 p-2 text-sm text-rose-700">{{ $errors->first() }}</p>
+            @endif
+
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <input type="text" name="register_first_name" value="{{ old('register_first_name') }}" required placeholder="Ad" class="w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+                <input type="text" name="register_last_name" value="{{ old('register_last_name') }}" required placeholder="Soyad" class="w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+            </div>
+            <input type="email" name="register_email" value="{{ old('register_email') }}" required placeholder="E-posta" class="mt-3 w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+            <input type="text" name="register_phone" value="{{ old('register_phone') }}" placeholder="Telefon (opsiyonel)" class="mt-3 w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                <input type="password" name="register_password" required placeholder="Şifre" class="w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+                <input type="password" name="register_password_confirmation" required placeholder="Şifre tekrar" class="w-full rounded-xl border border-slate-500/45 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+            </div>
+            <button class="btn-primary mt-5 w-full py-3">Üye Ol ve Kodu Gönder</button>
+        </form>
+    </div>
 </div>
 <script>
     (function () {
