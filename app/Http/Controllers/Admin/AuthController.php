@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\AdminActivityLogger;
 use App\Support\SiteMailer;
 use App\Support\VerificationMailFlow;
 use Exception;
@@ -331,11 +332,34 @@ HTML;
         $request->session()->put('admin_code_verified', true);
         $request->session()->forget($this->allVerificationStateKeys());
 
+        AdminActivityLogger::log(
+            $request->user(),
+            $request,
+            'login',
+            'auth',
+            'Admin giriş doğrulaması tamamlandı ve panele giriş yapıldı.',
+            'admin.verify.submit',
+            'POST'
+        );
+
         return redirect()->route('admin.dashboard');
     }
 
     public function logout(Request $request)
     {
+        $admin = $request->user();
+        if ($admin instanceof User && $admin->is_admin) {
+            AdminActivityLogger::log(
+                $admin,
+                $request,
+                'logout',
+                'auth',
+                'Admin panelden çıkış yaptı.',
+                'admin.logout',
+                'POST'
+            );
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

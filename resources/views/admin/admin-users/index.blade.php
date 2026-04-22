@@ -9,7 +9,10 @@
                 <h1 class="text-2xl font-bold text-slate-900">Admin Yönetimi</h1>
                 <p class="mt-1 text-sm text-slate-600">Mevcut admin hesaplarını görüntüleyin, şifrelerini güncelleyin veya hesap silin.</p>
             </div>
-            <a href="#yeni-admin-formu" class="btn-primary text-center">Yeni Admin Üye Ol</a>
+            <div class="flex gap-2">
+                <a href="{{ route('admin.logs.index') }}" class="btn-secondary text-center">Admin Log Kayıtları</a>
+                <a href="#yeni-admin-formu" class="btn-primary text-center">Yeni Admin Üye Ol</a>
+            </div>
         </div>
 
         <div id="yeni-admin-formu" class="card rounded-2xl border border-violet-100 bg-gradient-to-br from-white to-violet-50/40 p-5 shadow-sm md:p-6">

@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\AdminActivityLogMiddleware;
 use App\Http\Middleware\AdminCodeVerifiedMiddleware;
 use App\Http\Middleware\MemberCodeVerifiedMiddleware;
 use App\Http\Middleware\MemberMiddleware;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'admin.code' => AdminCodeVerifiedMiddleware::class,
+            'admin.activity' => AdminActivityLogMiddleware::class,
             'member' => MemberMiddleware::class,
             'member.code' => MemberCodeVerifiedMiddleware::class,
         ]);

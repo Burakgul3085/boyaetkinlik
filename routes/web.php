@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdController as AdminAdController;
 use App\Http\Controllers\Admin\AdminManagementController;
+use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ColoringPageController as AdminColoringPageController;
@@ -146,7 +147,7 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
     });
 
-    Route::middleware(['auth', 'admin', 'admin.code'])->group(function () {
+    Route::middleware(['auth', 'admin', 'admin.code', 'admin.activity'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/uyeler', [AdminMemberController::class, 'index'])->name('members.index');
@@ -192,6 +193,7 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::delete('/visitor-feedback/{visitorFeedback}', [AdminVisitorFeedbackController::class, 'destroy'])->name('visitor-feedback.destroy');
 
         Route::get('/admin-yonetimi', [AdminManagementController::class, 'index'])->name('admin-users.index');
+        Route::get('/admin-log-kayitlari', [AdminLogController::class, 'index'])->name('logs.index');
         Route::post('/admin-yonetimi/yeni-admin', [AdminManagementController::class, 'store'])->name('admin-users.create.submit');
         Route::get('/admin-yonetimi/yeni-admin/dogrulama', [AdminManagementController::class, 'showCreateVerify'])->name('admin-users.create.verify.form');
         Route::post('/admin-yonetimi/yeni-admin/dogrulama', [AdminManagementController::class, 'verifyCreate'])
