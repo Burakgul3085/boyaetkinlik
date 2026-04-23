@@ -100,7 +100,7 @@
                     type="search"
                     name="q"
                     value="{{ $activeFilters['q'] }}"
-                    class="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-0 md:text-[15px]"
+                    class="min-w-0 flex-1 border-0 bg-transparent py-2.5 pl-3 pr-9 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-0 md:text-[15px]"
                     placeholder="Ne aramak istersiniz? Örn: boyama, meyve, harf çalışması, 5-6 yaş, okul öncesi, ortaokul..."
                 >
                 <button
