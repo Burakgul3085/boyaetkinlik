@@ -231,6 +231,20 @@ class Category extends Model
     }
 
     /**
+     * Admin paneli select seçenek metni: derinlik figure space ile girintili, alt öğede tek › (çoklu tire yok).
+     */
+    public static function adminSelectOptionLabel(int $depth, string $name): string
+    {
+        if ($depth <= 0) {
+            return $name;
+        }
+
+        $indentUnit = "\u{2007}\u{2007}";
+
+        return str_repeat($indentUnit, $depth)."\u{203A}\u{00A0}".$name;
+    }
+
+    /**
      * Admin üst kategori seçimi: düzenlenen kayıt ve alt ağacı listeden çıkarılır.
      *
      * @return Collection<int, array{id: int, depth: int, name: string}>

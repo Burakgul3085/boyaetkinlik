@@ -10,7 +10,7 @@
         <input name="title" placeholder="Başlık" class="input-ui">
         <select name="category_id" class="input-ui">
             @foreach($categoryAssignmentOptions as $opt)
-                <option value="{{ $opt['id'] }}">{{ str_repeat('— ', $opt['depth']) }}{{ $opt['name'] }}</option>
+                <option value="{{ $opt['id'] }}">{{ \App\Models\Category::adminSelectOptionLabel($opt['depth'], $opt['name']) }}</option>
             @endforeach
         </select>
         <input type="number" step="0.01" name="price" placeholder="Fiyat" class="input-ui">
@@ -53,7 +53,7 @@
                                         <input name="title" value="{{ $page->title }}" class="input-ui" placeholder="Başlık" required>
                                         <select name="category_id" class="input-ui" required>
                                             @foreach($categoryAssignmentOptions as $opt)
-                                                <option value="{{ $opt['id'] }}" @selected($opt['id'] === $page->category_id)>{{ str_repeat('— ', $opt['depth']) }}{{ $opt['name'] }}</option>
+                                                <option value="{{ $opt['id'] }}" @selected($opt['id'] === $page->category_id)>{{ \App\Models\Category::adminSelectOptionLabel($opt['depth'], $opt['name']) }}</option>
                                             @endforeach
                                         </select>
                                         <input type="number" step="0.01" name="price" value="{{ $page->price }}" placeholder="Fiyat" class="input-ui">

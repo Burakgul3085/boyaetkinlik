@@ -17,7 +17,7 @@
         <select name="parent_id" class="input-ui @error('parent_id') border-rose-300 @enderror">
             <option value="">Ana kategori</option>
             @foreach($parentSelectOptionsCreate as $opt)
-                <option value="{{ $opt['id'] }}" @selected((string) old('parent_id') === (string) $opt['id'])>{{ str_repeat('— ', $opt['depth']) }}{{ $opt['name'] }}</option>
+                <option value="{{ $opt['id'] }}" @selected((string) old('parent_id') === (string) $opt['id'])>{{ \App\Models\Category::adminSelectOptionLabel($opt['depth'], $opt['name']) }}</option>
             @endforeach
         </select>
         <input type="number" name="nav_order" value="0" min="0" class="input-ui" placeholder="Menü sırası">
@@ -48,7 +48,7 @@
                     <select name="parent_id" class="input-ui">
                         <option value="">Ana kategori</option>
                         @foreach(($parentSelectOptionsForEdit[$category->id] ?? []) as $opt)
-                            <option value="{{ $opt['id'] }}" @selected($category->parent_id === $opt['id'])>{{ str_repeat('— ', $opt['depth']) }}{{ $opt['name'] }}</option>
+                            <option value="{{ $opt['id'] }}" @selected($category->parent_id === $opt['id'])>{{ \App\Models\Category::adminSelectOptionLabel($opt['depth'], $opt['name']) }}</option>
                         @endforeach
                     </select>
                     <input type="number" name="nav_order" value="{{ $category->nav_order ?? 0 }}" min="0" class="input-ui" placeholder="Menü sırası">

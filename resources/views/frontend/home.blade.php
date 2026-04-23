@@ -302,7 +302,7 @@
                             <select name="category_id" class="mt-1 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm">
                                 <option value="">Tüm Kategoriler</option>
                                 @foreach($categoryFilterOptions as $opt)
-                                    <option value="{{ $opt['id'] }}" @selected((int) $activeFilters['category_id'] === $opt['id'])>{{ str_repeat('— ', $opt['depth']) }}{{ $opt['name'] }}</option>
+                                    <option value="{{ $opt['id'] }}" @selected((int) $activeFilters['category_id'] === $opt['id'])>{{ \App\Models\Category::adminSelectOptionLabel($opt['depth'], $opt['name']) }}</option>
                                 @endforeach
                             </select>
                             <span class="mt-1 block text-[11px] leading-snug text-slate-500">Girinti alt kategorileri gösterir; seçim o başlık ve altındaki tüm içerikleri kapsar.</span>
