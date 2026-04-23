@@ -1,12 +1,27 @@
+@php
+    $siteLogoPathSetting = (string) (\App\Models\Setting::getValue('site_logo', '') ?? '');
+    $usesCustomSiteLogo = $siteLogoPathSetting !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($siteLogoPathSetting);
+    $siteLogoUrl = $usesCustomSiteLogo
+        ? asset('storage/'.$siteLogoPathSetting)
+        : asset('images/site-logo.png');
+    $headerSiteName = (string) (\App\Models\Setting::getValue('header_site_name', 'Boya Etkinlik') ?: 'Boya Etkinlik');
+    $faviconMime = 'image/png';
+    if ($usesCustomSiteLogo) {
+        $lowerLogoPath = strtolower($siteLogoPathSetting);
+        if (str_ends_with($lowerLogoPath, '.jpg') || str_ends_with($lowerLogoPath, '.jpeg')) {
+            $faviconMime = 'image/jpeg';
+        }
+    }
+@endphp
 <!doctype html>
 <html lang="tr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Boya Etkinlik')</title>
+    <title>@yield('title', $headerSiteName)</title>
     {{-- Sekme ikonu + Google arama sonuçlarında site ikonu (tarayıcılar /favicon.ico veya rel=icon kullanır) --}}
-    <link rel="icon" type="image/png" href="{{ asset('images/site-logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/site-logo.png') }}">
+    <link rel="icon" type="{{ $faviconMime }}" href="{{ $siteLogoUrl }}">
+    <link rel="apple-touch-icon" href="{{ $siteLogoUrl }}">
     <script>
         (function () {
             try {
@@ -134,9 +149,9 @@
     <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 lg:gap-4 lg:py-4">
         <a href="{{ route('home') }}" class="group flex min-w-0 max-w-[55%] items-center gap-2 text-slate-800 sm:max-w-none sm:gap-3">
             <span class="logo-anim-wrap inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-violet-100 bg-white shadow-md shadow-indigo-200/50 transition group-hover:scale-105 sm:h-12 sm:w-12">
-                <img src="{{ asset('images/site-logo.png') }}" alt="Boya Etkinlik Logo" class="logo-anim-img h-full w-full object-cover">
+                <img src="{{ $siteLogoUrl }}" alt="{{ $headerSiteName }} Logo" class="logo-anim-img h-full w-full object-contain">
             </span>
-            <span class="truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg lg:text-xl">Boya Etkinlik</span>
+            <span class="truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg lg:text-xl">{{ $headerSiteName }}</span>
         </a>
 
         {{-- Masaüstü: tam menü --}}

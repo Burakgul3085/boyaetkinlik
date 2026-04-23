@@ -5,8 +5,39 @@
 @section('content')
     <h1 class="text-3xl font-bold text-slate-900">Dinamik Sayfa Ayarları</h1>
     <p class="mt-1 text-sm text-slate-500">Bu alanda yaptığınız değişiklikler mevcut ayarları günceller. Yeni değer yazıp "Değişiklikleri Güncelle" butonuna basmanız yeterlidir.</p>
-    <form method="post" action="{{ route('admin.settings.update') }}" class="card mt-5 space-y-4 p-5">
+    @php
+        $adminLogoPath = $settings['site_logo'] ?? '';
+        $adminLogoUrl = ($adminLogoPath !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($adminLogoPath))
+            ? asset('storage/'.$adminLogoPath)
+            : asset('images/site-logo.png');
+    @endphp
+    <form method="post" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" class="card mt-5 space-y-4 p-5">
         @csrf
+        <div class="rounded-xl border border-slate-200 p-4">
+            <h2 class="mb-3 text-lg font-semibold text-slate-900">Üst menü: logo ve site adı</h2>
+            <p class="mb-3 text-xs text-slate-500">Logo PNG, JPG veya JPEG olabilir; ön yüzde kutunun içinde kırpılmadan gösterilir. Boş bırakırsanız mevcut logo korunur.</p>
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-violet-100 bg-white shadow-sm">
+                        <img src="{{ $adminLogoUrl }}" alt="" class="h-full w-full object-contain p-0.5">
+                    </span>
+                    <div>
+                        <label class="mb-1 block text-xs font-medium text-slate-600" for="site_logo">Yeni logo yükle</label>
+                        <input id="site_logo" type="file" name="site_logo" accept=".png,.jpg,.jpeg,image/png,image/jpeg" class="block w-full max-w-xs text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-violet-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-violet-700 hover:file:bg-violet-100">
+                    </div>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <label class="mb-1 block text-xs font-medium text-slate-600" for="header_site_name">Logo yanındaki site adı</label>
+                    <input id="header_site_name" name="header_site_name" value="{{ $settings['header_site_name'] ?? '' }}" class="input-ui" placeholder="Örn: Boya Etkinlik">
+                </div>
+            </div>
+            @error('site_logo')
+                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+            @error('header_site_name')
+                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+        </div>
         <textarea name="about" rows="4" class="input-ui" placeholder="Hakkımızda">{{ $settings['about'] ?? '' }}</textarea>
         <div class="grid gap-3 md:grid-cols-2">
             <input name="contact_phone" value="{{ $settings['contact_phone'] ?? '' }}" class="input-ui" placeholder="İletişim telefonu (örn: +90 555 123 45 67)">

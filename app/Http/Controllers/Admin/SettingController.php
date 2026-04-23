@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
@@ -18,6 +19,7 @@ class SettingController extends Controller
     public function update(Request $request)
     {
         $data = $request->validate([
+            'header_site_name' => ['nullable', 'string', 'max:120'],
             'about' => ['nullable', 'string'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'contact_email' => ['nullable', 'email', 'max:255'],
@@ -43,7 +45,19 @@ class SettingController extends Controller
             'shopier_api_secret' => ['nullable', 'string'],
             'shopier_website_index' => ['nullable', 'string'],
             'shopier_endpoint' => ['nullable', 'string'],
+            'site_logo' => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png', 'max:4096'],
         ]);
+
+        unset($data['site_logo']);
+
+        if ($request->hasFile('site_logo')) {
+            $previous = Setting::getValue('site_logo', '');
+            if (is_string($previous) && $previous !== '' && Storage::disk('public')->exists($previous)) {
+                Storage::disk('public')->delete($previous);
+            }
+            $storedPath = $request->file('site_logo')->store('branding', 'public');
+            Setting::query()->updateOrCreate(['key' => 'site_logo'], ['value' => $storedPath]);
+        }
 
         foreach ($data as $key => $value) {
             Setting::query()->updateOrCreate(['key' => $key], ['value' => $value]);
