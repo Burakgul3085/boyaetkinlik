@@ -12,6 +12,9 @@
             $faviconMime = 'image/jpeg';
         }
     }
+    $canonicalBase = rtrim((string) config('app.url'), '/');
+    $canonicalPath = trim((string) request()->path(), '/');
+    $canonicalHref = $canonicalBase.($canonicalPath !== '' ? '/'.$canonicalPath : '');
 @endphp
 <!doctype html>
 <html lang="tr">
@@ -19,6 +22,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', $headerSiteName)</title>
+    {{-- Google için tercih edilen URL (APP_URL kanonik olmalı; yönlendirme Cloudflare + .htaccess) --}}
+    <link rel="canonical" href="{{ $canonicalHref }}">
     {{-- Sekme ikonu + Google arama sonuçlarında site ikonu (tarayıcılar /favicon.ico veya rel=icon kullanır) --}}
     <link rel="icon" type="{{ $faviconMime }}" href="{{ $siteLogoUrl }}">
     <link rel="apple-touch-icon" href="{{ $siteLogoUrl }}">

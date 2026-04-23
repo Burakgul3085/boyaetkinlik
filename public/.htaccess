@@ -5,6 +5,14 @@
 
     RewriteEngine On
 
+    # Tek kanonik adres: önce www kaldır (https:// ile), sonra HTTP -> HTTPS.
+    # Böylece http/https ve www karışıklığı Search Console'da sinyal bölmesini azaltır.
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
