@@ -15,6 +15,36 @@
     $canonicalBase = rtrim((string) config('app.url'), '/');
     $canonicalPath = trim((string) request()->path(), '/');
     $canonicalHref = $canonicalBase.($canonicalPath !== '' ? '/'.$canonicalPath : '');
+
+    $faviconGooglePath = public_path('images/favicon-google.png');
+    $faviconHref = is_file($faviconGooglePath) ? asset('images/favicon-google.png') : $siteLogoUrl;
+    $faviconType = is_file($faviconGooglePath) ? 'image/png' : $faviconMime;
+
+    $schemaLd = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            [
+                '@type' => 'Organization',
+                '@id' => $canonicalBase.'#organization',
+                'name' => $headerSiteName,
+                'url' => $canonicalBase,
+                'logo' => [
+                    '@type' => 'ImageObject',
+                    'url' => $faviconHref,
+                ],
+            ],
+            [
+                '@type' => 'WebSite',
+                '@id' => $canonicalBase.'#website',
+                'name' => $headerSiteName,
+                'alternateName' => ['boyaetkinlik', 'boyaetkinlik.com'],
+                'url' => $canonicalBase,
+                'inLanguage' => 'tr',
+                'publisher' => ['@id' => $canonicalBase.'#organization'],
+            ],
+        ],
+    ];
+    $schemaLdJson = json_encode($schemaLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 @endphp
 <!doctype html>
 <html lang="tr">
@@ -22,11 +52,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', $headerSiteName)</title>
+    <meta property="og:site_name" content="{{ $headerSiteName }}">
+    <meta name="application-name" content="{{ $headerSiteName }}">
     {{-- Google için tercih edilen URL (APP_URL kanonik olmalı; yönlendirme Cloudflare + .htaccess) --}}
     <link rel="canonical" href="{{ $canonicalHref }}">
-    {{-- Sekme ikonu + Google arama sonuçlarında site ikonu (tarayıcılar /favicon.ico veya rel=icon kullanır) --}}
-    <link rel="icon" type="{{ $faviconMime }}" href="{{ $siteLogoUrl }}">
-    <link rel="apple-touch-icon" href="{{ $siteLogoUrl }}">
+    {{-- favicon-google.png: kare, mümkünse ≥48px; yoksa site logosu. SERP ikonunu iyileştirir. --}}
+    <link rel="icon" type="{{ $faviconType }}" href="{{ $faviconHref }}" sizes="48x48">
+    <link rel="icon" type="{{ $faviconType }}" href="{{ $faviconHref }}" sizes="32x32">
+    <link rel="apple-touch-icon" href="{{ $faviconHref }}" sizes="180x180">
+    <script type="application/ld+json">{!! $schemaLdJson !!}</script>
     <script>
         (function () {
             try {
