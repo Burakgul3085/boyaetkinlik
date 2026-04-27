@@ -82,6 +82,7 @@
         gtag('js', new Date());
         gtag('config', 'G-T85B5EZG72');
     </script>
+    <meta name="google-adsense-account" content="ca-pub-1312868815768552">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1312868815768552" crossorigin="anonymous"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
