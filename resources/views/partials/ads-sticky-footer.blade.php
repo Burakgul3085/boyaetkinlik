@@ -23,7 +23,7 @@
     aria-label="Sponsor alanı"
 >
     <div class="mx-auto flex h-full w-[min(92vw,820px)] items-center gap-1.5 px-2 pb-1 sm:px-3">
-        <div class="flex h-[52px] flex-1 items-center rounded-xl border border-violet-100/80 bg-gradient-to-r from-white via-violet-50/20 to-white px-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
+        <div class="flex h-[56px] flex-1 items-center rounded-xl border border-violet-100/80 bg-gradient-to-r from-white via-violet-50/20 to-white px-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
             <div class="sticky-ad-mini-slot w-full overflow-hidden text-center text-xs leading-tight text-slate-700 dark:text-slate-200 [&_*]:max-w-full">
                 {!! $stickyAdMarkup !!}
             </div>
@@ -46,12 +46,12 @@
 
     #site-sticky-ad .sticky-ad-mini-slot,
     #site-sticky-ad .sticky-ad-mini-slot > * {
-        max-height: 46px !important;
+        max-height: 50px !important;
         min-height: 0 !important;
     }
 
     #site-sticky-ad .sticky-ad-mini-slot * {
-        max-height: 46px !important;
+        max-height: 50px !important;
         min-height: 0 !important;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
@@ -59,9 +59,9 @@
 
     #site-sticky-ad .sticky-ad-mini-slot iframe,
     #site-sticky-ad .sticky-ad-mini-slot ins.adsbygoogle {
-        height: 46px !important;
-        min-height: 46px !important;
-        max-height: 46px !important;
+        height: 50px !important;
+        min-height: 50px !important;
+        max-height: 50px !important;
         width: 100% !important;
         max-width: 100% !important;
     }

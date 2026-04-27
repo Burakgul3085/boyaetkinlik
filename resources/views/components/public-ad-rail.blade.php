@@ -38,7 +38,7 @@
 
     {{-- lg+: yan sütunlar satır yüksekliğine yayılır; içteki kutu sticky ile kaydırırken üstte sabit kalır (fareyi takip etmez, standart reklam davranışı). --}}
     <div class="grid gap-5 lg:grid-cols-12 lg:items-stretch lg:gap-6">
-        <aside class="relative hidden min-h-0 min-w-0 lg:col-span-2 lg:block">
+        <aside class="relative hidden min-h-0 min-w-0 lg:col-span-3 lg:block">
             <div class="sticky top-24 z-10 w-full pt-0.5 sm:top-28">
                 <div class="max-h-[calc(100dvh-6.5rem)] overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
                     <p class="mb-2 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sol sütun</p>
@@ -49,11 +49,11 @@
             </div>
         </aside>
 
-        <div class="min-h-0 min-w-0 lg:col-span-8">
+        <div class="min-h-0 min-w-0 lg:col-span-6">
             {{ $slot }}
         </div>
 
-        <aside class="relative hidden min-h-0 min-w-0 lg:col-span-2 lg:block">
+        <aside class="relative hidden min-h-0 min-w-0 lg:col-span-3 lg:block">
             <div class="sticky top-24 z-10 w-full pt-0.5 sm:top-28">
                 <div class="max-h-[calc(100dvh-6.5rem)] overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
                     <p class="mb-2 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sağ sütun</p>
