@@ -228,18 +228,35 @@
             var isPdf = fmt === 'pdf' || url.toLowerCase().indexOf('.pdf') !== -1;
 
             if (isPdf) {
-                // PDF için: küçük popup aç, yüklenince otomatik yazdır
-                var win = window.open(url, '_blank', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
-                if (win) {
-                    var tried = false;
-                    var tryPrint = function () {
-                        if (tried) return;
-                        tried = true;
-                        try { win.print(); } catch (e) {}
-                    };
-                    win.addEventListener('load', function () { setTimeout(tryPrint, 500); });
-                    setTimeout(tryPrint, 3000);
-                }
+                // PDF için: blob olarak çek, gizli iframe içinde render et, print() çağır
+                fetch(url, { credentials: 'same-origin' })
+                    .then(function (r) { return r.blob(); })
+                    .then(function (blob) {
+                        var blobUrl = URL.createObjectURL(blob);
+                        var iframe = document.createElement('iframe');
+                        iframe.style.cssText = 'position:fixed;top:-200%;left:-200%;width:100vw;height:100vh;border:none;visibility:hidden;';
+                        document.body.appendChild(iframe);
+                        var printed = false;
+                        var doPrint = function () {
+                            if (printed) return;
+                            printed = true;
+                            try {
+                                iframe.contentWindow.focus();
+                                iframe.contentWindow.print();
+                            } catch (e) {}
+                            setTimeout(function () {
+                                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                                URL.revokeObjectURL(blobUrl);
+                            }, 6000);
+                        };
+                        iframe.onload = function () { setTimeout(doPrint, 800); };
+                        setTimeout(doPrint, 5000);
+                        iframe.src = blobUrl;
+                    })
+                    .catch(function () {
+                        var win = window.open(url, '_blank', 'width=900,height=700,menubar=no,toolbar=no');
+                        if (win) { setTimeout(function () { win.print(); }, 2000); }
+                    });
             } else {
                 // Görsel için: gizli iframe + header/footer gizleme
                 var iframe = document.createElement('iframe');
