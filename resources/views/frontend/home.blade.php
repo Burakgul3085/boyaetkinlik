@@ -201,15 +201,13 @@
                 <div class="paid-marquee-track">
                     @foreach($paidLoopPages as $paidPage)
                         <a href="{{ route('products.show', $paidPage) }}" class="paid-marquee-item group">
-                            <div class="flex h-24 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
-                                <img
-                                    src="{{ route('products.preview-image', $paidPage) }}"
-                                    alt="{{ $paidPage->title }}"
-                                    class="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]"
-                                    draggable="false"
-                                    onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Premium+Urun';"
-                                >
-                            </div>
+                            <img
+                                src="{{ route('products.preview-image', $paidPage) }}"
+                                alt="{{ $paidPage->title }}"
+                                class="w-full rounded-xl transition duration-300 group-hover:scale-[1.03]"
+                                draggable="false"
+                                onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Premium+Urun';"
+                            >
                             <div class="mt-2">
                                 <p class="line-clamp-1 text-sm font-semibold text-slate-900">{{ $paidPage->title }}</p>
                                 <div class="mt-1 flex items-center justify-between gap-2">
@@ -354,15 +352,13 @@
                 <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @forelse($filteredPages as $page)
                         <a href="{{ route('products.show', $page) }}" class="group rounded-2xl border border-slate-200 bg-white p-3 transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md">
-                            <div class="flex h-40 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
-                                <img
-                                    src="{{ route('products.preview-image', $page) }}"
-                                    class="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]"
-                                    alt="{{ $page->title }}"
-                                    draggable="false"
-                                    onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya%20Sayfas%C4%B1';"
-                                >
-                            </div>
+                            <img
+                                src="{{ route('products.preview-image', $page) }}"
+                                class="w-full rounded-xl transition duration-300 group-hover:scale-[1.03]"
+                                alt="{{ $page->title }}"
+                                draggable="false"
+                                onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya%20Sayfas%C4%B1';"
+                            >
                             <div class="mt-3 flex items-start justify-between gap-2">
                                 <p class="line-clamp-2 font-semibold text-slate-900">{{ $page->title }}</p>
                                 <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700">Detay</span>
