@@ -183,13 +183,15 @@
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @forelse($coloringPages as $page)
                 <a href="{{ route('products.show', $page) }}" class="card group p-4 transition hover:-translate-y-0.5 hover:shadow-md">
-                    <img
-                        src="{{ route('products.preview-image', $page) }}"
-                        class="h-40 w-full rounded-xl object-cover"
-                        alt="{{ $page->title }}"
-                        draggable="false"
-                        onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya%20Sayfas%C4%B1';"
-                    >
+                    <div class="flex h-40 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
+                        <img
+                            src="{{ route('products.preview-image', $page) }}"
+                            class="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]"
+                            alt="{{ $page->title }}"
+                            draggable="false"
+                            onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya%20Sayfas%C4%B1';"
+                        >
+                    </div>
                     <div class="mt-3 flex items-start justify-between gap-2">
                         <p class="font-semibold text-slate-900">{{ $page->title }}</p>
                         <span class="rounded-md bg-violet-50 px-2 py-0.5 text-[11px] text-violet-700 group-hover:bg-violet-100">Detay</span>
