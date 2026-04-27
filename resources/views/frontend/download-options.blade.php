@@ -34,14 +34,13 @@
                                 >
                                     PDF İndir
                                 </a>
-                                <a
-                                    href="{{ route('download.paid.print', ['token' => $transaction->download_token, 'format' => 'pdf']) }}"
-                                    target="_blank"
-                                    rel="noopener"
+                                <button
+                                    type="button"
+                                    onclick="directPrint('{{ route('download.paid.print', ['token' => $transaction->download_token, 'format' => 'pdf']) }}')"
                                     class="btn-secondary inline-flex w-full items-center justify-center"
                                 >
                                     Dosyayı Yazdır
-                                </a>
+                                </button>
                             </div>
                         </div>
                     @else
@@ -60,14 +59,13 @@
                                     >
                                         İndir
                                     </a>
-                                    <a
-                                        href="{{ route('download.paid.print', ['token' => $transaction->download_token, 'format' => $format]) }}"
-                                        target="_blank"
-                                        rel="noopener"
+                                    <button
+                                        type="button"
+                                        onclick="directPrint('{{ route('download.paid.print', ['token' => $transaction->download_token, 'format' => $format]) }}')"
                                         class="btn-secondary inline-flex w-full items-center justify-center"
                                     >
                                         Yazdır
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -78,6 +76,24 @@
     </section>
     </x-public-ad-rail>
     <script>
+        function directPrint(url) {
+            var iframe = document.createElement('iframe');
+            iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;border:none;';
+            document.body.appendChild(iframe);
+            iframe.onload = function () {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (e) {
+                    window.open(url, '_blank');
+                }
+                setTimeout(function () {
+                    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                }, 3000);
+            };
+            iframe.src = url;
+        }
+
         (function () {
             if (typeof window.gtag !== 'function') return;
 

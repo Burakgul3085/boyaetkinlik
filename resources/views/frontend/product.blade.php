@@ -87,14 +87,13 @@
                         </div>
                     @endif
                 </div>
-                <a
-                    href="{{ route('products.print.free', ['coloringPage' => $coloringPage, 'format' => $originalFormat]) }}"
-                    target="_blank"
-                    rel="noopener"
+                <button
+                    type="button"
+                    onclick="directPrint('{{ route('products.print.free', ['coloringPage' => $coloringPage, 'format' => $originalFormat]) }}')"
                     class="btn-secondary mt-3 w-full"
                 >
                     Dosyayı Yazdır
-                </a>
+                </button>
                 @guest
                     <div class="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">E-posta ile gönder</p>
@@ -222,4 +221,23 @@
         @endif
     </div>
     </x-public-ad-rail>
+    <script>
+        function directPrint(url) {
+            var iframe = document.createElement('iframe');
+            iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;border:none;';
+            document.body.appendChild(iframe);
+            iframe.onload = function () {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (e) {
+                    window.open(url, '_blank');
+                }
+                setTimeout(function () {
+                    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                }, 3000);
+            };
+            iframe.src = url;
+        }
+    </script>
 @endsection
