@@ -78,20 +78,31 @@
     <script>
         function directPrint(url) {
             var iframe = document.createElement('iframe');
-            iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;border:none;';
+            iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:0;height:0;border:none;';
             document.body.appendChild(iframe);
-            iframe.onload = function () {
-                try {
-                    iframe.contentWindow.focus();
-                    iframe.contentWindow.print();
-                } catch (e) {
-                    window.open(url, '_blank');
-                }
-                setTimeout(function () {
-                    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                }, 3000);
-            };
-            iframe.src = url;
+
+            var html = '<!DOCTYPE html><html><head><title></title>'
+                + '<style>'
+                + '@page{margin:0;size:auto;}'
+                + 'html,body{margin:0;padding:0;background:#fff;}'
+                + 'img{display:block;width:100%;height:100vh;object-fit:contain;}'
+                + '</style></head><body>'
+                + '<img src="' + url + '" />'
+                + '<scr' + 'ipt>'
+                + 'document.querySelector("img").onload=function(){'
+                + '  window.focus();window.print();'
+                + '};'
+                + '<\/scr' + 'ipt>'
+                + '</body></html>';
+
+            var doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+
+            setTimeout(function () {
+                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+            }, 8000);
         }
 
         (function () {
