@@ -23,12 +23,36 @@
         <button class="btn-primary">Kaydet</button>
     </form>
 
-    <div class="card mt-6 overflow-x-auto p-4">
+    <div
+        class="mt-6"
+        x-data="{
+            search: '',
+            match(title) {
+                const q = this.search.trim().toLocaleLowerCase('tr-TR');
+                if (!q) return true;
+                return String(title).toLocaleLowerCase('tr-TR').includes(q);
+            }
+        }"
+    >
+        <div class="card mb-4 p-4">
+            <label for="admin-pages-filter" class="text-sm font-medium text-slate-700">Listede ara</label>
+            <input
+                id="admin-pages-filter"
+                type="search"
+                x-model.debounce.150ms="search"
+                autocomplete="off"
+                placeholder="Başlığa göre filtrele..."
+                class="input-ui mt-2 max-w-xl"
+            >
+            <p class="mt-2 text-xs text-slate-500">Alan boşken tüm boyama sayfaları listelenir; yazdığınız metin yalnızca başlıkta aranır.</p>
+        </div>
+
+        <div class="card overflow-x-auto p-4">
         <table class="min-w-full text-sm">
             <thead><tr class="text-left text-slate-500"><th class="py-2">Başlık</th><th>Kategori</th><th>Fiyat</th><th>Shopier Link</th><th>Tip</th><th>İşlem</th></tr></thead>
             <tbody>
             @foreach($pages as $page)
-                <tr class="border-t">
+                <tr class="border-t" x-show="match({{ \Illuminate\Support\Js::from($page->title) }})">
                     <td class="py-2">{{ $page->title }}</td>
                     <td>{{ $page->category?->name ?? '— (kategori yok)' }}</td>
                     <td>{{ number_format($page->price, 2) }} TL</td>
@@ -92,5 +116,6 @@
             @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 @endsection
