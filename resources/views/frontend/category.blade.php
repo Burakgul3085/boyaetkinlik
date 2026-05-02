@@ -20,7 +20,7 @@
                     {{ $category->description ?: 'Bu kategori için özenle seçilmiş boyama içeriklerini aşağıda inceleyebilirsiniz.' }}
                 </p>
                 @if($category->cover_image_path)
-                    <div class="mt-5 w-full max-w-2xl overflow-hidden rounded-2xl border border-violet-100 bg-white/95 p-3 shadow-sm">
+                    <div class="mt-5 w-full max-w-2xl overflow-hidden rounded-2xl border border-violet-100 p-3 shadow-sm">
                         <img
                             src="{{ asset('storage/'.$category->cover_image_path) }}"
                             alt="{{ $category->name }} kategori görseli"
