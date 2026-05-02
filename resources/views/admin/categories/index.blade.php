@@ -44,34 +44,8 @@
             search: '',
             match(name) {
                 const q = this.search.trim().toLocaleLowerCase('tr-TR');
-                if (!q) return false;
+                if (!q) return true;
                 return String(name).toLocaleLowerCase('tr-TR').includes(q);
-            },
-            highlight(name) {
-                return this.match(name)
-                    ? 'ring-2 ring-violet-400 rounded-2xl bg-violet-50/80 shadow-sm dark:bg-violet-950/35 dark:ring-violet-500'
-                    : '';
-            },
-            scrollToFirstMatch() {
-                this.$nextTick(() => {
-                    const q = this.search.trim().toLocaleLowerCase('tr-TR');
-                    if (!q) return;
-                    const rows = this.$root.querySelectorAll('[data-admin-category-row]');
-                    for (const el of rows) {
-                        const name = el.getAttribute('data-category-name') || '';
-                        if (name.toLocaleLowerCase('tr-TR').includes(q)) {
-                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            break;
-                        }
-                    }
-                });
-            },
-            init() {
-                let t;
-                this.$watch('search', () => {
-                    clearTimeout(t);
-                    t = setTimeout(() => this.scrollToFirstMatch(), 220);
-                });
             }
         }"
     >
@@ -80,22 +54,17 @@
             <input
                 id="admin-category-filter"
                 type="search"
-                x-model="search"
+                x-model.debounce.150ms="search"
                 autocomplete="off"
                 placeholder="Kategori adına yazın..."
                 class="input-ui mt-2 max-w-xl"
             >
-            <p class="mt-2 text-xs text-slate-500">Tüm kategoriler listede kalır; yazdığınız ada uyanlar vurgulanır ve ilk eşleşene kaydırılır. Alan boşken vurgu yoktur. Slug kullanılmaz.</p>
+            <p class="mt-2 text-xs text-slate-500">Alan boşken tüm kategoriler listelenir; yazdığınız metin ada göre süzer (slug kullanılmaz).</p>
         </div>
 
         <div class="space-y-3">
         @foreach($categories as $category)
-            <div
-                data-admin-category-row
-                data-category-name="{{ e($category->name) }}"
-                class="scroll-mt-24 space-y-2 transition-[box-shadow,background-color] duration-150"
-                :class="highlight({{ \Illuminate\Support\Js::from($category->name) }})"
-            >
+            <div x-show="match({{ \Illuminate\Support\Js::from($category->name) }})" class="space-y-2">
             <form method="post" action="{{ route('admin.categories.update', $category) }}" enctype="multipart/form-data" class="card p-4">
                 @csrf @method('PUT')
                 <div class="grid gap-3 md:grid-cols-4">
