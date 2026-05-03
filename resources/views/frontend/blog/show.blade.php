@@ -13,11 +13,11 @@
     </article>
 
     @if($blog->image_path)
-        <section class="mx-auto mt-6 max-w-2xl overflow-hidden rounded-2xl border border-violet-100/80 bg-white/40 p-2.5 shadow-sm backdrop-blur-[1px]">
+        <section class="mx-auto mt-6 max-w-xl overflow-hidden rounded-2xl border border-violet-100 bg-white p-3 shadow-sm transition duration-300 hover:shadow-md">
             <img
                 src="{{ asset('storage/'.$blog->image_path) }}"
                 alt="{{ $blog->title }} görseli"
-                class="mx-auto max-h-[18rem] w-full rounded-xl object-contain select-none md:max-h-[21rem]"
+                class="h-52 w-full rounded-xl object-contain select-none md:h-60"
                 draggable="false"
                 oncontextmenu="return false;"
             >
