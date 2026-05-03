@@ -25,8 +25,8 @@
             </section>
         @endif
 
-        <section class="mt-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-[1.01] hover:border-violet-300 hover:bg-gradient-to-br hover:from-violet-50 hover:via-fuchsia-50/80 hover:to-indigo-50 hover:shadow-2xl md:p-6">
-            <div class="prose prose-slate max-w-none leading-relaxed text-slate-700 transition-colors duration-500 hover:text-violet-900">
+        <section class="group mt-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-[1.01] hover:border-violet-300 hover:bg-gradient-to-br hover:from-violet-50 hover:via-fuchsia-50/80 hover:to-indigo-50 hover:shadow-2xl md:p-6">
+            <div class="prose prose-slate max-w-none rounded-xl bg-white/80 p-3 leading-relaxed text-slate-700 transition-all duration-500 group-hover:bg-violet-100/60 group-hover:text-violet-900 sm:p-4">
                 {!! nl2br(e($blog->content)) !!}
             </div>
         </section>
