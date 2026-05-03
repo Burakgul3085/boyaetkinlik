@@ -13,19 +13,19 @@
     </article>
 
     @if($blog->image_path)
-        <section class="mx-auto mt-6 flex w-full max-w-[26rem] items-center justify-center sm:max-w-[28rem] lg:max-w-[30rem]">
+        <section class="group mx-auto mt-6 flex w-full max-w-[26rem] items-center justify-center sm:max-w-[28rem] lg:max-w-[30rem]">
             <img
                 src="{{ asset('storage/'.$blog->image_path) }}"
                 alt="{{ $blog->title }} görseli"
-                class="block max-h-56 w-full object-contain select-none sm:max-h-60 md:max-h-64"
+                class="block max-h-56 w-full rounded-2xl object-contain select-none transition duration-500 ease-out group-hover:-translate-y-1 group-hover:scale-[1.035] group-hover:rotate-[0.4deg] group-hover:saturate-125 group-hover:brightness-110 sm:max-h-60 md:max-h-64"
                 draggable="false"
                 oncontextmenu="return false;"
             >
         </section>
     @endif
 
-    <section class="mt-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm md:p-6">
-        <div class="prose prose-slate max-w-none leading-relaxed">
+    <section class="group mt-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/40 hover:shadow-md md:p-6">
+        <div class="prose prose-slate max-w-none leading-relaxed transition duration-300 group-hover:text-slate-800">
             {!! nl2br(e($blog->content)) !!}
         </div>
     </section>
