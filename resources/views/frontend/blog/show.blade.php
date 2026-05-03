@@ -15,14 +15,16 @@
     <div class="group">
         @if($blog->image_path)
             <section class="mx-auto mt-6 flex w-full max-w-[26rem] items-center justify-center sm:max-w-[28rem] lg:max-w-[30rem]">
-                <div class="w-full rounded-2xl bg-gradient-to-r from-sky-300 via-cyan-300 to-indigo-300 p-[2px] shadow-[0_10px_20px_rgba(56,189,248,0.20)] transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-105 hover:from-violet-300 hover:via-fuchsia-300 hover:to-sky-300 hover:shadow-[0_18px_30px_rgba(124,58,237,0.35)]">
-                    <img
-                        src="{{ asset('storage/'.$blog->image_path) }}"
-                        alt="{{ $blog->title }} görseli"
-                        class="block max-h-56 w-full cursor-pointer rounded-[0.95rem] object-contain select-none transition-all duration-500 ease-out hover:saturate-150 hover:brightness-110 hover:hue-rotate-6 sm:max-h-60 md:max-h-64"
-                        draggable="false"
-                        oncontextmenu="return false;"
-                    >
+                <div class="group w-full rounded-[1.35rem] bg-gradient-to-br from-cyan-300 via-sky-300 to-indigo-300 p-[2px] shadow-[0_10px_24px_rgba(56,189,248,0.22)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:from-violet-300 hover:via-fuchsia-300 hover:to-sky-300 hover:shadow-[0_20px_34px_rgba(124,58,237,0.34)]">
+                    <div class="rounded-[1.2rem] bg-gradient-to-br from-violet-100/40 via-fuchsia-100/30 to-indigo-100/40 p-2">
+                        <img
+                            src="{{ asset('storage/'.$blog->image_path) }}"
+                            alt="{{ $blog->title }} görseli"
+                            class="block max-h-56 w-full cursor-pointer rounded-[0.95rem] object-contain select-none transition-all duration-500 ease-out group-hover:saturate-150 group-hover:brightness-110 group-hover:hue-rotate-6 sm:max-h-60 md:max-h-64"
+                            draggable="false"
+                            oncontextmenu="return false;"
+                        >
+                    </div>
                 </div>
             </section>
         @endif
