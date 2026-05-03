@@ -13,11 +13,11 @@
     </article>
 
     @if($blog->image_path)
-        <section class="mx-auto mt-6 flex w-fit max-w-full items-center justify-center">
+        <section class="mx-auto mt-6 flex w-full max-w-[26rem] items-center justify-center sm:max-w-[28rem] lg:max-w-[30rem]">
             <img
                 src="{{ asset('storage/'.$blog->image_path) }}"
                 alt="{{ $blog->title }} görseli"
-                class="block max-h-44 max-w-full object-contain select-none sm:max-h-48 md:max-h-52"
+                class="block max-h-56 w-full object-contain select-none sm:max-h-60 md:max-h-64"
                 draggable="false"
                 oncontextmenu="return false;"
             >
