@@ -15,8 +15,8 @@
     <div class="group">
         @if($blog->image_path)
             <section class="mx-auto mt-6 flex w-full max-w-[26rem] items-center justify-center sm:max-w-[28rem] lg:max-w-[30rem]">
-                <div class="group w-full rounded-[1.35rem] bg-gradient-to-br from-cyan-300 via-sky-300 to-indigo-300 p-[2px] shadow-[0_10px_24px_rgba(56,189,248,0.22)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:from-violet-300 hover:via-fuchsia-300 hover:to-sky-300 hover:shadow-[0_20px_34px_rgba(124,58,237,0.34)]">
-                    <div class="rounded-[1.2rem] bg-gradient-to-br from-violet-100/40 via-fuchsia-100/30 to-indigo-100/40 p-2">
+                <div class="group w-full rounded-[1.35rem] bg-gradient-to-br from-cyan-300 via-sky-300 to-indigo-300 p-[2px] shadow-[0_10px_24px_rgba(56,189,248,0.22)] transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:from-violet-300 hover:via-fuchsia-300 hover:to-sky-300 hover:shadow-[0_18px_30px_rgba(124,58,237,0.34)]">
+                    <div class="rounded-[1.2rem] bg-transparent p-1.5 ring-1 ring-white/70">
                         <img
                             src="{{ asset('storage/'.$blog->image_path) }}"
                             alt="{{ $blog->title }} görseli"
