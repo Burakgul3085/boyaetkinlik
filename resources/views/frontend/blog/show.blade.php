@@ -14,13 +14,13 @@
 
     <div class="group">
         @if($blog->image_path)
-            <section class="mx-auto mt-6 flex w-full max-w-[26rem] items-center justify-center sm:max-w-[28rem] lg:max-w-[30rem]">
-                <div class="group w-full rounded-[1.35rem] bg-gradient-to-br from-cyan-300 via-sky-300 to-indigo-300 p-[2px] shadow-[0_10px_24px_rgba(56,189,248,0.22)] transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:from-violet-300 hover:via-fuchsia-300 hover:to-sky-300 hover:shadow-[0_18px_30px_rgba(124,58,237,0.34)]">
+            <section class="mx-auto mt-6 flex w-fit max-w-full items-center justify-center">
+                <div class="group w-fit rounded-[1.35rem] bg-gradient-to-br from-cyan-300 via-sky-300 to-indigo-300 p-[2px] shadow-[0_8px_18px_rgba(56,189,248,0.22),_0_2px_6px_rgba(15,23,42,0.15)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:scale-[1.03] hover:from-violet-300 hover:via-fuchsia-300 hover:to-sky-300 hover:shadow-[0_18px_30px_rgba(124,58,237,0.34),_0_4px_10px_rgba(15,23,42,0.2)]">
                     <div class="rounded-[1.2rem] bg-transparent p-1.5 ring-1 ring-white/70">
                         <img
                             src="{{ asset('storage/'.$blog->image_path) }}"
                             alt="{{ $blog->title }} görseli"
-                            class="block max-h-56 w-full cursor-pointer rounded-[0.95rem] object-contain select-none transition-all duration-500 ease-out group-hover:saturate-150 group-hover:brightness-110 group-hover:hue-rotate-6 sm:max-h-60 md:max-h-64"
+                            class="block h-auto max-h-56 w-auto max-w-full cursor-pointer rounded-[0.95rem] object-contain select-none transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:rotate-[0.6deg] group-hover:saturate-150 group-hover:brightness-110 group-hover:hue-rotate-6 sm:max-h-60 md:max-h-64"
                             draggable="false"
                             oncontextmenu="return false;"
                         >
