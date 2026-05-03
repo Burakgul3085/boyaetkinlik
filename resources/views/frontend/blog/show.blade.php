@@ -15,13 +15,15 @@
     <div class="group">
         @if($blog->image_path)
             <section class="mx-auto mt-6 flex w-full max-w-[26rem] items-center justify-center sm:max-w-[28rem] lg:max-w-[30rem]">
-                <img
-                    src="{{ asset('storage/'.$blog->image_path) }}"
-                    alt="{{ $blog->title }} görseli"
-                    class="block max-h-56 w-full cursor-pointer object-contain select-none drop-shadow-[0_10px_18px_rgba(15,23,42,0.18)] transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-105 hover:saturate-150 hover:brightness-110 hover:hue-rotate-6 hover:drop-shadow-[0_18px_26px_rgba(124,58,237,0.35)] sm:max-h-60 md:max-h-64"
-                    draggable="false"
-                    oncontextmenu="return false;"
-                >
+                <div class="w-full rounded-2xl border border-sky-200/90 p-1.5 shadow-[0_10px_24px_rgba(56,189,248,0.15)] transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-105 hover:shadow-[0_18px_30px_rgba(124,58,237,0.30)]">
+                    <img
+                        src="{{ asset('storage/'.$blog->image_path) }}"
+                        alt="{{ $blog->title }} görseli"
+                        class="block max-h-56 w-full cursor-pointer rounded-xl object-contain select-none transition-all duration-500 ease-out hover:saturate-150 hover:brightness-110 hover:hue-rotate-6 sm:max-h-60 md:max-h-64"
+                        draggable="false"
+                        oncontextmenu="return false;"
+                    >
+                </div>
             </section>
         @endif
 
