@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdController as AdminAdController;
 use App\Http\Controllers\Admin\AdminManagementController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ColoringPageController as AdminColoringPageController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\VisitorFeedbackController as AdminVisitorFeedbackController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ColoringPageController;
 use App\Http\Controllers\DownloadController;
@@ -40,6 +42,12 @@ Route::any('/admin', fn () => abort(404));
 Route::any('/admin/{any}', fn () => abort(404))->where('any', '.*');
 Route::get('/kategoriler/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/iletisim', [ContactController::class, 'show'])->name('contact.show');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/yaz', [BlogController::class, 'create'])->name('blog.create');
+Route::post('/blog/yaz', [BlogController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('blog.store');
+Route::get('/blog/{blog:slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::post('/iletisim', [ContactController::class, 'send'])->name('contact.send');
 Route::post('/iletisim/whatsapp', [ContactController::class, 'sendWhatsApp'])->name('contact.whatsapp');
 Route::post('/e-bulten/kayit', [NewsletterController::class, 'store'])->name('newsletter.store');
@@ -165,6 +173,11 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/pages', [AdminColoringPageController::class, 'store'])->name('pages.store');
         Route::put('/pages/{coloringPage}', [AdminColoringPageController::class, 'update'])->name('pages.update');
         Route::delete('/pages/{coloringPage}', [AdminColoringPageController::class, 'destroy'])->name('pages.destroy');
+
+        Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs.index');
+        Route::post('/blogs/{blog}/approve', [AdminBlogController::class, 'approve'])->name('blogs.approve');
+        Route::post('/blogs/{blog}/reject', [AdminBlogController::class, 'reject'])->name('blogs.reject');
+        Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->name('blogs.destroy');
 
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');

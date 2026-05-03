@@ -139,6 +139,8 @@
         $menuItems->push($navItem);
     }
 
+    $menuItems->push(['label' => 'Blog', 'url' => '/blog', 'children' => []]);
+
     if ($hasContact) {
         $contactItem = $links->first(fn ($item) => $item['url'] === '/iletisim');
         $menuItems->push(['label' => $contactItem['label'], 'url' => $contactItem['url'], 'children' => []]);
