@@ -15,22 +15,18 @@
     <div class="group">
         @if($blog->image_path)
             <section class="mx-auto mt-6 flex w-full max-w-[26rem] items-center justify-center sm:max-w-[28rem] lg:max-w-[30rem]">
-                <div class="w-full rounded-[1.1rem] bg-gradient-to-br from-violet-300/70 via-fuchsia-300/55 to-indigo-300/70 p-[2px] shadow-md transition-all duration-500 group-hover:shadow-xl">
-                    <div class="rounded-2xl bg-white/80 p-1.5 backdrop-blur-[1px]">
-                        <img
-                            src="{{ asset('storage/'.$blog->image_path) }}"
-                            alt="{{ $blog->title }} görseli"
-                            class="block max-h-56 w-full cursor-pointer rounded-xl object-contain select-none transition-all duration-500 ease-out group-hover:-translate-y-2 group-hover:scale-110 group-hover:rotate-1 group-hover:saturate-200 group-hover:brightness-125 group-hover:hue-rotate-15 group-hover:drop-shadow-2xl sm:max-h-60 md:max-h-64"
-                            draggable="false"
-                            oncontextmenu="return false;"
-                        >
-                    </div>
-                </div>
+                <img
+                    src="{{ asset('storage/'.$blog->image_path) }}"
+                    alt="{{ $blog->title }} görseli"
+                    class="block max-h-56 w-full cursor-pointer object-contain select-none drop-shadow-[0_10px_18px_rgba(15,23,42,0.18)] transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-105 hover:saturate-150 hover:brightness-110 hover:hue-rotate-6 hover:drop-shadow-[0_18px_26px_rgba(124,58,237,0.35)] sm:max-h-60 md:max-h-64"
+                    draggable="false"
+                    oncontextmenu="return false;"
+                >
             </section>
         @endif
 
-        <section class="mt-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:scale-[1.015] hover:border-violet-300 hover:bg-violet-50/60 hover:shadow-2xl md:p-6">
-            <div class="prose prose-slate max-w-none leading-relaxed transition duration-500 hover:text-slate-900">
+        <section class="mt-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:border-violet-300 hover:bg-violet-50/60 hover:shadow-xl md:p-6">
+            <div class="prose prose-slate max-w-none leading-relaxed text-slate-700 transition-colors duration-400 hover:text-violet-900">
                 {!! nl2br(e($blog->content)) !!}
             </div>
         </section>
