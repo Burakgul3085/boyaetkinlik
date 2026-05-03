@@ -25,8 +25,19 @@
             </section>
         @endif
 
-        <section class="mt-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-[1.01] hover:border-violet-400 hover:bg-violet-200/70 hover:shadow-2xl hover:[&_*]:text-violet-900 md:p-6">
-            <div class="prose prose-slate max-w-none rounded-xl bg-transparent p-0 leading-relaxed text-slate-700 transition-all duration-500">
+        <section
+            x-data="{ hoverCard: false }"
+            @mouseenter="hoverCard = true"
+            @mouseleave="hoverCard = false"
+            class="mt-6 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition-all duration-500 ease-out md:p-6"
+            :style="hoverCard
+                ? 'transform: translateY(-8px) scale(1.01); background: linear-gradient(135deg, rgba(237,233,254,0.95), rgba(250,232,255,0.90), rgba(224,231,255,0.92)); border-color: rgba(167,139,250,0.9); box-shadow: 0 22px 40px rgba(124,58,237,0.24);'
+                : 'transform: translateY(0) scale(1); background: #ffffff; border-color: rgb(221,214,254); box-shadow: 0 1px 2px rgba(15,23,42,0.06);'"
+        >
+            <div
+                class="prose prose-slate max-w-none rounded-xl bg-transparent p-0 leading-relaxed text-slate-700 transition-all duration-500"
+                :style="hoverCard ? 'color: rgb(76,29,149);' : 'color: rgb(51,65,85);'"
+            >
                 {!! nl2br(e($blog->content)) !!}
             </div>
         </section>
