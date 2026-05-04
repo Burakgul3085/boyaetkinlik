@@ -175,6 +175,7 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::delete('/pages/{coloringPage}', [AdminColoringPageController::class, 'destroy'])->name('pages.destroy');
 
         Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs.index');
+        Route::put('/blogs/{blog}', [AdminBlogController::class, 'update'])->name('blogs.update');
         Route::post('/blogs/{blog}/approve', [AdminBlogController::class, 'approve'])->name('blogs.approve');
         Route::post('/blogs/{blog}/reject', [AdminBlogController::class, 'reject'])->name('blogs.reject');
         Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->name('blogs.destroy');
