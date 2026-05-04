@@ -3,6 +3,7 @@
     <form method="post" action="{{ route('admin.blogs.update', $blog) }}" enctype="multipart/form-data" class="space-y-3 p-3">
         @csrf
         @method('PUT')
+        <input type="hidden" name="_edit_blog_id" value="{{ $blog->id }}">
         <div class="grid gap-3 md:grid-cols-2">
             <label class="block text-xs font-medium text-slate-600">
                 İsim
