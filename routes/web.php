@@ -40,6 +40,10 @@ Route::get('/yonetim', fn () => abort(404));
 Route::get('/admin-giris', fn () => abort(404));
 Route::any('/admin', fn () => abort(404));
 Route::any('/admin/{any}', fn () => abort(404))->where('any', '.*');
+// Search Console'da görünen kalıcı silinmiş eski URL'ler: hızlı düşüş için 410.
+Route::get('/kategoriler/okul-oncesi-3-yas', fn () => abort(410));
+Route::get('/kategoriler/ozel-egitim-kelime-kartlari', fn () => abort(410));
+Route::get('/boyama/58', fn () => abort(410));
 Route::get('/kategoriler/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/iletisim', [ContactController::class, 'show'])->name('contact.show');
 Route::view('/hakkimizda', 'frontend.hakkimizda')->name('about');
