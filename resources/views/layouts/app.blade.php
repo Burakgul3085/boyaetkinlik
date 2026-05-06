@@ -491,34 +491,6 @@
                         </a>
                     @endif
                 @endforeach
-                <button
-                    type="button"
-                    data-policy-open="privacy"
-                    class="block w-full rounded-lg bg-white/10 px-3 py-2 text-left text-slate-100 transition hover:bg-white/20 hover:text-white"
-                >
-                    Gizlilik Politikası
-                </button>
-                <button
-                    type="button"
-                    data-policy-open="terms"
-                    class="block w-full rounded-lg bg-white/10 px-3 py-2 text-left text-slate-100 transition hover:bg-white/20 hover:text-white"
-                >
-                    Kullanım Koşulları
-                </button>
-                <button
-                    type="button"
-                    data-policy-open="cookies"
-                    class="block w-full rounded-lg bg-white/10 px-3 py-2 text-left text-slate-100 transition hover:bg-white/20 hover:text-white"
-                >
-                    Çerez Politikası
-                </button>
-                <button
-                    type="button"
-                    data-policy-open="about"
-                    class="block w-full rounded-lg bg-white/10 px-3 py-2 text-left text-slate-100 transition hover:bg-white/20 hover:text-white"
-                >
-                    Hakkımızda
-                </button>
             </div>
         </div>
 
@@ -603,6 +575,41 @@
                     E-bültene kayıt ol
                 </button>
             </form>
+        </div>
+
+        <div class="rounded-2xl border border-white/25 bg-gradient-to-r from-white/15 to-white/5 p-4 lg:col-span-12">
+            <p class="text-sm font-semibold text-white">Yasal Bilgilendirme</p>
+            <p class="mt-1 text-xs text-slate-300">Politika ve kullanım metinlerini buradan açabilirsiniz.</p>
+            <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <button
+                    type="button"
+                    data-policy-open="privacy"
+                    class="rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Gizlilik Politikası
+                </button>
+                <button
+                    type="button"
+                    data-policy-open="terms"
+                    class="rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Kullanım Koşulları
+                </button>
+                <button
+                    type="button"
+                    data-policy-open="cookies"
+                    class="rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Çerez Politikası
+                </button>
+                <button
+                    type="button"
+                    data-policy-open="about"
+                    class="rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Hakkımızda
+                </button>
+            </div>
         </div>
         </div>
     </div>
