@@ -647,22 +647,22 @@
     </div>
 </footer>
 
-<div id="policy-modal" class="fixed inset-0 z-[10000] hidden" aria-hidden="true">
-    <div data-policy-close class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"></div>
-    <div class="relative mx-auto mt-[8vh] w-[min(92vw,860px)]">
-        <div class="max-h-[84vh] overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-2xl">
-            <div class="flex items-center justify-between border-b border-violet-100 bg-violet-50/70 px-5 py-3">
-                <h2 id="policy-modal-title" class="text-lg font-bold text-slate-900">Politika</h2>
+<div id="policy-modal" class="fixed inset-0 z-[10000] hidden p-4 sm:p-6" aria-hidden="true">
+    <div data-policy-close class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>
+    <div class="relative mx-auto mt-[6vh] w-full max-w-2xl">
+        <div class="max-h-[86vh] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.35)]">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
+                <h2 id="policy-modal-title" class="text-lg font-semibold text-slate-900">Politika</h2>
                 <button
                     type="button"
                     data-policy-close
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:bg-violet-50"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
                     aria-label="Kapat"
                 >
                     ×
                 </button>
             </div>
-            <div id="policy-modal-body" class="max-h-[calc(84vh-4rem)] overflow-y-auto px-5 py-4 text-sm leading-relaxed text-slate-700"></div>
+            <div id="policy-modal-body" class="max-h-[calc(86vh-4.25rem)] overflow-y-auto px-5 py-4 text-sm leading-7 text-slate-700"></div>
         </div>
     </div>
 </div>
