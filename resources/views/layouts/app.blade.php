@@ -590,7 +590,7 @@
                     placeholder="E-posta"
                     class="w-full rounded-lg border border-white/40 bg-white/10 px-3 py-2 text-xs text-white placeholder:text-white/70 focus:border-white focus:outline-none"
                 >
-                <button class="w-full rounded-lg bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110">
+                <button class="w-full min-h-[40px] rounded-lg bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110">
                     E-bültene kayıt ol
                 </button>
             </form>
@@ -608,35 +608,35 @@
                 <button
                     type="button"
                     data-policy-open="privacy"
-                    class="min-h-[42px] rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                    class="min-h-[42px] w-full rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium leading-tight text-slate-100 break-words transition hover:bg-white/20 hover:text-white"
                 >
                     Gizlilik Politikası
                 </button>
                 <button
                     type="button"
                     data-policy-open="terms"
-                    class="min-h-[42px] rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                    class="min-h-[42px] w-full rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium leading-tight text-slate-100 break-words transition hover:bg-white/20 hover:text-white"
                 >
                     Kullanım Koşulları
                 </button>
                 <button
                     type="button"
                     data-policy-open="cookies"
-                    class="min-h-[42px] rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                    class="min-h-[42px] w-full rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium leading-tight text-slate-100 break-words transition hover:bg-white/20 hover:text-white"
                 >
                     Çerez Politikası
                 </button>
                 <button
                     type="button"
                     data-policy-open="clarification"
-                    class="min-h-[42px] rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                    class="min-h-[42px] w-full rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium leading-tight text-slate-100 break-words transition hover:bg-white/20 hover:text-white"
                 >
                     Aydınlatma Metni
                 </button>
                 <button
                     type="button"
                     data-policy-open="about"
-                    class="min-h-[42px] rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                    class="min-h-[42px] w-full rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium leading-tight text-slate-100 break-words transition hover:bg-white/20 hover:text-white"
                 >
                     Hakkımızda
                 </button>
@@ -657,10 +657,10 @@
                     <span class="pointer-events-none h-2 w-2 rounded-full bg-white/65 shadow-[0_0_0_1px_rgba(255,255,255,0.12)] transition group-hover:bg-white/90 group-hover:shadow-[0_0_0_1px_rgba(255,255,255,0.25)]"></span>
                 </a>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
                 <a
                     href="mailto:burakgul3085@gmail.com"
-                    class="rounded-md px-2 py-1 font-medium text-white/90 transition hover:bg-white/10 hover:text-white"
+                    class="break-all rounded-md px-2 py-1 font-medium text-white/90 transition hover:bg-white/10 hover:text-white"
                 >
                     burakgul3085@gmail.com
                 </a>
