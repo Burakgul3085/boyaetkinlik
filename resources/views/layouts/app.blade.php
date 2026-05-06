@@ -98,6 +98,11 @@
     $youtubeUrl = \App\Models\Setting::getValue('social_youtube_url', '');
     $pinterestUrl = \App\Models\Setting::getValue('social_pinterest_url', '');
     $dailymotionUrl = \App\Models\Setting::getValue('social_dailymotion_url', '');
+    $policyAbout = \App\Models\Setting::getValue('about', '');
+    $policyPrivacy = \App\Models\Setting::getValue('privacy_policy', '');
+    $policyClarification = \App\Models\Setting::getValue('clarification_text', '');
+    $policyTerms = \App\Models\Setting::getValue('terms_of_use', '');
+    $policyCookies = \App\Models\Setting::getValue('cookie_policy', '');
     $phoneHref = preg_replace('/[^0-9\+]/', '', (string) $contactPhone);
     $isEmbeddableMapUrl = str_contains($mapEmbedUrl, 'output=embed') || str_contains($mapEmbedUrl, '/maps/embed');
     $resolvedMapEmbedUrl = $isEmbeddableMapUrl
@@ -585,7 +590,7 @@
                 <p class="text-sm font-semibold text-white">Yasal Bilgilendirme</p>
                 <p class="text-xs text-slate-300">Politika ve kullanım metinlerini buradan açabilirsiniz.</p>
             </div>
-            <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
                 <button
                     type="button"
                     data-policy-open="privacy"
@@ -606,6 +611,13 @@
                     class="rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
                 >
                     Çerez Politikası
+                </button>
+                <button
+                    type="button"
+                    data-policy-open="clarification"
+                    class="rounded-lg bg-white/10 px-3 py-2 text-left text-xs font-medium text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Aydınlatma Metni
                 </button>
                 <button
                     type="button"
@@ -681,37 +693,64 @@
 <template id="policy-template-privacy">
     <div class="space-y-3">
         <h3 class="text-base font-semibold text-slate-900">Gizlilik Politikası</h3>
-        <p>Bu metin, Boya Etkinlik platformunda kişisel verilerin nasıl toplandığını, işlendiğini ve korunduğunu açıklar.</p>
-        <p>Ad, soyad, e-posta ve temel kullanım verileri; hizmetin sunulması, güvenlik ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebilir.</p>
-        <p>Sitede çerezler; oturum yönetimi, performans takibi ve kullanıcı deneyimi için kullanılabilir. Üçüncü taraf servisler (Google Analytics ve Google AdSense gibi) kendi politikaları kapsamında veri işleyebilir.</p>
-        <p>Kullanıcılar, yürürlükteki mevzuat kapsamında verilerine ilişkin bilgi talep etme, düzeltme veya silme gibi haklara sahiptir.</p>
+        @if(trim((string) $policyPrivacy) !== '')
+            <div class="prose prose-slate max-w-none text-sm leading-7">{!! nl2br(e($policyPrivacy)) !!}</div>
+        @else
+            <p>Bu metin, Boya Etkinlik platformunda kişisel verilerin nasıl toplandığını, işlendiğini ve korunduğunu açıklar.</p>
+            <p>Ad, soyad, e-posta ve temel kullanım verileri; hizmetin sunulması, güvenlik ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebilir.</p>
+            <p>Sitede çerezler; oturum yönetimi, performans takibi ve kullanıcı deneyimi için kullanılabilir. Üçüncü taraf servisler (Google Analytics ve Google AdSense gibi) kendi politikaları kapsamında veri işleyebilir.</p>
+            <p>Kullanıcılar, yürürlükteki mevzuat kapsamında verilerine ilişkin bilgi talep etme, düzeltme veya silme gibi haklara sahiptir.</p>
+        @endif
     </div>
 </template>
 
 <template id="policy-template-terms">
     <div class="space-y-3">
         <h3 class="text-base font-semibold text-slate-900">Kullanım Koşulları</h3>
-        <p>Boya Etkinlik platformunu kullanan tüm ziyaretçiler ve üyeler bu koşulları kabul etmiş sayılır.</p>
-        <p>Platformda sunulan içerikler bilgilendirme ve eğitim amaçlıdır. Site yönetimi hizmet kapsamını güncelleme veya değiştirme hakkını saklı tutar.</p>
-        <p>Site içeriklerinin izinsiz çoğaltılması, dağıtılması veya ticari amaçla kullanılması yasaktır. Telif hakları saklıdır.</p>
-        <p>Kullanıcı tarafından yüklenen içeriklerde hukuki sorumluluk içeriği yükleyen kişiye aittir; ihlal şüphesi bulunan içerikler kaldırılabilir.</p>
+        @if(trim((string) $policyTerms) !== '')
+            <div class="prose prose-slate max-w-none text-sm leading-7">{!! nl2br(e($policyTerms)) !!}</div>
+        @else
+            <p>Boya Etkinlik platformunu kullanan tüm ziyaretçiler ve üyeler bu koşulları kabul etmiş sayılır.</p>
+            <p>Platformda sunulan içerikler bilgilendirme ve eğitim amaçlıdır. Site yönetimi hizmet kapsamını güncelleme veya değiştirme hakkını saklı tutar.</p>
+            <p>Site içeriklerinin izinsiz çoğaltılması, dağıtılması veya ticari amaçla kullanılması yasaktır. Telif hakları saklıdır.</p>
+            <p>Kullanıcı tarafından yüklenen içeriklerde hukuki sorumluluk içeriği yükleyen kişiye aittir; ihlal şüphesi bulunan içerikler kaldırılabilir.</p>
+        @endif
     </div>
 </template>
 
 <template id="policy-template-cookies">
     <div class="space-y-3">
         <h3 class="text-base font-semibold text-slate-900">Çerez Politikası</h3>
-        <p>Çerezler, ziyaret ettiğiniz web siteleri tarafından tarayıcınıza kaydedilen küçük metin dosyalarıdır.</p>
-        <p>Zorunlu çerezler site fonksiyonları için gereklidir. Analitik çerezler kullanım alışkanlıklarını anlamaya yardımcı olur. Reklam çerezleri ilgi alanına uygun reklam gösterimi için kullanılabilir.</p>
-        <p>Çerez tercihlerinizi tarayıcı ayarlarınızdan yönetebilir, engelleyebilir veya silebilirsiniz. Bazı çerezlerin devre dışı bırakılması belirli özelliklerin çalışmasını etkileyebilir.</p>
+        @if(trim((string) $policyCookies) !== '')
+            <div class="prose prose-slate max-w-none text-sm leading-7">{!! nl2br(e($policyCookies)) !!}</div>
+        @else
+            <p>Çerezler, ziyaret ettiğiniz web siteleri tarafından tarayıcınıza kaydedilen küçük metin dosyalarıdır.</p>
+            <p>Zorunlu çerezler site fonksiyonları için gereklidir. Analitik çerezler kullanım alışkanlıklarını anlamaya yardımcı olur. Reklam çerezleri ilgi alanına uygun reklam gösterimi için kullanılabilir.</p>
+            <p>Çerez tercihlerinizi tarayıcı ayarlarınızdan yönetebilir, engelleyebilir veya silebilirsiniz. Bazı çerezlerin devre dışı bırakılması belirli özelliklerin çalışmasını etkileyebilir.</p>
+        @endif
+    </div>
+</template>
+<template id="policy-template-clarification">
+    <div class="space-y-3">
+        <h3 class="text-base font-semibold text-slate-900">Aydınlatma Metni</h3>
+        @if(trim((string) $policyClarification) !== '')
+            <div class="prose prose-slate max-w-none text-sm leading-7">{!! nl2br(e($policyClarification)) !!}</div>
+        @else
+            <p>Bu aydınlatma metni, kişisel verilerinizin hangi amaçlarla işlendiği, hangi yöntemle toplandığı ve haklarınız hakkında genel bilgilendirme sunar.</p>
+            <p>Detaylı veri işleme süreçleri için Gizlilik Politikası metnini de inceleyebilirsiniz.</p>
+        @endif
     </div>
 </template>
 <template id="policy-template-about">
     <div class="space-y-3">
         <h3 class="text-base font-semibold text-slate-900">Hakkımızda</h3>
-        <p>Boya Etkinlik; çocuklar, aileler ve eğitimciler için güvenli, anlaşılır ve kaliteli boyama içerikleri sunmak amacıyla hazırlanmış bir platformdur.</p>
-        <p>Amacımız, yaş ve seviyeye uygun içerikleri düzenli bir yapıda sunarak eğlenceli ve öğretici bir deneyim sağlamaktır.</p>
-        <p>İçeriklerde aile ve çocuk güvenliği önceliklidir. Uygunsuz içeriklere yer verilmez, kullanıcı deneyimini bozabilecek uygulamalardan kaçınılır.</p>
+        @if(trim((string) $policyAbout) !== '')
+            <div class="prose prose-slate max-w-none text-sm leading-7">{!! nl2br(e($policyAbout)) !!}</div>
+        @else
+            <p>Boya Etkinlik; çocuklar, aileler ve eğitimciler için güvenli, anlaşılır ve kaliteli boyama içerikleri sunmak amacıyla hazırlanmış bir platformdur.</p>
+            <p>Amacımız, yaş ve seviyeye uygun içerikleri düzenli bir yapıda sunarak eğlenceli ve öğretici bir deneyim sağlamaktır.</p>
+            <p>İçeriklerde aile ve çocuk güvenliği önceliklidir. Uygunsuz içeriklere yer verilmez, kullanıcı deneyimini bozabilecek uygulamalardan kaçınılır.</p>
+        @endif
     </div>
 </template>
 
@@ -977,6 +1016,7 @@
             privacy: 'Gizlilik Politikası',
             terms: 'Kullanım Koşulları',
             cookies: 'Çerez Politikası',
+            clarification: 'Aydınlatma Metni',
             about: 'Hakkımızda'
         };
 

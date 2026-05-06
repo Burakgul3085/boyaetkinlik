@@ -38,7 +38,32 @@
                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
             @enderror
         </div>
-        <textarea name="about" rows="4" class="input-ui" placeholder="Hakkımızda">{{ $settings['about'] ?? '' }}</textarea>
+        <div class="rounded-xl border border-slate-200 p-4">
+            <h2 class="mb-1 text-lg font-semibold text-slate-900">Yasal Metinler Yönetimi</h2>
+            <p class="mb-3 text-xs text-slate-500">Tek bölümden Hakkımızda, Gizlilik Politikası, Aydınlatma Metni, Kullanım Koşulları ve Çerez Politikası içeriklerini güncelleyebilirsiniz.</p>
+            <div class="grid gap-3 md:grid-cols-2">
+                <label class="block text-xs font-medium text-slate-600 md:col-span-2">
+                    Hakkımızda
+                    <textarea name="about" rows="4" class="input-ui mt-1" placeholder="Hakkımızda metni">{{ $settings['about'] ?? '' }}</textarea>
+                </label>
+                <label class="block text-xs font-medium text-slate-600 md:col-span-2">
+                    Gizlilik Politikası
+                    <textarea name="privacy_policy" rows="5" class="input-ui mt-1" placeholder="Gizlilik politikası metni">{{ $settings['privacy_policy'] ?? '' }}</textarea>
+                </label>
+                <label class="block text-xs font-medium text-slate-600 md:col-span-2">
+                    Aydınlatma Metni
+                    <textarea name="clarification_text" rows="5" class="input-ui mt-1" placeholder="KVKK aydınlatma metni">{{ $settings['clarification_text'] ?? '' }}</textarea>
+                </label>
+                <label class="block text-xs font-medium text-slate-600 md:col-span-2">
+                    Kullanım Koşulları
+                    <textarea name="terms_of_use" rows="5" class="input-ui mt-1" placeholder="Kullanım koşulları metni">{{ $settings['terms_of_use'] ?? '' }}</textarea>
+                </label>
+                <label class="block text-xs font-medium text-slate-600 md:col-span-2">
+                    Çerez Politikası
+                    <textarea name="cookie_policy" rows="5" class="input-ui mt-1" placeholder="Çerez politikası metni">{{ $settings['cookie_policy'] ?? '' }}</textarea>
+                </label>
+            </div>
+        </div>
         <div class="grid gap-3 md:grid-cols-2">
             <input name="contact_phone" value="{{ $settings['contact_phone'] ?? '' }}" class="input-ui" placeholder="İletişim telefonu (örn: +90 555 123 45 67)">
             <input type="email" name="contact_email" value="{{ $settings['contact_email'] ?? '' }}" class="input-ui" placeholder="İletişim e-posta (örn: info@alanadi.com)">

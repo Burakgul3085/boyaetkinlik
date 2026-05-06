@@ -21,6 +21,10 @@ class SettingController extends Controller
         $data = $request->validate([
             'header_site_name' => ['nullable', 'string', 'max:120'],
             'about' => ['nullable', 'string'],
+            'privacy_policy' => ['nullable', 'string'],
+            'clarification_text' => ['nullable', 'string'],
+            'terms_of_use' => ['nullable', 'string'],
+            'cookie_policy' => ['nullable', 'string'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'contact_email' => ['nullable', 'email', 'max:255'],
             'contact_address' => ['nullable', 'string', 'max:500'],
