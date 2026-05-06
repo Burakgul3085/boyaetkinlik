@@ -578,7 +578,9 @@
         </div>
         </div>
 
-        <div class="mt-4 rounded-2xl border border-white/25 bg-gradient-to-r from-indigo-900/40 via-violet-900/30 to-fuchsia-900/30 p-4">
+        <div class="my-4 h-px w-full bg-white/25"></div>
+
+        <div class="rounded-2xl border border-white/25 bg-gradient-to-r from-indigo-900/40 via-violet-900/30 to-fuchsia-900/30 p-4">
             <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <p class="text-sm font-semibold text-white">Yasal Bilgilendirme</p>
                 <p class="text-xs text-slate-300">Politika ve kullanım metinlerini buradan açabilirsiniz.</p>
