@@ -130,7 +130,7 @@
                 </div>
 
                 <div class="mt-4">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Kategori ve Alt Kategori Eşleşmeleri</p>
+                    <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Kategori ve Alt Kategori Eşleşmeleri</h3>
                     <div class="grid gap-3 md:grid-cols-2">
                         @forelse($searchCategoryMatches as $matchedCategory)
                             @php
@@ -165,7 +165,7 @@
                 </div>
 
                 <div class="mt-5">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Boyama Sayfaları Eşleşmeleri</p>
+                    <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Boyama Sayfaları Eşleşmeleri</h3>
                     <div class="grid gap-3 sm:grid-cols-2">
                         @forelse($searchPageMatches as $matchedPage)
                             <a href="{{ route('products.show', $matchedPage) }}" class="group rounded-2xl border border-slate-200 bg-white p-3 transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md">

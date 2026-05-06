@@ -104,7 +104,7 @@
     <x-public-ad-rail>
     <div id="category-live-area">
         <div class="mt-6 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2" aria-label="İçerik görünüm filtreleri">
                 <a
                     href="{{ route('categories.show', ['slug' => $category->slug, 'mode' => 'all', 'q' => $activeFilters['q'], 'pricing' => $activeFilters['pricing'], 'date_from' => $activeFilters['date_from'], 'date_to' => $activeFilters['date_to'], 'sort' => $activeFilters['sort']]) }}"
                     class="js-live-filter-link {{ $activeFilters['mode'] === 'all' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700' }} rounded-full px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
@@ -173,12 +173,12 @@
             </form>
         </div>
 
-        <div class="mt-6">
+        <section class="mt-6" aria-label="Kategori içerik listesi">
             <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <h2 class="min-w-0 break-words text-xl font-bold text-slate-900 sm:text-2xl">Boyama Sayfaları</h2>
                 <span class="w-fit shrink-0 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">{{ $coloringPages->total() }} içerik</span>
             </div>
-        </div>
+        </section>
 
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @forelse($coloringPages as $page)
@@ -191,7 +191,7 @@
                         onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Boya%20Sayfas%C4%B1';"
                     >
                     <div class="mt-3 flex items-start justify-between gap-2">
-                        <p class="font-semibold text-slate-900">{{ $page->title }}</p>
+                        <h3 class="font-semibold text-slate-900">{{ $page->title }}</h3>
                         <span class="rounded-md bg-violet-50 px-2 py-0.5 text-[11px] text-violet-700 group-hover:bg-violet-100">Detay</span>
                     </div>
                     <p class="text-sm font-medium {{ $page->is_free ? 'text-emerald-600' : 'text-violet-600' }}">

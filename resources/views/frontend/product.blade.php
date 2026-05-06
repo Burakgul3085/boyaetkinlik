@@ -11,7 +11,7 @@
                 <img
                     src="{{ route('products.preview-image', $coloringPage) }}"
                     class="w-full rounded-xl object-cover"
-                    alt="{{ $coloringPage->title }}"
+                    alt="{{ $coloringPage->title }} boyama sayfası önizleme görseli"
                     draggable="false"
                     onerror="this.onerror=null;this.src='https://placehold.co/900x600/e2e8f0/334155?text=Boya+Onizleme';"
                 >
@@ -48,8 +48,9 @@
             </div>
             </div>
 
-            <div class="min-w-0 lg:col-span-4 card p-5" x-data="{ verificationInfoOpen: false }">
-                <p class="text-sm text-slate-500">Kategori: {{ $coloringPage->category?->name ?? 'Kategorisiz' }}</p>
+            <aside class="min-w-0 lg:col-span-4 card p-5" x-data="{ verificationInfoOpen: false }" aria-label="Ürün satın alma ve indirme paneli">
+                <h2 class="text-sm font-semibold text-slate-700">Satın Alma ve İndirme</h2>
+                <p class="mt-1 text-sm text-slate-500">Kategori: {{ $coloringPage->category?->name ?? 'Kategorisiz' }}</p>
                 <p class="mt-3 text-2xl font-bold {{ $coloringPage->is_free ? 'text-emerald-600' : 'text-indigo-600' }}">
                     {{ $coloringPage->is_free ? 'Ücretsiz' : number_format($coloringPage->price, 2).' TL' }}
                 </p>
@@ -190,7 +191,7 @@
                         @endif
                     @endauth
                 @endif
-            </div>
+            </aside>
         </div>
 
         @if($coloringPage->is_free)
@@ -212,7 +213,7 @@
                     </button>
                     <img
                         src="{{ route('products.preview-image', $coloringPage) }}"
-                        alt="{{ $coloringPage->title }} büyük önizleme"
+                        alt="{{ $coloringPage->title }} boyama sayfası büyük önizleme görseli"
                         class="max-h-[85vh] w-full rounded-2xl border border-slate-700 bg-white object-contain shadow-2xl"
                         draggable="false"
                     >
@@ -269,7 +270,7 @@
                     + 'html,body{margin:0;padding:0;background:#fff;}'
                     + 'img{display:block;width:100%;height:100vh;object-fit:contain;}'
                     + '</style></head><body>'
-                    + '<img src="' + url + '" />'
+                    + '<img src="' + url + '" alt="Yazdirilacak boyama sayfasi gorseli" />'
                     + '<scr' + 'ipt>'
                     + 'document.querySelector("img").onload=function(){'
                     + '  window.focus();window.print();'

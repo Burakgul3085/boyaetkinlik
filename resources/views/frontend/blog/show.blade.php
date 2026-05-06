@@ -56,10 +56,12 @@
                 </div>
                 <div class="mt-4 grid gap-3 md:grid-cols-2">
                     @foreach($recentBlogs as $recentBlog)
-                        <a href="{{ route('blog.show', $recentBlog) }}" class="group rounded-xl border border-violet-100 bg-violet-50/50 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-100/70 hover:shadow-sm">
-                            <p class="line-clamp-1 text-sm font-semibold text-slate-900 transition-colors duration-300 group-hover:text-violet-900">{{ $recentBlog->title }}</p>
-                            <p class="mt-1 line-clamp-2 text-xs text-slate-600 transition-colors duration-300 group-hover:text-slate-700">{{ $recentBlog->excerpt }}</p>
-                        </a>
+                        <article>
+                            <a href="{{ route('blog.show', $recentBlog) }}" class="group block rounded-xl border border-violet-100 bg-violet-50/50 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-100/70 hover:shadow-sm">
+                                <h3 class="line-clamp-1 text-sm font-semibold text-slate-900 transition-colors duration-300 group-hover:text-violet-900">{{ $recentBlog->title }}</h3>
+                                <p class="mt-1 line-clamp-2 text-xs text-slate-600 transition-colors duration-300 group-hover:text-slate-700">{{ $recentBlog->excerpt }}</p>
+                            </a>
+                        </article>
                     @endforeach
                 </div>
             </section>

@@ -121,7 +121,7 @@
                     + 'html,body{margin:0;padding:0;background:#fff;}'
                     + 'img{display:block;width:100%;height:100vh;object-fit:contain;}'
                     + '</style></head><body>'
-                    + '<img src="' + url + '" />'
+                    + '<img src="' + url + '" alt="Yazdirilacak satin alinmis boyama dosyasi gorseli" />'
                     + '<scr' + 'ipt>'
                     + 'document.querySelector("img").onload=function(){'
                     + '  window.focus();window.print();'
