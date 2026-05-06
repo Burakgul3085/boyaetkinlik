@@ -42,6 +42,10 @@ Route::any('/admin', fn () => abort(404));
 Route::any('/admin/{any}', fn () => abort(404))->where('any', '.*');
 Route::get('/kategoriler/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/iletisim', [ContactController::class, 'show'])->name('contact.show');
+Route::view('/hakkimizda', 'frontend.hakkimizda')->name('about');
+Route::view('/gizlilik-politikasi', 'frontend.gizlilik-politikasi')->name('privacy');
+Route::view('/kullanim-kosullari', 'frontend.kullanim-kosullari')->name('terms');
+Route::view('/cerez-politikasi', 'frontend.cerez-politikasi')->name('cookies');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/yaz', [BlogController::class, 'create'])->name('blog.create');
 Route::post('/blog/yaz', [BlogController::class, 'store'])

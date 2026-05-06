@@ -140,6 +140,7 @@
     }
 
     $menuItems->push(['label' => 'Blog', 'url' => '/blog', 'children' => []]);
+    $menuItems->push(['label' => 'Hakkımızda', 'url' => '/hakkimizda', 'children' => []]);
 
     if ($hasContact) {
         $contactItem = $links->first(fn ($item) => $item['url'] === '/iletisim');
@@ -491,6 +492,24 @@
                         </a>
                     @endif
                 @endforeach
+                <a
+                    href="{{ route('privacy') }}"
+                    class="block rounded-lg bg-white/10 px-3 py-2 text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Gizlilik Politikası
+                </a>
+                <a
+                    href="{{ route('terms') }}"
+                    class="block rounded-lg bg-white/10 px-3 py-2 text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Kullanım Koşulları
+                </a>
+                <a
+                    href="{{ route('cookies') }}"
+                    class="block rounded-lg bg-white/10 px-3 py-2 text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Çerez Politikası
+                </a>
             </div>
         </div>
 
