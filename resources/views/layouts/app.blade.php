@@ -140,7 +140,6 @@
     }
 
     $menuItems->push(['label' => 'Blog', 'url' => '/blog', 'children' => []]);
-    $menuItems->push(['label' => 'Hakkımızda', 'url' => '/hakkimizda', 'children' => []]);
 
     if ($hasContact) {
         $contactItem = $links->first(fn ($item) => $item['url'] === '/iletisim');
@@ -513,6 +512,13 @@
                 >
                     Çerez Politikası
                 </button>
+                <button
+                    type="button"
+                    data-policy-open="about"
+                    class="block w-full rounded-lg bg-white/10 px-3 py-2 text-left text-slate-100 transition hover:bg-white/20 hover:text-white"
+                >
+                    Hakkımızda
+                </button>
             </div>
         </div>
 
@@ -680,6 +686,14 @@
         <p>Çerezler, ziyaret ettiğiniz web siteleri tarafından tarayıcınıza kaydedilen küçük metin dosyalarıdır.</p>
         <p>Zorunlu çerezler site fonksiyonları için gereklidir. Analitik çerezler kullanım alışkanlıklarını anlamaya yardımcı olur. Reklam çerezleri ilgi alanına uygun reklam gösterimi için kullanılabilir.</p>
         <p>Çerez tercihlerinizi tarayıcı ayarlarınızdan yönetebilir, engelleyebilir veya silebilirsiniz. Bazı çerezlerin devre dışı bırakılması belirli özelliklerin çalışmasını etkileyebilir.</p>
+    </div>
+</template>
+<template id="policy-template-about">
+    <div class="space-y-3">
+        <h3 class="text-base font-semibold text-slate-900">Hakkımızda</h3>
+        <p>Boya Etkinlik; çocuklar, aileler ve eğitimciler için güvenli, anlaşılır ve kaliteli boyama içerikleri sunmak amacıyla hazırlanmış bir platformdur.</p>
+        <p>Amacımız, yaş ve seviyeye uygun içerikleri düzenli bir yapıda sunarak eğlenceli ve öğretici bir deneyim sağlamaktır.</p>
+        <p>İçeriklerde aile ve çocuk güvenliği önceliklidir. Uygunsuz içeriklere yer verilmez, kullanıcı deneyimini bozabilecek uygulamalardan kaçınılır.</p>
     </div>
 </template>
 
@@ -944,7 +958,8 @@
         var labels = {
             privacy: 'Gizlilik Politikası',
             terms: 'Kullanım Koşulları',
-            cookies: 'Çerez Politikası'
+            cookies: 'Çerez Politikası',
+            about: 'Hakkımızda'
         };
 
         function openPolicy(type) {
