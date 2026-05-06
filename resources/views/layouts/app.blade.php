@@ -119,6 +119,20 @@
             return null;
         }
 
+        $lowerUrl = strtolower($url);
+        // Ölü/geçersiz menü bağlantılarını baştan ele.
+        if ($url === '#' || str_starts_with($lowerUrl, 'javascript:')) {
+            return null;
+        }
+
+        $isAbsolute = str_starts_with($lowerUrl, 'http://')
+            || str_starts_with($lowerUrl, 'https://')
+            || str_starts_with($lowerUrl, 'mailto:')
+            || str_starts_with($lowerUrl, 'tel:');
+        if (! $isAbsolute && ! str_starts_with($url, '/')) {
+            $url = '/'.$url;
+        }
+
         if (strtolower($label) === 'admin') {
             return null;
         }
