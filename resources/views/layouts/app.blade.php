@@ -647,10 +647,17 @@
     </div>
 </footer>
 
-<div id="policy-modal" class="fixed inset-0 z-[10000] hidden p-4 sm:p-6" aria-hidden="true">
-    <div data-policy-close class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>
-    <div class="relative mx-auto mt-[6vh] w-full max-w-2xl">
-        <div class="max-h-[86vh] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.35)]">
+<div
+    id="policy-modal"
+    class="fixed inset-0 z-[10000] hidden items-center justify-center p-4 sm:p-6"
+    aria-hidden="true"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="policy-modal-title"
+>
+    <div data-policy-close class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"></div>
+    <div class="relative w-full max-w-2xl">
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(2,6,23,0.55)]">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
                 <h2 id="policy-modal-title" class="text-lg font-semibold text-slate-900">Politika</h2>
                 <button
@@ -662,7 +669,7 @@
                     ×
                 </button>
             </div>
-            <div id="policy-modal-body" class="max-h-[calc(86vh-4.25rem)] overflow-y-auto px-5 py-4 text-sm leading-7 text-slate-700"></div>
+            <div id="policy-modal-body" class="max-h-[75vh] overflow-y-auto px-5 py-4 text-sm leading-7 text-slate-700"></div>
         </div>
     </div>
 </div>
