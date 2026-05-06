@@ -492,24 +492,27 @@
                         </a>
                     @endif
                 @endforeach
-                <a
-                    href="{{ route('privacy') }}"
-                    class="block rounded-lg bg-white/10 px-3 py-2 text-slate-100 transition hover:bg-white/20 hover:text-white"
+                <button
+                    type="button"
+                    data-policy-open="privacy"
+                    class="block w-full rounded-lg bg-white/10 px-3 py-2 text-left text-slate-100 transition hover:bg-white/20 hover:text-white"
                 >
                     Gizlilik Politikası
-                </a>
-                <a
-                    href="{{ route('terms') }}"
-                    class="block rounded-lg bg-white/10 px-3 py-2 text-slate-100 transition hover:bg-white/20 hover:text-white"
+                </button>
+                <button
+                    type="button"
+                    data-policy-open="terms"
+                    class="block w-full rounded-lg bg-white/10 px-3 py-2 text-left text-slate-100 transition hover:bg-white/20 hover:text-white"
                 >
                     Kullanım Koşulları
-                </a>
-                <a
-                    href="{{ route('cookies') }}"
-                    class="block rounded-lg bg-white/10 px-3 py-2 text-slate-100 transition hover:bg-white/20 hover:text-white"
+                </button>
+                <button
+                    type="button"
+                    data-policy-open="cookies"
+                    class="block w-full rounded-lg bg-white/10 px-3 py-2 text-left text-slate-100 transition hover:bg-white/20 hover:text-white"
                 >
                     Çerez Politikası
-                </a>
+                </button>
             </div>
         </div>
 
@@ -630,6 +633,55 @@
         </div>
     </div>
 </footer>
+
+<div id="policy-modal" class="fixed inset-0 z-[10000] hidden" aria-hidden="true">
+    <div data-policy-close class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"></div>
+    <div class="relative mx-auto mt-[8vh] w-[min(92vw,860px)]">
+        <div class="max-h-[84vh] overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-violet-100 bg-violet-50/70 px-5 py-3">
+                <h2 id="policy-modal-title" class="text-lg font-bold text-slate-900">Politika</h2>
+                <button
+                    type="button"
+                    data-policy-close
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:bg-violet-50"
+                    aria-label="Kapat"
+                >
+                    ×
+                </button>
+            </div>
+            <div id="policy-modal-body" class="max-h-[calc(84vh-4rem)] overflow-y-auto px-5 py-4 text-sm leading-relaxed text-slate-700"></div>
+        </div>
+    </div>
+</div>
+
+<template id="policy-template-privacy">
+    <div class="space-y-3">
+        <h3 class="text-base font-semibold text-slate-900">Gizlilik Politikası</h3>
+        <p>Bu metin, Boya Etkinlik platformunda kişisel verilerin nasıl toplandığını, işlendiğini ve korunduğunu açıklar.</p>
+        <p>Ad, soyad, e-posta ve temel kullanım verileri; hizmetin sunulması, güvenlik ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebilir.</p>
+        <p>Sitede çerezler; oturum yönetimi, performans takibi ve kullanıcı deneyimi için kullanılabilir. Üçüncü taraf servisler (Google Analytics ve Google AdSense gibi) kendi politikaları kapsamında veri işleyebilir.</p>
+        <p>Kullanıcılar, yürürlükteki mevzuat kapsamında verilerine ilişkin bilgi talep etme, düzeltme veya silme gibi haklara sahiptir.</p>
+    </div>
+</template>
+
+<template id="policy-template-terms">
+    <div class="space-y-3">
+        <h3 class="text-base font-semibold text-slate-900">Kullanım Koşulları</h3>
+        <p>Boya Etkinlik platformunu kullanan tüm ziyaretçiler ve üyeler bu koşulları kabul etmiş sayılır.</p>
+        <p>Platformda sunulan içerikler bilgilendirme ve eğitim amaçlıdır. Site yönetimi hizmet kapsamını güncelleme veya değiştirme hakkını saklı tutar.</p>
+        <p>Site içeriklerinin izinsiz çoğaltılması, dağıtılması veya ticari amaçla kullanılması yasaktır. Telif hakları saklıdır.</p>
+        <p>Kullanıcı tarafından yüklenen içeriklerde hukuki sorumluluk içeriği yükleyen kişiye aittir; ihlal şüphesi bulunan içerikler kaldırılabilir.</p>
+    </div>
+</template>
+
+<template id="policy-template-cookies">
+    <div class="space-y-3">
+        <h3 class="text-base font-semibold text-slate-900">Çerez Politikası</h3>
+        <p>Çerezler, ziyaret ettiğiniz web siteleri tarafından tarayıcınıza kaydedilen küçük metin dosyalarıdır.</p>
+        <p>Zorunlu çerezler site fonksiyonları için gereklidir. Analitik çerezler kullanım alışkanlıklarını anlamaya yardımcı olur. Reklam çerezleri ilgi alanına uygun reklam gösterimi için kullanılabilir.</p>
+        <p>Çerez tercihlerinizi tarayıcı ayarlarınızdan yönetebilir, engelleyebilir veya silebilirsiniz. Bazı çerezlerin devre dışı bırakılması belirli özelliklerin çalışmasını etkileyebilir.</p>
+    </div>
+</template>
 
 <script>
     // Sayfa genelinde sürüklemeyi kapat (görsel/link dahil).
@@ -878,6 +930,58 @@
         applyThemeButtonLabel();
         initAdsByGoogle(document);
         initAnimatedCounters(document);
+    })();
+</script>
+<script>
+    (function () {
+        var modal = document.getElementById('policy-modal');
+        if (!modal) return;
+
+        var titleEl = document.getElementById('policy-modal-title');
+        var bodyEl = document.getElementById('policy-modal-body');
+        var openButtons = document.querySelectorAll('[data-policy-open]');
+        var closeButtons = modal.querySelectorAll('[data-policy-close]');
+        var labels = {
+            privacy: 'Gizlilik Politikası',
+            terms: 'Kullanım Koşulları',
+            cookies: 'Çerez Politikası'
+        };
+
+        function openPolicy(type) {
+            var template = document.getElementById('policy-template-' + type);
+            if (!template) return;
+
+            titleEl.textContent = labels[type] || 'Politika';
+            bodyEl.innerHTML = template.innerHTML;
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+            document.documentElement.classList.add('overflow-hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closePolicy() {
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+            bodyEl.innerHTML = '';
+            document.documentElement.classList.remove('overflow-hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        openButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                openPolicy(button.getAttribute('data-policy-open'));
+            });
+        });
+
+        closeButtons.forEach(function (button) {
+            button.addEventListener('click', closePolicy);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+                closePolicy();
+            }
+        });
     })();
 </script>
 </body>
