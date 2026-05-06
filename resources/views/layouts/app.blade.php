@@ -576,10 +576,13 @@
                 </button>
             </form>
         </div>
+        </div>
 
-        <div class="rounded-2xl border border-white/25 bg-gradient-to-r from-white/15 to-white/5 p-4 lg:col-span-12">
-            <p class="text-sm font-semibold text-white">Yasal Bilgilendirme</p>
-            <p class="mt-1 text-xs text-slate-300">Politika ve kullanım metinlerini buradan açabilirsiniz.</p>
+        <div class="mt-4 rounded-2xl border border-white/25 bg-gradient-to-r from-indigo-900/40 via-violet-900/30 to-fuchsia-900/30 p-4">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-sm font-semibold text-white">Yasal Bilgilendirme</p>
+                <p class="text-xs text-slate-300">Politika ve kullanım metinlerini buradan açabilirsiniz.</p>
+            </div>
             <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 <button
                     type="button"
@@ -610,7 +613,6 @@
                     Hakkımızda
                 </button>
             </div>
-        </div>
         </div>
     </div>
     <div class="border-t border-white/20">
