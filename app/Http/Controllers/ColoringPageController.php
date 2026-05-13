@@ -194,8 +194,8 @@ HTML;
 
     public function previewImage(ColoringPage $coloringPage): StreamedResponse
     {
-        // Güvenlik: Asıl indirilebilir ana dosyayı (pdf_path) bu endpointten asla servis etmeyelim.
-        // Kapak görseli (cover_image_path) ücretli/ücretsiz aynı şekilde orijinal dosya olarak verilir; filigran yok.
+        // Güvenlik: Asıl indirilebilir dosyayı (pdf/png/jpg/jpeg) preview endpointinden asla servis etmeyelim.
+        // Yalnızca kapak görseli (cover_image_path) servis edilir.
         if (! $coloringPage->cover_image_path) {
             abort(404);
         }
