@@ -1,70 +1,215 @@
-# Boya Etkinlik Platformu (Laravel 11)
+## Proje Adı ve Açıklama
 
-Bu proje, ücretsiz ve ücretli boyama sayfalarının listelendiği, satın alınabildiği ve token bazlı indirilebildiği bir platform iskeletidir.
+Bu proje, kullanıcıların boyama sayfalarına göz atabileceği, indirebileceği (ücretsiz olanları) veya satın alabileceği (ücretli olanları) bir platform sunar. Yönetim paneli üzerinden boyama sayfaları, kategoriler, üyeler ve işlemler gibi birçok farklı öğe yönetilebilir. Amaç, dijital boyama içeriği arayan kullanıcılara zengin bir deneyim sağlamaktır.
+
+## Özellikler
+
+- **Boyama Sayfaları Yönetimi**: Yönetim paneli üzerinden kolayca boyama sayfaları ekleyebilir, düzenleyebilir ve silebilirsiniz.
+- **Kategori Sistemi**: Boyama sayfalarını kategorilere ayırarak düzenli bir yapı oluşturabilirsiniz.
+- **Ücretsiz ve Ücretli İçerikler**: Kullanıcılara hem ücretsiz indirme seçenekleri sunabilir hem de ücretli içeriklerle gelir elde edebilirsiniz.
+- **Shopier Entegrasyonu**: Ücretli boyama sayfaları için Shopier ödeme sistemi entegrasyonu mevcuttur.
+- **E-posta İle Gönderme**: Kullanıcılar ücretsiz boyama sayfalarını doğrudan e-posta adreslerine gönderebilirler.
+- **Kullanıcı ve Üye Yönetimi**: Yönetim panelinden üyeleri ve yetkilerini yönetebilirsiniz.
+- **İşlem Takibi**: Yapılan satın alma işlemlerini ve finansal hareketleri takip edebilirsiniz.
+- **Blog Sistemi**: İçerik pazarlaması için entegre bir blog sistemi bulunur.
+- **Ziyaretçi Geri Bildirimleri**: Kullanıcılardan gelen geri bildirimleri yönetebilirsiniz.
+- **E-posta Abonelikleri**: Bülten aboneliklerini yöneterek kullanıcılarla iletişiminizi sürdürebilirsiniz.
+- **Genel Ayarlar**: Siteye ait çeşitli ayarları (SMTP, uygulama adları vb.) yönetim panelinden yapılandırabilirsiniz.
+- **Reklam Yönetimi**: Reklam alanlarını kontrol edebilirsiniz.
+
+## Teknolojiler
+
+Proje aşağıdaki temel teknolojileri kullanmaktadır:
+
+-   **Backend**: PHP (>=8.2), Laravel (>=11.31)
+-   **Veritabanı**: MySQL, PostgreSQL veya SQLite (Laravel'in desteklediği herhangi biri)
+-   **Frontend**: Tailwind CSS, Alpine.js, Vite
+-   **E-posta Gönderimi**: PHPMailer
+-   **PDF İşleme**: setasign/fpdf
 
 ## Kurulum
 
-1. `cp .env.example .env`
-2. Veritabanı ayarlarını `.env` içinde doldurun.
-3. `php artisan key:generate`
-4. `php artisan migrate --seed`
-5. `npm install && npm run build`
+Bu projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyin:
 
-## Varsayılan Admin
+### Ön Koşullar
 
-- E-posta: `admin@boyaetkinlik.test`
-- Şifre: `12345678`
+Başlamadan önce sisteminizde aşağıdaki yazılımların kurulu olduğundan emin olun:
 
-## Paylaşımlı Hosting Notları
+*   **PHP** (8.2 veya üzeri)
+*   **Composer**
+*   **Node.js** (20.x veya üzeri)
+*   **npm** veya **yarn**
+*   **Veritabanı Sunucusu** (MySQL, PostgreSQL veya SQLite)
+*   **Web Sunucusu** (Nginx veya Apache)
 
-- `APP_ENV=production`, `APP_DEBUG=false`
-- Canlı `.env`: `APP_URL=https://boyaetkinlik.com` (sonunda `/` yok). `http://` veya `www.` yazmayın; yönlendirme `public/.htaccess` ile tek adrese toplanır.
-- Queue ve cache için `database` veya `file` kullanın.
-- Ücretli dosyalar `storage/app/private` altında saklanır ve herkese açık erişim yoktur.
-- Ücretsiz dosyalar `storage/app/public/free-pages` altında saklanır.
+### Adımlar
 
-### `storage:link` çalışmazsa alternatif
+1.  **Depoyu Klonlayın:**
 
-Paylaşımlı hostingte symlink kapalıysa:
+    ```bash
+    git clone https://github.com/Burakgul3085/boyaetkinlik.git
+    cd boyaetkinlik
+    ```
 
-1. `storage/app/public` içeriklerini `public/storage` altına manuel kopyalayın.
-2. Yükleme stratejisini buna göre sabit tutun (deploy betiği ile senkronize edin).
+2.  **Composer Bağımlılıklarını Yükleyin:**
 
-### Hostinger (hPanel) — SSL ve tek adres
+    ```bash
+    composer install
+    ```
 
-1. Sol menüden **Web siteleri** → siteni seç.
-2. **Güvenlik** veya **SSL** bölümünde sertifikayı etkinleştir; mümkünse **“HTTPS’e yönlendir”** / **Force HTTPS** seçeneğini aç (çift yönlendirme genelde sorun çıkarmaz; yine de tarayıcıda `http://` ve `www` adreslerini test et).
-3. **Dosya yöneticisi** ile sunucudaki `public/.htaccess` dosyasının repodaki sürümle güncel olduğundan emin ol (www kaldırma + HTTP→HTTPS kuralları burada).
-4. Proje kökündeki `.env` dosyasında `APP_URL=https://boyaetkinlik.com` olduğunu doğrula, ardından gerekirse **Önbelleği temizle**: `php artisan config:clear` (SSH veya Hostinger **Gelişmiş** → **Terminal**).
-5. Tarayıcıda kontrol: `http://boyaetkinlik.com` ve `https://www.boyaetkinlik.com` adresleri `https://boyaetkinlik.com` adresine **301** ile gitmeli.
-6. Google Search Console’da aynı mülk altında **2–4 hafta** sonra **Performans → Sayfalar** raporunda gösterimlerin çoğunun tek kanonik URL’de toplanmaya başlamasını bekle.
+3.  **.env Dosyasını Yapılandırın:**
 
-**HSTS:** Yalnızca tüm alt yolların HTTPS ile sorunsuz çalıştığından eminsen panelde aç; aksi halde atla.
+    `.env.example` dosyasını `cp .env.example .env` komutu ile kopyalayın ve veritabanı bağlantı bilgilerini, `APP_URL` ve isteğe bağlı olarak `ADMIN_PATH` gibi ayarları düzenleyin.
 
-### Cloudflare (ad sunucuları Cloudflare ise — kanonik: `https://boyaetkinlik.com`)
+    ```dotenv
+    APP_NAME="Boya Etkinlik"
+    APP_ENV=local
+    APP_KEY=
+    APP_DEBUG=true
+    APP_URL=http://localhost:8000
 
-Hostinger **DNS / Yönlendirmeler** bu durumda işe yaramaz; ayarlar Cloudflare’da yapılır. Sayfayı bozmamak için önce SSL’i doğrula, sonra tek kural ekleyip test et.
+    LOG_CHANNEL=stack
+    LOG_DEPRECATIONS_CHANNEL=null
+    LOG_LEVEL=debug
 
-1. [Cloudflare Dashboard](https://dash.cloudflare.com) → **boyaetkinlik.com** → **SSL/TLS** → genel mod **Full (strict)** (origin’de geçerli sertifika varsa). Önce **Full** deneyip site açılıyorsa strict’e geç.
-2. Aynı menüde **Edge Certificates** → **Always Use HTTPS**: **Açık** (HTTP istekleri HTTPS’e döner).
-3. **Rules** → **Redirect Rules** → **Create rule**:
-   - **Rule name:** `www to apex`
-   - **If…:** Alan *Hostname* → *equals* → `www.boyaetkinlik.com`
-   - **Then…:** *Dynamic redirect* → **301** → hedef ifade (Expression / dinamik URL alanına yapıştırın):  
-     `concat("https://boyaetkinlik.com", http.request.uri.path, if(len(http.request.uri.query) > 0, concat("?", http.request.uri.query), ""))`  
-     (Amaç: www’yi kaldırıp yol ve sorgu dizgisini aynen taşımak.)
-4. Kaydet. **Önbelleği** bir kez temizlemek için **Caching** → **Configuration** → **Purge Everything** (isteğe bağlı; sorun olursa yap).
-5. Tarayıcıda gizli sekmede dene: `https://www.boyaetkinlik.com/` → adres çubuğu **`https://boyaetkinlik.com/`** olmalı (301). Ana sayfa ve bir iç sayfa açılıyor mu kontrol et.
-6. Sunucudaki **`.env`**: `APP_URL=https://boyaetkinlik.com` ve güncel `public/.htaccess` deploy edilmiş olsun; sonra `php artisan config:clear`.
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=boyaetkinlik
+    DB_USERNAME=root
+    DB_PASSWORD=
 
-**Döngü / “too many redirects” olursa:** Cloudflare SSL modunu **Full (strict)** yerine **Full** yapın veya geçici olarak **Always Use HTTPS** kapatıp hangi katmanda döngü olduğunu ayırın.
+    BROADCAST_DRIVER=log
+    CACHE_DRIVER=file
+    FILESYSTEM_DISK=local
+    QUEUE_CONNECTION=sync
+    SESSION_DRIVER=file
+    SESSION_LIFETIME=120
 
-## Shopier Notu
+    MEMCACHED_HOST=127.0.0.1
 
-Shopier callback rotası: `POST /shopier/callback`
+    REDIS_HOST=127.0.0.1
+    REDIS_PASSWORD=null
+    REDIS_PORT=6379
 
-Bu iskelette callback geldikten sonra:
+    MAIL_MAILER=smtp
+    MAIL_HOST=mailpit
+    MAIL_PORT=1025
+    MAIL_USERNAME=null
+    MAIL_PASSWORD=null
+    MAIL_ENCRYPTION=null
+    MAIL_FROM_ADDRESS="hello@example.com"
+    MAIL_FROM_NAME="${APP_NAME}"
 
-- ödeme başarılıysa işlem `paid` olur,
-- tek kullanımlık indirme tokeni üretilir,
-- kullanıcıya e-posta ile indirme linki gönderilir.
+    AWS_ACCESS_KEY_ID=
+    AWS_SECRET_ACCESS_KEY=
+    AWS_DEFAULT_REGION=us-east-1
+    AWS_BUCKET=
+    AWS_USE_PATH_STYLE_ENDPOINT=false
+
+    PUSHER_APP_ID=
+    PUSHER_APP_KEY=
+    PUSHER_APP_SECRET=
+    PUSHER_HOST=
+    PUSHER_PORT=443
+    PUSHER_SCHEME=https
+    PUSHER_APP_CLUSTER=mt1
+
+    VITE_APP_NAME="Boya Etkinlik"
+
+    # Yönetim paneli giriş yolu. Güvenlik için değiştirin.
+    ADMIN_PATH=y981
+
+    # Ücretsiz sayfa indirildikten sonra e-posta gönderimi için PHPmailer SMTP ayarları
+    # Bunlar production ortamında yönetim panelinden de yapılandırılabilir.
+    # SMTP_HOST=
+    # SMTP_PORT=587
+    # SMTP_USERNAME=
+    # SMTP_PASSWORD=
+    # SMTP_ENCRYPTION=tls
+    # SMTP_FROM_EMAIL=
+    # SMTP_FROM_NAME="Boya Etkinlik"
+    ```
+
+4.  **Uygulama Anahtarını Oluşturun:**
+
+    ```bash
+    php artisan key:generate
+    ```
+
+5.  **Veritabanını Oluşturun ve Migrasyonları Çalıştırın:**
+
+    `.env` dosyasında yapılandırdığınız veritabanını oluşturun ve ardından migrasyonları çalıştırın:
+
+    ```bash
+    php artisan migrate
+    ```
+
+6.  **Depolama Bağlantısını Oluşturun:**
+
+    ```bash
+    php artisan storage:link
+    ```
+
+7.  **NPM Bağımlılıklarını Yükleyin ve Frontend Assetlerini Derleyin:**
+
+    ```bash
+    npm install
+    npm run build
+    ```
+
+8.  **Uygulamayı Çalıştırın:**
+
+    Geliştirme sunucusunu başlatın:
+
+    ```bash
+    php artisan serve
+    ```
+
+    Tarayıcınızda `http://localhost:8000` adresine giderek uygulamayı görüntüleyebilirsiniz. Yönetim paneli için `.env` dosyasında belirttiğiniz `ADMIN_PATH` (varsayılan `y981`) ile `http://localhost:8000/y981/giris` adresini kullanın.
+
+### Cron Job Ayarı (Laravel Scheduler)
+
+Bazı Laravel görevlerinin (örneğin e-posta gönderimi) düzenli olarak çalışması için bir cron job ayarlamanız gerekebilir. Aşağıdaki komutu `crontab -e` ile ekleyin:
+
+```bash
+* * * * * cd /path/to/your/project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+`/path/to/your/project` kısmını projenizin gerçek yolu ile değiştirmeyi unutmayın.
+
+## Kullanım
+
+### Kullanıcılar İçin
+
+Kullanıcılar, ana sayfadaki kategoriler veya arama çubuğu aracılığıyla boyama sayfalarına göz atabilirler. Ücretsiz sayfaları doğrudan indirebilir veya e-posta adreslerine gönderebilirler. Ücretli sayfalar için Shopier aracılığıyla güvenli bir şekilde satın alma işlemi gerçekleştirebilirler.
+
+### Yöneticiler İçin
+
+Yönetim paneline, `.env` dosyasında tanımlanan `ADMIN_PATH` (varsayılan: `y981`) üzerinden erişilebilir. Örnek: `http://localhost:8000/y981/giris`.
+
+Yönetim panelinde şunları yapabilirsiniz:
+
+*   **Boyama Sayfaları**: Yeni boyama sayfaları ekleyebilir, mevcutları düzenleyebilir veya silebilirsiniz.
+*   **Kategoriler**: Boyama sayfalarını organize etmek için kategoriler oluşturabilir ve yönetebilirsiniz.
+*   **Üyeler**: Kullanıcı hesaplarını görüntüleyebilir, düzenleyebilir veya silebilirsiniz.
+*   **İşlemler**: Yapılan tüm satın alma işlemlerini ve bunların detaylarını takip edebilirsiniz.
+*   **Ayarlar**: SMTP ayarları, site adı gibi genel site ayarlarını yapılandırabilirsiniz.
+*   **Blog**: Yeni blog gönderileri oluşturabilir, yayınlayabilir ve yönetebilirsiniz.
+*   **Geri Bildirimler**: Ziyaretçilerden gelen geri bildirimleri inceleyebilirsiniz.
+*   **Bülten Aboneleri**: E-posta bülteni abonelerini yönetebilirsiniz.
+*   **Satın Alma Doğrulamaları**: Shopier üzerinden yapılan satın alma doğrulamalarını manuel olarak yönetebilirsiniz.
+
+## Katkıda Bulunma
+
+Projeye katkıda bulunmak isterseniz, lütfen aşağıdaki adımları izleyin:
+
+1.  Depoyu forklayın.
+2.  Yeni bir özellik veya hata düzeltmesi için dal (branch) oluşturun (`git checkout -b feature/AmazingFeature`).
+3.  Değişikliklerinizi yapın ve commit edin (`git commit -m 'Add some AmazingFeature'`).
+4.  Dalınızı uzak depoya itin (`git push origin feature/AmazingFeature`).
+5.  Bir Pull Request (Çekme İsteği) açın.
+
+## Lisans
+
+Bu proje MIT Lisansı altında lisanslanmıştır. Daha fazla bilgi için `LICENSE` dosyasına bakınız.
