@@ -13,6 +13,7 @@
                     class="w-full rounded-xl object-cover"
                     alt="{{ $coloringPage->title }} boyama sayfası önizleme görseli"
                     draggable="false"
+                    @if(! $coloringPage->is_free) oncontextmenu="return false" @endif
                     onerror="this.onerror=null;this.src='https://placehold.co/900x600/e2e8f0/334155?text=Boya+Onizleme';"
                 >
 

@@ -11,6 +11,7 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use GdImage;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -195,20 +196,116 @@ HTML;
     public function previewImage(ColoringPage $coloringPage): StreamedResponse
     {
         // Güvenlik: Asıl indirilebilir dosyayı (pdf/png/jpg/jpeg) preview endpointinden asla servis etmeyelim.
-        // Böylece kullanıcı yalnızca "İndir" akışı üzerinden dosyaya ulaşır.
-        if ($coloringPage->cover_image_path) {
-            $coverExt = strtolower((string) pathinfo($coloringPage->cover_image_path, PATHINFO_EXTENSION));
-            $isImageCover = in_array($coverExt, ['png', 'jpg', 'jpeg'], true);
+        // Ücretli kayıtlarda kapak dosyasını doğrudan vermeyelim; sağ tık / URL ile tam kalite sızmaz.
+        if (! $coloringPage->cover_image_path) {
+            abort(404);
+        }
 
-            /** @var FilesystemAdapter $publicDisk */
-            $publicDisk = Storage::disk('public');
+        $coverExt = strtolower((string) pathinfo($coloringPage->cover_image_path, PATHINFO_EXTENSION));
+        $isImageCover = in_array($coverExt, ['png', 'jpg', 'jpeg'], true);
 
-            if ($isImageCover && $publicDisk->exists($coloringPage->cover_image_path)) {
-                return $publicDisk->response($coloringPage->cover_image_path);
+        /** @var FilesystemAdapter $publicDisk */
+        $publicDisk = Storage::disk('public');
+
+        if (! $isImageCover || ! $publicDisk->exists($coloringPage->cover_image_path)) {
+            abort(404);
+        }
+
+        if ($coloringPage->is_free) {
+            return $publicDisk->response($coloringPage->cover_image_path);
+        }
+
+        if (! extension_loaded('gd') || ! function_exists('imagejpeg')) {
+            abort(503, 'Ücretli önizleme şu an oluşturulamıyor (sunucu GD/JPEG desteği).');
+        }
+
+        $absolutePath = $publicDisk->path($coloringPage->cover_image_path);
+        $paidPreview = $this->streamPaidCoverPreviewJpeg($absolutePath, $coverExt);
+        if ($paidPreview === null) {
+            abort(503, 'Ücretli önizleme oluşturulamadı.');
+        }
+
+        return $paidPreview;
+    }
+
+    /**
+     * Ücretli ürün kapak önizlemesi: küçültülmüş JPEG + filigran (tam dosya yerine).
+     */
+    private function streamPaidCoverPreviewJpeg(string $absolutePath, string $extension): ?StreamedResponse
+    {
+        $src = $this->gdImageFromFile($absolutePath, $extension);
+        if (! $src instanceof GdImage) {
+            return null;
+        }
+
+        $srcW = imagesx($src);
+        $srcH = imagesy($src);
+        if ($srcW < 1 || $srcH < 1) {
+            imagedestroy($src);
+
+            return null;
+        }
+
+        $maxW = 640;
+        if ($srcW > $maxW) {
+            $dstW = $maxW;
+            $dstH = (int) max(1, round($srcH * ($maxW / $srcW)));
+        } else {
+            $dstW = $srcW;
+            $dstH = $srcH;
+        }
+
+        $dst = imagecreatetruecolor($dstW, $dstH);
+        if ($dst === false) {
+            imagedestroy($src);
+
+            return null;
+        }
+
+        imagealphablending($dst, true);
+        $white = imagecolorallocate($dst, 255, 255, 255);
+        imagefill($dst, 0, 0, $white);
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $dstW, $dstH, $srcW, $srcH);
+        imagedestroy($src);
+
+        $this->drawPaidPreviewWatermark($dst, $dstW, $dstH);
+
+        return response()->stream(function () use ($dst): void {
+            imagejpeg($dst, null, 52);
+            imagedestroy($dst);
+        }, 200, [
+            'Content-Type' => 'image/jpeg',
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
+    }
+
+    private function gdImageFromFile(string $absolutePath, string $extension): GdImage|false
+    {
+        return match ($extension) {
+            'jpg', 'jpeg' => @imagecreatefromjpeg($absolutePath),
+            'png' => @imagecreatefrompng($absolutePath),
+            default => false,
+        };
+    }
+
+    private function drawPaidPreviewWatermark(GdImage $im, int $w, int $h): void
+    {
+        $wmColor = imagecolorallocatealpha($im, 99, 102, 241, 108);
+        $label = ' boyaetkinlik.com ';
+        for ($py = 12; $py < $h; $py += 48) {
+            $offset = ($py % 96) - 40;
+            for ($px = $offset; $px < $w + 120; $px += 130) {
+                imagestring($im, 4, $px, $py, $label, $wmColor);
             }
         }
 
-        abort(404);
+        $barH = (int) max(28, round($h * 0.08));
+        $barY = $h - $barH;
+        $bar = imagecolorallocatealpha($im, 15, 23, 42, 55);
+        imagefilledrectangle($im, 0, $barY, $w, $h, $bar);
+        $fg = imagecolorallocate($im, 248, 250, 252);
+        $msg = 'Ucretli icerik - tam dosya satin alma veya dogrulama sonrasi';
+        imagestring($im, 3, 10, $barY + (int) (($barH - 13) / 2), $msg, $fg);
     }
 
     public function buy(Request $request, ColoringPage $coloringPage)
