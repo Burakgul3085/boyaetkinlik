@@ -29,15 +29,16 @@
                         </span>
                     </button>
                 @else
+                    {{-- Tam ekran karartma yok: çizimi kapatmasın; sadece köşede bilgi --}}
                     <div
-                        class="absolute inset-0 flex items-center justify-center rounded-xl bg-slate-900/35"
-                        aria-label="Ücretli içerik büyütme kapalı"
+                        class="pointer-events-none absolute bottom-2 right-2 z-10 max-w-[calc(100%-1rem)] rounded-full border border-white/30 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold leading-tight text-white shadow-md backdrop-blur-[2px] sm:bottom-3 sm:right-3 sm:px-3 sm:py-1.5 sm:text-xs"
+                        aria-label="Ücretli içerik; önizlemede büyütme kapalı"
                     >
-                        <span class="inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-800 shadow">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <span class="inline-flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0 text-amber-300 sm:h-3.5 sm:w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd" d="M10 1a4 4 0 0 0-4 4v2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1V5a4 4 0 0 0-4-4Zm2 6V5a2 2 0 1 0-4 0v2h4Z" clip-rule="evenodd" />
                             </svg>
-                            Ücretli içerikte büyütme kapalı
+                            <span>Ücretli · büyütme kapalı</span>
                         </span>
                     </div>
                 @endif
