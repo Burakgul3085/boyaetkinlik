@@ -28,6 +28,11 @@
                         </span>
                     </button>
                 @else
+                    {{-- Ücretli: tüm alanda hafif karartma (referans); etkileşim yok, sağ tık alttaki bağlantıya iner --}}
+                    <div
+                        class="pointer-events-none absolute inset-0 z-[5] rounded-xl bg-slate-900/35"
+                        aria-hidden="true"
+                    ></div>
                     {{-- Görsel üstünde şeffaf bağlantı: sağ tık menüsü görsel yerine bu hedefe aittir (Hedefi farklı kaydet → HTML). --}}
                     <a
                         href="{{ route('products.preview-door', $coloringPage) }}"
