@@ -38,6 +38,18 @@
                         aria-label="Ürün bağlantısı — sağ tık ile hedefi farklı kaydedebilirsiniz"
                         title="Sağ tık → Hedefi farklı kaydet: ürün sayfasına giden HTML indirilir"
                     ></a>
+                    {{-- pointer-events-none: tıklar / sağ tık hâlâ alttaki bağlantı katmanına gider --}}
+                    <div
+                        class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-xl"
+                        aria-hidden="true"
+                    >
+                        <span class="inline-flex max-w-[min(100%,22rem)] items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-center text-sm font-semibold text-slate-800 shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M10 1a4 4 0 0 0-4 4v2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1V5a4 4 0 0 0-4-4Zm2 6V5a2 2 0 1 0-4 0v2h4Z" clip-rule="evenodd" />
+                            </svg>
+                            Ücretli içerikte büyütme kapalı
+                        </span>
+                    </div>
                 @endif
             </div>
             <h1 class="mt-4 break-words text-2xl font-bold text-slate-900">{{ $coloringPage->title }}</h1>
