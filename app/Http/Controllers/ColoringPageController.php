@@ -10,6 +10,8 @@ use Exception;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -211,6 +213,46 @@ HTML;
         }
 
         return $publicDisk->response($coloringPage->cover_image_path);
+    }
+
+    /**
+     * Ücretli ürünler: kullanıcı "bağlantıyı/hedefi farklı kaydettiğinde" indirilebilecek küçük HTML.
+     * Açıldığında ilgili ürün sayfasına (mutlak URL) gider; filigran veya görsel işleme yoktur.
+     */
+    public function previewDoorHtml(ColoringPage $coloringPage): Response
+    {
+        abort_if($coloringPage->is_free, 404);
+
+        $target = route('products.show', $coloringPage, true);
+        $title = htmlspecialchars($coloringPage->title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $targetEsc = htmlspecialchars($target, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $targetJson = json_encode($target, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP);
+
+        $html = <<<HTML
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{$title} — Boya Etkinlik</title>
+<link rel="canonical" href="{$targetEsc}">
+<meta http-equiv="refresh" content="0;url={$targetEsc}">
+</head>
+<body style="font-family:system-ui,Segoe UI,sans-serif;margin:2rem;line-height:1.6;color:#0f172a;">
+<p>Ürün sayfasına yönlendiriliyorsunuz.</p>
+<p><a href="{$targetEsc}">Sayfayı açmak için tıklayın</a>.</p>
+<script>location.replace({$targetJson});</script>
+</body>
+</html>
+HTML;
+
+        $base = Str::slug($coloringPage->title.'-'.$coloringPage->id);
+        $filename = ($base !== '' ? $base : 'urun-'.$coloringPage->id).'-boyaetkinlik.html';
+
+        return response($html, 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
+            'Content-Disposition' => 'inline; filename="'.$filename.'"',
+        ]);
     }
 
     public function buy(Request $request, ColoringPage $coloringPage)

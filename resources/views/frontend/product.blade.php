@@ -10,7 +10,7 @@
             <div class="group relative">
                 <img
                     src="{{ route('products.preview-image', $coloringPage) }}"
-                    class="w-full rounded-xl object-cover"
+                    class="w-full rounded-xl object-cover @if(! $coloringPage->is_free) pointer-events-none select-none @endif"
                     alt="{{ $coloringPage->title }} boyama sayfası önizleme görseli"
                     draggable="false"
                     onerror="this.onerror=null;this.src='https://placehold.co/900x600/e2e8f0/334155?text=Boya+Onizleme';"
@@ -27,6 +27,17 @@
                             Önizlemeyi Büyüt
                         </span>
                     </button>
+                @else
+                    {{-- Görsel üstünde şeffaf bağlantı: sağ tık menüsü görsel yerine bu hedefe aittir (Hedefi farklı kaydet → HTML). --}}
+                    <a
+                        href="{{ route('products.preview-door', $coloringPage) }}"
+                        download="{{ (\Illuminate\Support\Str::slug($coloringPage->title.'-'.$coloringPage->id) ?: 'urun-'.$coloringPage->id) }}-boyaetkinlik.html"
+                        class="absolute inset-0 z-10 block cursor-default rounded-xl outline-none ring-0"
+                        onclick="event.preventDefault(); return false;"
+                        tabindex="-1"
+                        aria-label="Ürün bağlantısı — sağ tık ile hedefi farklı kaydedebilirsiniz"
+                        title="Sağ tık → Hedefi farklı kaydet: ürün sayfasına giden HTML indirilir"
+                    ></a>
                 @endif
             </div>
             <h1 class="mt-4 break-words text-2xl font-bold text-slate-900">{{ $coloringPage->title }}</h1>

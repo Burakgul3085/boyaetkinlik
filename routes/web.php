@@ -64,6 +64,7 @@ Route::post('/ziyaretci-geri-bildirim', [VisitorFeedbackController::class, 'stor
     ->name('visitor-feedback.store');
 Route::get('/boyama/{coloringPage}', [ColoringPageController::class, 'show'])->name('products.show');
 Route::get('/boyama/{coloringPage}/preview-image', [ColoringPageController::class, 'previewImage'])->name('products.preview-image');
+Route::get('/boyama/{coloringPage}/urun-baglanti.html', [ColoringPageController::class, 'previewDoorHtml'])->name('products.preview-door');
 Route::post('/boyama/{coloringPage}/buy', [ColoringPageController::class, 'buy'])->name('products.buy');
 Route::get('/boyama/{coloringPage}/free-download', [ColoringPageController::class, 'downloadFree'])->name('products.download.free');
 Route::get('/boyama/{coloringPage}/free-print', [ColoringPageController::class, 'printFree'])->name('products.print.free');
