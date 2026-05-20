@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -281,15 +282,11 @@ HTML;
     {
         abort_unless($coloringPage->is_free, 404);
 
-        if ($coloringPage->mainFilePathLooksLikeCoverFolder()) {
-            abort(404);
-        }
-
-        /** @var FilesystemAdapter $disk */
-        $disk = $coloringPage->diskForMainFile();
-
         try {
-            $raster = $downloadService->lineArtRasterForPainting($disk, $coloringPage->mainDownloadRelativePath());
+            $source = $coloringPage->lineArtFileSource();
+            /** @var FilesystemAdapter $disk */
+            $disk = $source['disk'];
+            $raster = $downloadService->lineArtRasterForPainting($disk, $source['path']);
         } catch (Throwable $exception) {
             report($exception);
             abort(404);
@@ -298,6 +295,7 @@ HTML;
         $response = response()->file($raster['absolute_path'], [
             'Content-Type' => 'image/png',
             'Cache-Control' => 'public, max-age=3600',
+            'Access-Control-Allow-Origin' => request()->getSchemeAndHttpHost(),
         ]);
 
         if ($raster['is_temporary']) {

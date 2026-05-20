@@ -95,10 +95,14 @@ class FileFormatDownloadService
                 throw new RuntimeException('Boyama dosyası bulunamadı.');
             }
 
-            return [
-                'absolute_path' => $absolute,
-                'is_temporary' => false,
-            ];
+            if ($sourceExt === 'png') {
+                return [
+                    'absolute_path' => $absolute,
+                    'is_temporary' => false,
+                ];
+            }
+
+            return $this->rasterFileToPng($absolute);
         }
 
         if ($sourceExt === 'pdf') {
@@ -182,6 +186,51 @@ class FileFormatDownloadService
         }
 
         return response()->file($resolved['absolute_path'], $headers);
+    }
+
+    /**
+     * @return array{absolute_path: string, is_temporary: bool}
+     */
+    private function rasterFileToPng(string $sourceAbsolutePath): array
+    {
+        $tmpDir = storage_path('app/tmp-converted');
+        if (! is_dir($tmpDir)) {
+            mkdir($tmpDir, 0755, true);
+        }
+
+        $target = $tmpDir.'/'.Str::uuid().'.png';
+
+        if (extension_loaded('imagick')) {
+            $img = new \Imagick($sourceAbsolutePath);
+            $img->setImageFormat('png');
+            $img->writeImage($target);
+            $img->clear();
+            $img->destroy();
+
+            if (is_file($target)) {
+                return ['absolute_path' => $target, 'is_temporary' => true];
+            }
+        }
+
+        $ext = strtolower((string) pathinfo($sourceAbsolutePath, PATHINFO_EXTENSION));
+        $image = match ($ext) {
+            'jpg', 'jpeg' => @imagecreatefromjpeg($sourceAbsolutePath),
+            'png' => @imagecreatefrompng($sourceAbsolutePath),
+            default => false,
+        };
+
+        if ($image === false) {
+            throw new RuntimeException('Görsel PNG\'ye dönüştürülemedi.');
+        }
+
+        imagepng($image, $target);
+        imagedestroy($image);
+
+        if (! is_file($target)) {
+            throw new RuntimeException('Görsel PNG\'ye dönüştürülemedi.');
+        }
+
+        return ['absolute_path' => $target, 'is_temporary' => true];
     }
 
     private function convertPdfFirstPageWithImagick(string $pdfAbsolutePath): ?string

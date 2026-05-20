@@ -403,16 +403,38 @@ function initOnlinePaint(config) {
         });
     }
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-        resizeCanvases(img.naturalWidth, img.naturalHeight);
-        lineCtx.clearRect(0, 0, state.naturalW, state.naturalH);
-        lineCtx.drawImage(img, 0, 0, state.naturalW, state.naturalH);
-        if (loader) loader.classList.add('hidden');
-    };
-    img.onerror = () => showError('Çizgi görseli yüklenemedi. Ürün dosyası desteklenmiyor olabilir.');
-    img.src = config.lineArtUrl;
+    async function loadLineArt() {
+        try {
+            const res = await fetch(config.lineArtUrl, { credentials: 'same-origin' });
+            if (!res.ok) {
+                showError(
+                    res.status === 404
+                        ? 'Çizgi görseli bulunamadı. Yönetim panelinde «Dosya» alanını kontrol edin.'
+                        : 'Çizgi görseli yüklenemedi. PDF için sunucuda Imagick veya LibreOffice gerekir.'
+                );
+                return;
+            }
+            const blob = await res.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = () => {
+                resizeCanvases(img.naturalWidth, img.naturalHeight);
+                lineCtx.clearRect(0, 0, state.naturalW, state.naturalH);
+                lineCtx.drawImage(img, 0, 0, state.naturalW, state.naturalH);
+                URL.revokeObjectURL(objectUrl);
+                if (loader) loader.classList.add('hidden');
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                showError('Çizgi görseli okunamadı. Dosya biçimi desteklenmiyor olabilir.');
+            };
+            img.src = objectUrl;
+        } catch {
+            showError('Çizgi görseli yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.');
+        }
+    }
+
+    loadLineArt();
 
     setTool('brush');
     if (swatches[0]) swatches[0].classList.add('online-paint-swatch--active');

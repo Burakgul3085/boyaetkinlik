@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class ColoringPage extends Model
 {
@@ -59,19 +60,61 @@ class ColoringPage extends Model
     }
 
     /**
+     * Ana dosyanın hangi diskte olduğunu bulur (public ve local sırayla denenir).
+     *
+     * @return array{disk: FilesystemContract, path: string}|null
+     */
+    public function resolveMainFileStorage(): ?array
+    {
+        $path = trim((string) $this->pdf_path);
+        if ($path === '') {
+            return null;
+        }
+
+        foreach (['public', 'local'] as $diskName) {
+            $disk = Storage::disk($diskName);
+            if ($disk->exists($path)) {
+                return ['disk' => $disk, 'path' => $path];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Online boya çizgi katmanı: önce ana dosya (pdf_path), yoksa ücretsiz ürünlerde kapak görseli.
+     *
+     * @return array{disk: FilesystemContract, path: string}
+     */
+    public function lineArtFileSource(): array
+    {
+        $main = $this->resolveMainFileStorage();
+        if ($main !== null) {
+            return $main;
+        }
+
+        $cover = trim((string) $this->cover_image_path);
+        if ($this->is_free && $cover !== '') {
+            $ext = strtolower((string) pathinfo($cover, PATHINFO_EXTENSION));
+            if (in_array($ext, ['png', 'jpg', 'jpeg'], true)) {
+                $disk = Storage::disk('public');
+                if ($disk->exists($cover)) {
+                    return ['disk' => $disk, 'path' => $cover];
+                }
+            }
+        }
+
+        throw new RuntimeException('Boyama dosyası bulunamadı.');
+    }
+
+    /**
      * Ana dosyanın bulunduğu disk (ücretsiz kayıtlar genelde public; eski/özel durumlarda local).
      */
     public function diskForMainFile(): FilesystemContract
     {
-        if (Storage::disk('public')->exists($this->pdf_path)) {
-            return Storage::disk('public');
-        }
+        $resolved = $this->resolveMainFileStorage();
 
-        if (Storage::disk('local')->exists($this->pdf_path)) {
-            return Storage::disk('local');
-        }
-
-        return Storage::disk('public');
+        return $resolved !== null ? $resolved['disk'] : Storage::disk('public');
     }
 
     /**
