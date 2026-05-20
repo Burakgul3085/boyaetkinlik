@@ -359,8 +359,75 @@
         @apply rounded-xl border border-violet-100/80 bg-violet-50/30 px-3 py-2.5 text-[11px] leading-relaxed text-slate-500;
     }
 
+    .online-paint-orbit-zone {
+        @apply relative flex shrink-0 items-center justify-center p-8;
+    }
+
+    .online-paint-orbit-ring {
+        @apply pointer-events-none absolute inset-0 rounded-[1.25rem];
+        display: none;
+    }
+
+    .online-paint-orbit-ring--on {
+        display: block;
+        animation: online-paint-orbit-spin 20s linear infinite;
+    }
+
+    .online-paint-orbit-dot {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        margin: -5px;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, #c4b5fd, #7c3aed);
+        box-shadow: 0 0 12px rgba(124, 58, 237, 0.65);
+        transform: rotate(calc(var(--orbit-i) * 45deg)) translateY(calc(-50% - clamp(140px, 42vh, 380px)));
+    }
+
+    .online-paint-orbit-glow {
+        @apply pointer-events-none absolute rounded-[1.2rem] opacity-0;
+        display: none;
+        inset: -3px;
+        border: 3px solid transparent;
+        border-radius: 1.2rem;
+    }
+
+    .online-paint-orbit-glow--on {
+        display: block;
+        opacity: 1;
+        border-image: conic-gradient(
+            from 0deg,
+            #a78bfa,
+            #ec4899,
+            #60a5fa,
+            #34d399,
+            #a78bfa
+        ) 1;
+        animation: online-paint-orbit-spin 6s linear infinite;
+    }
+
+    @keyframes online-paint-orbit-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
     .online-paint-canvas-scaler {
-        @apply flex shrink-0 origin-top transition-transform duration-150;
+        @apply relative z-[2] flex shrink-0 origin-center transition-transform duration-300 ease-out;
+    }
+
+    .online-paint-toggle-row {
+        @apply flex cursor-pointer items-center gap-2.5 rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2.5 text-[11px] font-medium text-slate-600;
+    }
+
+    .online-paint-stage-wrap:fullscreen {
+        @apply flex items-center justify-center bg-[#e8e4f3] p-6;
+    }
+
+    .online-paint-stage-wrap:fullscreen .online-paint-canvas-wrap {
+        @apply max-h-none min-h-0 h-full w-full;
     }
 
     .online-paint-export {
@@ -428,7 +495,7 @@
     }
 
     .online-paint-canvas-wrap {
-        @apply relative flex h-full min-h-[min(65vh,680px)] w-full items-start justify-center overflow-x-hidden overflow-y-auto rounded-xl bg-[#e8e4f3] py-3 md:min-h-[min(78vh,860px)];
+        @apply relative flex h-full min-h-[min(65vh,680px)] w-full items-center justify-center overflow-x-hidden overflow-y-auto rounded-xl bg-[#e8e4f3] py-3 md:min-h-[min(78vh,860px)];
     }
 
     .online-paint-canvas-stage {

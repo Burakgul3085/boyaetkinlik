@@ -29,7 +29,11 @@ function bootOnlinePaint() {
     const hitLayer = document.getElementById('paint-hit-layer');
     const stage = document.getElementById('canvas-stage');
     const scaler = document.getElementById('canvas-scaler');
+    const orbitZone = document.getElementById('canvas-orbit-zone');
+    const orbitRing = document.getElementById('paint-orbit-ring');
+    const orbitGlow = document.getElementById('paint-orbit-glow');
     const wrap = document.getElementById('canvas-wrap');
+    const stageWrap = document.querySelector('.online-paint-stage-wrap');
     const loader = document.getElementById('paint-loader');
     const errBox = document.getElementById('paint-error');
 
@@ -48,6 +52,9 @@ function bootOnlinePaint() {
         softness: 35,
         fillTolerance: 40,
         viewZoom: 1,
+        viewRotate: 0,
+        baseDisplayW: 0,
+        baseDisplayH: 0,
         drawing: false,
         pointerId: null,
         lastX: 0,
@@ -85,6 +92,13 @@ function bootOnlinePaint() {
     const zoomInBtn = document.getElementById('paint-zoom-in');
     const zoomOutBtn = document.getElementById('paint-zoom-out');
     const zoomLabel = document.getElementById('paint-zoom-label');
+    const rotateLeftBtn = document.getElementById('paint-rotate-left');
+    const rotateRightBtn = document.getElementById('paint-rotate-right');
+    const rotateResetBtn = document.getElementById('paint-rotate-reset');
+    const rotateLabel = document.getElementById('paint-rotate-label');
+    const orbitToggle = document.getElementById('paint-orbit-toggle');
+    const glowToggle = document.getElementById('paint-glow-toggle');
+    const fullscreenBtn = document.getElementById('paint-fullscreen');
     const downloadBtns = document.querySelectorAll('[data-paint-download]');
     const printBtn = document.getElementById('paint-print');
     const emailForm = document.getElementById('paint-email-form');
@@ -131,20 +145,39 @@ function bootOnlinePaint() {
         const displayW = Math.max(1, Math.round(state.naturalW * scale));
         displayH = Math.max(1, Math.round(state.naturalH * scale));
 
+        state.baseDisplayW = displayW;
+        state.baseDisplayH = displayH;
         stage.style.width = `${displayW}px`;
         stage.style.height = `${displayH}px`;
         stage.style.aspectRatio = `${state.naturalW} / ${state.naturalH}`;
-        applyViewZoom();
+        applyViewTransform();
     }
 
-    function applyViewZoom() {
+    function applyViewTransform() {
         const z = state.viewZoom;
+        const r = state.viewRotate;
         if (scaler) {
-            scaler.style.transform = `scale(${z})`;
+            scaler.style.transform = `scale(${z}) rotate(${r}deg)`;
         }
         if (zoomLabel) {
             zoomLabel.textContent = `${Math.round(z * 100)}%`;
         }
+        if (rotateLabel) {
+            rotateLabel.textContent = `${r}°`;
+        }
+    }
+
+    function unrotateNormalized(lx, ly, degrees) {
+        const steps = ((((degrees % 360) + 360) % 360) / 90) | 0;
+        let x = lx;
+        let y = ly;
+        for (let i = 0; i < steps; i++) {
+            const nx = y;
+            const ny = -x;
+            x = nx;
+            y = ny;
+        }
+        return { x, y };
     }
 
     function resizeCanvases(w, h) {
@@ -213,12 +246,24 @@ function bootOnlinePaint() {
         if (!rect.width || !rect.height) {
             return { x: 0, y: 0 };
         }
-        const x = ((clientX - rect.left) / rect.width) * state.naturalW;
-        const y = ((clientY - rect.top) / rect.height) * state.naturalH;
+        let lx = (clientX - rect.left) / rect.width - 0.5;
+        let ly = (clientY - rect.top) / rect.height - 0.5;
+        const unrot = unrotateNormalized(lx, ly, state.viewRotate);
+        const x = (unrot.x + 0.5) * state.naturalW;
+        const y = (unrot.y + 0.5) * state.naturalH;
         return {
             x: Math.max(0, Math.min(state.naturalW, x)),
             y: Math.max(0, Math.min(state.naturalH, y)),
         };
+    }
+
+    function syncOrbitEffects() {
+        if (orbitRing) {
+            orbitRing.classList.toggle('online-paint-orbit-ring--on', !!orbitToggle?.checked);
+        }
+        if (orbitGlow) {
+            orbitGlow.classList.toggle('online-paint-orbit-glow--on', !!glowToggle?.checked);
+        }
     }
 
     function saveUndo() {
@@ -705,16 +750,74 @@ function bootOnlinePaint() {
     if (zoomInBtn) {
         zoomInBtn.addEventListener('click', () => {
             state.viewZoom = Math.min(2.5, Math.round((state.viewZoom + 0.15) * 100) / 100);
-            applyViewZoom();
+            applyViewTransform();
         });
     }
 
     if (zoomOutBtn) {
         zoomOutBtn.addEventListener('click', () => {
             state.viewZoom = Math.max(0.5, Math.round((state.viewZoom - 0.15) * 100) / 100);
-            applyViewZoom();
+            applyViewTransform();
         });
     }
+
+    if (rotateLeftBtn) {
+        rotateLeftBtn.addEventListener('click', () => {
+            state.viewRotate = (state.viewRotate - 90 + 360) % 360;
+            applyViewTransform();
+        });
+    }
+
+    if (rotateRightBtn) {
+        rotateRightBtn.addEventListener('click', () => {
+            state.viewRotate = (state.viewRotate + 90) % 360;
+            applyViewTransform();
+        });
+    }
+
+    if (rotateResetBtn) {
+        rotateResetBtn.addEventListener('click', () => {
+            state.viewRotate = 0;
+            applyViewTransform();
+        });
+    }
+
+    if (orbitToggle) {
+        orbitToggle.addEventListener('change', syncOrbitEffects);
+    }
+
+    if (glowToggle) {
+        glowToggle.addEventListener('change', syncOrbitEffects);
+    }
+
+    if (fullscreenBtn && stageWrap) {
+        fullscreenBtn.addEventListener('click', async () => {
+            try {
+                if (document.fullscreenElement) {
+                    await document.exitFullscreen();
+                    fullscreenBtn.textContent = 'Tam ekran tuval';
+                } else {
+                    await stageWrap.requestFullscreen();
+                    fullscreenBtn.textContent = 'Tam ekrandan çık';
+                    requestAnimationFrame(() => {
+                        if (state.ready) fitToView();
+                    });
+                }
+            } catch {
+                alert('Tam ekran bu tarayıcıda desteklenmiyor olabilir.');
+            }
+        });
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && fullscreenBtn) {
+                fullscreenBtn.textContent = 'Tam ekran tuval';
+                requestAnimationFrame(() => {
+                    if (state.ready) fitToView();
+                });
+            }
+        });
+    }
+
+    syncOrbitEffects();
 
     if (undoBtn) undoBtn.addEventListener('click', undo);
     if (redoBtn) redoBtn.addEventListener('click', redo);
@@ -730,6 +833,7 @@ function bootOnlinePaint() {
     if (zoomFitBtn) {
         zoomFitBtn.addEventListener('click', () => {
             state.viewZoom = 1;
+            state.viewRotate = 0;
             fitToView();
         });
     }

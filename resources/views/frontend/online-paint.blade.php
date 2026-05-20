@@ -178,6 +178,24 @@
                             <button type="button" id="paint-zoom-in" class="online-paint-icon-btn" title="Yakınlaştır">+</button>
                         </div>
                         <button type="button" id="paint-zoom-fit" class="online-paint-action-btn mt-2 w-full">Tuvali sığdır</button>
+
+                        <p class="online-paint-mini-label mt-3">Tuval döndür</p>
+                        <div class="online-paint-preset-row">
+                            <button type="button" id="paint-rotate-left" class="online-paint-chip" title="90° sola">↺ 90°</button>
+                            <button type="button" id="paint-rotate-right" class="online-paint-chip" title="90° sağa">↻ 90°</button>
+                            <button type="button" id="paint-rotate-reset" class="online-paint-chip">0°</button>
+                        </div>
+                        <p class="text-center text-[11px] font-semibold text-violet-700"><span id="paint-rotate-label">0°</span></p>
+
+                        <label class="online-paint-toggle-row mt-3">
+                            <input type="checkbox" id="paint-orbit-toggle" checked class="rounded border-violet-300 text-violet-600">
+                            <span>Tuval etrafında dönen halka</span>
+                        </label>
+                        <label class="online-paint-toggle-row">
+                            <input type="checkbox" id="paint-glow-toggle" checked class="rounded border-violet-300 text-violet-600">
+                            <span>Işıltılı çerçeve animasyonu</span>
+                        </label>
+                        <button type="button" id="paint-fullscreen" class="online-paint-action-btn mt-2 w-full">Tam ekran tuval</button>
                     </div>
                 </section>
 
@@ -206,11 +224,19 @@
                         <p>Çizim yükleniyor…</p>
                     </div>
                     <p id="paint-error" class="online-paint-error hidden"></p>
-                    <div id="canvas-scaler" class="online-paint-canvas-scaler">
-                        <div id="canvas-stage" class="online-paint-canvas-stage">
-                            <canvas id="paint-canvas" class="online-paint-canvas online-paint-canvas--paint"></canvas>
-                            <canvas id="line-canvas" class="online-paint-canvas online-paint-canvas--lines"></canvas>
-                            <div id="paint-hit-layer" class="online-paint-hit-layer" aria-hidden="true"></div>
+                    <div id="canvas-orbit-zone" class="online-paint-orbit-zone online-paint-orbit-zone--active">
+                        <div id="paint-orbit-glow" class="online-paint-orbit-glow online-paint-orbit-glow--on" aria-hidden="true"></div>
+                        <div id="paint-orbit-ring" class="online-paint-orbit-ring online-paint-orbit-ring--on" aria-hidden="true">
+                            @for ($i = 0; $i < 8; $i++)
+                                <span class="online-paint-orbit-dot" style="--orbit-i: {{ $i }}"></span>
+                            @endfor
+                        </div>
+                        <div id="canvas-scaler" class="online-paint-canvas-scaler">
+                            <div id="canvas-stage" class="online-paint-canvas-stage">
+                                <canvas id="paint-canvas" class="online-paint-canvas online-paint-canvas--paint"></canvas>
+                                <canvas id="line-canvas" class="online-paint-canvas online-paint-canvas--lines"></canvas>
+                                <div id="paint-hit-layer" class="online-paint-hit-layer" aria-hidden="true"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
