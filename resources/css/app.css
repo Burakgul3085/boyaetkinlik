@@ -172,6 +172,105 @@
         @apply mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-100 text-violet-600 transition hover:bg-violet-50;
     }
 
+    /* Admin: blog kategori ağacı */
+    .admin-blog-cat-panel {
+        @apply overflow-hidden rounded-2xl border border-violet-100/90 bg-gradient-to-b from-slate-50/80 to-white;
+    }
+
+    .admin-blog-cat-panel__head {
+        @apply flex flex-wrap items-center justify-between gap-3 border-b border-violet-100/80 bg-white/70 px-4 py-3;
+    }
+
+    .admin-blog-cat-add {
+        @apply rounded-2xl border border-violet-100/80 bg-white/90 p-4 shadow-sm;
+    }
+
+    .admin-blog-cat-tree {
+        @apply relative p-3 sm:p-4;
+    }
+
+    .admin-blog-cat-tree__list {
+        @apply max-h-[32rem] space-y-1.5 overflow-y-auto pr-1;
+    }
+
+    .admin-blog-cat-item {
+        @apply relative;
+        padding-left: calc(var(--cat-depth, 0) * 1.125rem);
+    }
+
+    .admin-blog-cat-item__rail {
+        @apply pointer-events-none absolute bottom-2 top-2 w-px bg-gradient-to-b from-violet-200/0 via-violet-200 to-violet-200/0;
+        left: calc(var(--cat-depth, 0) * 1.125rem - 0.4rem);
+    }
+
+    .admin-blog-cat-item[data-depth="0"] .admin-blog-cat-item__rail {
+        display: none;
+    }
+
+    .admin-blog-cat-card {
+        @apply overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm transition duration-200;
+    }
+
+    .admin-blog-cat-card:hover {
+        @apply border-violet-200 shadow-md;
+    }
+
+    .admin-blog-cat-card--open {
+        @apply border-violet-300 shadow-md ring-2 ring-violet-100/80;
+    }
+
+    .admin-blog-cat-card__trigger {
+        @apply flex w-full items-center gap-3 px-3 py-3 text-left sm:px-4;
+    }
+
+    .admin-blog-cat-card__chevron {
+        @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-violet-100 bg-violet-50/80 text-violet-600 transition;
+    }
+
+    .admin-blog-cat-card__chevron--open {
+        @apply rotate-90 border-violet-200 bg-violet-100;
+    }
+
+    .admin-blog-cat-card__icon {
+        @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-50 text-violet-700;
+    }
+
+    .admin-blog-cat-card__meta {
+        @apply mt-0.5 flex flex-wrap items-center gap-1.5;
+    }
+
+    .admin-blog-cat-pill {
+        @apply inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide;
+    }
+
+    .admin-blog-cat-pill--count {
+        @apply bg-slate-100 text-slate-600;
+    }
+
+    .admin-blog-cat-pill--source {
+        @apply bg-indigo-50 text-indigo-700;
+    }
+
+    .admin-blog-cat-pill--active {
+        @apply bg-emerald-50 text-emerald-700;
+    }
+
+    .admin-blog-cat-pill--passive {
+        @apply bg-slate-100 text-slate-500;
+    }
+
+    .admin-blog-cat-card__path {
+        @apply mt-0.5 line-clamp-1 text-[11px] text-slate-500;
+    }
+
+    .admin-blog-cat-card__body {
+        @apply border-t border-violet-100/80 bg-gradient-to-b from-violet-50/40 to-white px-3 py-4 sm:px-4;
+    }
+
+    .admin-blog-cat-edit-title {
+        @apply mb-3 text-xs font-bold uppercase tracking-wider text-violet-700/90;
+    }
+
     .paid-marquee {
         @apply overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-r from-violet-50/70 via-white to-indigo-50/70 p-2;
         position: relative;
