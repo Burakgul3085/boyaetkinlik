@@ -3,7 +3,7 @@
 @section('title', 'Online Boya — '.$coloringPage->title)
 
 @section('content')
-    <div class="online-paint-page">
+    <div class="online-paint-page mx-auto max-w-[1400px]">
         <header class="online-paint-topbar">
             <div class="min-w-0">
                 <a href="{{ route('products.show', $coloringPage) }}" class="online-paint-back">← Ürüne dön</a>
