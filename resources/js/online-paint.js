@@ -1,17 +1,21 @@
 /**
- * Online Boya — çizgi katmanı üstte, boyama altta; dışa aktarma sunucuya PNG gönderilir.
+ * Online Boya — çizgi üstte, boyama altta; tıklamalar paint-hit-layer üzerinden.
  */
 const MAX_UNDO = 40;
 
-function initOnlinePaint(config) {
+function bootOnlinePaint() {
+    const config = window.__ONLINE_PAINT__;
+    if (!config?.lineArtUrl) return;
+
     const paintCanvas = document.getElementById('paint-canvas');
     const lineCanvas = document.getElementById('line-canvas');
+    const hitLayer = document.getElementById('paint-hit-layer');
     const stage = document.getElementById('canvas-stage');
     const wrap = document.getElementById('canvas-wrap');
     const loader = document.getElementById('paint-loader');
     const errBox = document.getElementById('paint-error');
 
-    if (!paintCanvas || !lineCanvas || !stage || !wrap || !config?.lineArtUrl) {
+    if (!paintCanvas || !lineCanvas || !hitLayer || !stage || !wrap) {
         return;
     }
 
@@ -32,6 +36,7 @@ function initOnlinePaint(config) {
         naturalH: 0,
         scale: 1,
         linePixels: null,
+        ready: false,
     };
 
     const toolButtons = document.querySelectorAll('[data-paint-tool]');
@@ -70,20 +75,28 @@ function initOnlinePaint(config) {
         lineCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
+    /** Ürün önizlemesi gibi: önce genişliği doldur */
     function fitToView() {
-        if (!wrap || !state.naturalW) return;
+        if (!state.naturalW || !state.naturalH) return;
 
-        const pad = 16;
-        const maxW = Math.max(wrap.clientWidth - pad, 280);
-        const maxH = Math.max(wrap.clientHeight - pad, 280);
+        const pad = 12;
+        const maxW = Math.max(wrap.clientWidth - pad, 320);
+        const maxH = Math.max(wrap.clientHeight - pad, 400);
 
-        // Önizleme gibi: alanı doldur (yüksek çözünürlüklü dosyada büyütülür)
-        state.scale = Math.min(maxW / state.naturalW, maxH / state.naturalH);
-        const displayW = Math.round(state.naturalW * state.scale);
-        const displayH = Math.round(state.naturalH * state.scale);
+        let scale = maxW / state.naturalW;
+        let displayH = state.naturalH * scale;
+
+        if (displayH > maxH * 1.15) {
+            scale = maxH / state.naturalH;
+        }
+
+        state.scale = scale;
+        const displayW = Math.max(1, Math.round(state.naturalW * scale));
+        displayH = Math.max(1, Math.round(state.naturalH * scale));
 
         stage.style.width = `${displayW}px`;
         stage.style.height = `${displayH}px`;
+        stage.style.aspectRatio = `${state.naturalW} / ${state.naturalH}`;
     }
 
     function resizeCanvases(w, h) {
@@ -119,7 +132,7 @@ function initOnlinePaint(config) {
     }
 
     function canvasPoint(clientX, clientY) {
-        const rect = paintCanvas.getBoundingClientRect();
+        const rect = hitLayer.getBoundingClientRect();
         if (!rect.width || !rect.height) {
             return { x: 0, y: 0 };
         }
@@ -138,7 +151,7 @@ function initOnlinePaint(config) {
             if (state.undoStack.length > MAX_UNDO) state.undoStack.shift();
             state.redoStack = [];
         } catch {
-            /* sessiz */
+            /* */
         }
     }
 
@@ -164,8 +177,7 @@ function initOnlinePaint(config) {
             btn.classList.toggle('online-paint-tool--active', btn.dataset.paintTool === tool);
         });
         const cursor = tool === 'fill' ? 'cell' : tool === 'eraser' ? 'grab' : 'crosshair';
-        paintCanvas.style.cursor = cursor;
-        stage.style.cursor = cursor;
+        hitLayer.style.cursor = cursor;
     }
 
     function drawLine(x0, y0, x1, y1) {
@@ -221,7 +233,7 @@ function initOnlinePaint(config) {
             return;
         }
 
-        const tolerance = 36;
+        const tolerance = 40;
         const stack = [[x, y]];
         const visited = new Uint8Array(w * h);
 
@@ -257,15 +269,16 @@ function initOnlinePaint(config) {
     }
 
     function pointerDown(e) {
+        if (!state.ready) return;
         if (state.pointerId !== null) return;
         if (e.button !== undefined && e.button !== 0) return;
         e.preventDefault();
         e.stopPropagation();
 
         try {
-            paintCanvas.setPointerCapture(e.pointerId);
+            hitLayer.setPointerCapture(e.pointerId);
         } catch {
-            /* eski tarayıcı */
+            /* */
         }
 
         state.pointerId = e.pointerId;
@@ -276,7 +289,7 @@ function initOnlinePaint(config) {
             floodFill(pt.x, pt.y);
             state.pointerId = null;
             try {
-                paintCanvas.releasePointerCapture(e.pointerId);
+                hitLayer.releasePointerCapture(e.pointerId);
             } catch {
                 /* */
             }
@@ -291,7 +304,7 @@ function initOnlinePaint(config) {
     }
 
     function pointerMove(e) {
-        if (state.pointerId !== e.pointerId || !state.drawing) return;
+        if (!state.ready || state.pointerId !== e.pointerId || !state.drawing) return;
         e.preventDefault();
         const pt = canvasPoint(e.clientX, e.clientY);
         drawLine(state.lastX, state.lastY, pt.x, pt.y);
@@ -304,7 +317,7 @@ function initOnlinePaint(config) {
         state.drawing = false;
         state.pointerId = null;
         try {
-            paintCanvas.releasePointerCapture(e.pointerId);
+            hitLayer.releasePointerCapture(e.pointerId);
         } catch {
             /* */
         }
@@ -346,11 +359,11 @@ function initOnlinePaint(config) {
         return res.blob();
     }
 
-    paintCanvas.addEventListener('pointerdown', pointerDown);
-    paintCanvas.addEventListener('pointermove', pointerMove);
-    paintCanvas.addEventListener('pointerup', pointerUp);
-    paintCanvas.addEventListener('pointercancel', pointerUp);
-    paintCanvas.addEventListener('lostpointercapture', () => {
+    hitLayer.addEventListener('pointerdown', pointerDown);
+    hitLayer.addEventListener('pointermove', pointerMove);
+    hitLayer.addEventListener('pointerup', pointerUp);
+    hitLayer.addEventListener('pointercancel', pointerUp);
+    hitLayer.addEventListener('lostpointercapture', () => {
         state.drawing = false;
         state.pointerId = null;
     });
@@ -395,7 +408,16 @@ function initOnlinePaint(config) {
     }
 
     if (zoomFitBtn) zoomFitBtn.addEventListener('click', fitToView);
-    window.addEventListener('resize', fitToView);
+
+    if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => {
+            if (state.ready) fitToView();
+        });
+        ro.observe(wrap);
+    }
+    window.addEventListener('resize', () => {
+        if (state.ready) fitToView();
+    });
 
     downloadBtns.forEach((btn) => {
         btn.addEventListener('click', async () => {
@@ -495,6 +517,7 @@ function initOnlinePaint(config) {
                 lineCtx.drawImage(img, 0, 0, state.naturalW, state.naturalH);
                 cacheLinePixels();
                 URL.revokeObjectURL(objectUrl);
+                state.ready = true;
                 if (loader) {
                     loader.classList.add('hidden');
                     loader.style.pointerEvents = 'none';
@@ -519,8 +542,8 @@ function initOnlinePaint(config) {
     if (swatches[0]) swatches[0].classList.add('online-paint-swatch--active');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.__ONLINE_PAINT__) {
-        initOnlinePaint(window.__ONLINE_PAINT__);
-    }
-});
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootOnlinePaint);
+} else {
+    bootOnlinePaint();
+}

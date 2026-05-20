@@ -76,6 +76,7 @@
                     <div id="canvas-stage" class="online-paint-canvas-stage">
                         <canvas id="paint-canvas" class="online-paint-canvas online-paint-canvas--paint"></canvas>
                         <canvas id="line-canvas" class="online-paint-canvas online-paint-canvas--lines"></canvas>
+                        <div id="paint-hit-layer" class="online-paint-hit-layer" aria-hidden="true"></div>
                     </div>
                 </div>
             </div>
@@ -114,7 +115,6 @@
 @endsection
 
 @push('scripts')
-    @vite(['resources/js/online-paint.js'])
     <script>
         window.__ONLINE_PAINT__ = {
             lineArtUrl: @js($lineArtUrl),
@@ -124,4 +124,5 @@
             fileBase: @js(\Illuminate\Support\Str::slug($coloringPage->title) ?: 'boyama-'.$coloringPage->id),
         };
     </script>
+    @vite(['resources/js/online-paint.js'])
 @endpush
