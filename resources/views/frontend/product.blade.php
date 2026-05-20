@@ -104,6 +104,16 @@
                         </div>
                     @endif
                 </div>
+                <a
+                    href="{{ route('products.online-paint', $coloringPage) }}"
+                    class="btn-primary mt-3 flex w-full items-center justify-center gap-2"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Online Boya
+                </a>
+                <p class="mt-2 text-center text-[11px] text-slate-500">Tarayıcıda boyayın; indir, yazdır veya e-posta ile gönderin.</p>
                 <button
                     type="button"
                     onclick="directPrint('{{ route('products.print.free', ['coloringPage' => $coloringPage, 'format' => $originalFormat]) }}')"

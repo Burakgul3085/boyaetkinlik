@@ -73,6 +73,14 @@ Route::get('/boyama/{coloringPage}/free-print', [ColoringPageController::class, 
 Route::post('/boyama/{coloringPage}/ucretsiz-eposta', [ColoringPageController::class, 'sendFreeToEmail'])
     ->middleware('throttle:6,1')
     ->name('products.free.email');
+Route::get('/boyama/{coloringPage}/online-boya', [ColoringPageController::class, 'onlinePaint'])->name('products.online-paint');
+Route::get('/boyama/{coloringPage}/online-boya/cizgi', [ColoringPageController::class, 'onlinePaintLineArt'])->name('products.online-paint.line-art');
+Route::post('/boyama/{coloringPage}/online-boya/indir', [ColoringPageController::class, 'onlinePaintExport'])
+    ->middleware('throttle:20,1')
+    ->name('products.online-paint.export');
+Route::post('/boyama/{coloringPage}/online-boya/eposta', [ColoringPageController::class, 'onlinePaintEmail'])
+    ->middleware('throttle:6,1')
+    ->name('products.online-paint.email');
 Route::get('/shopier/{transaction}/redirect', [ShopierController::class, 'redirect'])->name('shopier.redirect');
 Route::post('/shopier/callback', [ShopierController::class, 'callback'])->name('shopier.callback');
 Route::get('/download/{token}', [DownloadController::class, 'paid'])->name('download.paid');

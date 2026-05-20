@@ -172,6 +172,151 @@
         @apply mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-100 text-violet-600 transition hover:bg-violet-50;
     }
 
+    /* Online Boya stüdyosu */
+    .online-paint-page {
+        @apply -mx-2 min-h-[calc(100vh-12rem)] sm:-mx-0;
+    }
+
+    .online-paint-topbar {
+        @apply flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-fuchsia-50/80 px-4 py-4 shadow-sm md:px-6;
+    }
+
+    .online-paint-back {
+        @apply text-sm font-medium text-violet-700 transition hover:text-violet-900;
+    }
+
+    .online-paint-title {
+        @apply mt-1 text-xl font-bold text-slate-900 md:text-2xl;
+    }
+
+    .online-paint-sub {
+        @apply mt-1 text-sm text-slate-500;
+    }
+
+    .online-paint-badge {
+        @apply rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800;
+    }
+
+    .online-paint-workspace {
+        @apply mt-4 grid gap-4 lg:grid-cols-[minmax(0,11rem)_minmax(0,1fr)_minmax(0,12rem)] lg:items-stretch;
+    }
+
+    .online-paint-toolbar,
+    .online-paint-export {
+        @apply rounded-2xl border border-violet-100 bg-white p-4 shadow-sm;
+    }
+
+    .online-paint-toolbar__title {
+        @apply text-[10px] font-bold uppercase tracking-wider text-violet-700/90;
+    }
+
+    .online-paint-tools {
+        @apply grid grid-cols-1 gap-1.5;
+    }
+
+    .online-paint-tool {
+        @apply flex items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:border-violet-200 hover:bg-violet-50;
+    }
+
+    .online-paint-tool svg {
+        @apply h-5 w-5 shrink-0 text-violet-600;
+    }
+
+    .online-paint-tool--active {
+        @apply border-violet-400 bg-violet-600 text-white shadow-sm;
+    }
+
+    .online-paint-tool--active svg {
+        @apply text-white;
+    }
+
+    .online-paint-swatches {
+        @apply grid grid-cols-6 gap-1.5;
+    }
+
+    .online-paint-swatch {
+        @apply aspect-square rounded-lg border-2 border-white shadow-sm ring-1 ring-slate-200/80 transition hover:scale-105;
+    }
+
+    .online-paint-swatch--active {
+        @apply ring-2 ring-violet-500 ring-offset-1;
+    }
+
+    .online-paint-custom-color span {
+        @apply mb-1 block text-xs text-slate-600;
+    }
+
+    .online-paint-range {
+        @apply accent-violet-600;
+    }
+
+    .online-paint-actions {
+        @apply grid grid-cols-2 gap-1.5;
+    }
+
+    .online-paint-action-btn {
+        @apply rounded-lg border border-violet-100 bg-violet-50/60 px-2 py-1.5 text-xs font-semibold text-violet-800 transition hover:bg-violet-100;
+    }
+
+    .online-paint-stage-wrap {
+        @apply min-h-[min(70vh,640px)] rounded-2xl border border-violet-100 bg-slate-100/80 p-2 shadow-inner md:p-3;
+    }
+
+    .online-paint-canvas-wrap {
+        @apply relative flex h-full min-h-[min(65vh,600px)] items-center justify-center overflow-hidden rounded-xl bg-[#e8e4f3];
+    }
+
+    .online-paint-canvas-stage {
+        @apply relative shadow-lg;
+        background: #fff;
+    }
+
+    .online-paint-canvas {
+        @apply absolute left-0 top-0 block;
+    }
+
+    .online-paint-canvas--paint {
+        @apply z-0;
+    }
+
+    .online-paint-canvas--lines {
+        @apply z-10 pointer-events-none;
+    }
+
+    .online-paint-loader {
+        @apply absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-white/80 text-sm text-slate-600;
+    }
+
+    .online-paint-loader.hidden {
+        display: none;
+    }
+
+    .online-paint-spinner {
+        @apply h-10 w-10 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600;
+    }
+
+    .online-paint-error {
+        @apply absolute inset-0 z-20 flex items-center justify-center bg-rose-50 p-4 text-center text-sm text-rose-800;
+    }
+
+    .online-paint-export-btn {
+        @apply rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-violet-300 hover:bg-violet-50;
+    }
+
+    @media (max-width: 1023px) {
+        .online-paint-workspace {
+            @apply grid-cols-1;
+        }
+
+        .online-paint-tools {
+            @apply grid-cols-3;
+        }
+
+        .online-paint-actions {
+            @apply grid-cols-4;
+        }
+    }
+
     /* Admin: blog kategori ağacı */
     .admin-blog-cat-panel {
         @apply overflow-hidden rounded-2xl border border-violet-100/90 bg-gradient-to-b from-slate-50/80 to-white;

@@ -80,6 +80,91 @@ class FileFormatDownloadService
         ];
     }
 
+    /**
+     * Online boya: ana dosyayı (pdf/png/jpg) raster PNG yoluna çevirir.
+     *
+     * @return array{absolute_path: string, is_temporary: bool}
+     */
+    public function lineArtRasterForPainting(FilesystemAdapter $disk, string $path): array
+    {
+        $sourceExt = $this->sourceExtension($path);
+
+        if (in_array($sourceExt, ['png', 'jpg', 'jpeg'], true)) {
+            $absolute = $disk->path($path);
+            if (! is_file($absolute)) {
+                throw new RuntimeException('Boyama dosyası bulunamadı.');
+            }
+
+            return [
+                'absolute_path' => $absolute,
+                'is_temporary' => false,
+            ];
+        }
+
+        if ($sourceExt === 'pdf') {
+            if (extension_loaded('imagick')) {
+                $png = $this->convertPdfFirstPageWithImagick($disk->path($path));
+                if ($png !== null) {
+                    return [
+                        'absolute_path' => $png,
+                        'is_temporary' => true,
+                    ];
+                }
+            }
+
+            $resolved = $this->resolveFileForFormat($disk, $path, 'png');
+
+            return [
+                'absolute_path' => $resolved['absolute_path'],
+                'is_temporary' => $resolved['is_temporary'],
+            ];
+        }
+
+        throw new RuntimeException('Bu dosya türü online boya için desteklenmiyor.');
+    }
+
+    /**
+     * İstemciden gelen boyanmış PNG’yi istenen formata hazırlar.
+     *
+     * @return array{path: string, filename: string, delete_after_send: bool, extension: string}
+     */
+    public function preparePaintedExport(string $pngAbsolutePath, string $baseName, ?string $requestedFormat): array
+    {
+        $format = $this->normalizeFormat($requestedFormat) ?: 'png';
+        if (! in_array($format, $this->allowedFormats, true)) {
+            throw new RuntimeException('Geçersiz format.');
+        }
+
+        if ($format === 'png') {
+            return [
+                'path' => $pngAbsolutePath,
+                'filename' => $this->safeBaseName($baseName).'-boyanmis.png',
+                'delete_after_send' => false,
+                'extension' => 'png',
+            ];
+        }
+
+        if (in_array($format, ['jpg', 'jpeg'], true)) {
+            $jpgPath = $this->convertRasterToJpeg($pngAbsolutePath);
+
+            return [
+                'path' => $jpgPath,
+                'filename' => $this->safeBaseName($baseName).'-boyanmis.jpg',
+                'delete_after_send' => true,
+                'extension' => 'jpg',
+            ];
+        }
+
+        $pdfPath = $this->convertImageToPdf($pngAbsolutePath);
+
+        return [
+            'path' => $pdfPath,
+            'filename' => $this->safeBaseName($baseName).'-boyanmis.pdf',
+            'delete_after_send' => true,
+            'extension' => 'pdf',
+        ];
+    }
+
     public function inline(FilesystemAdapter $disk, string $path, string $baseName, ?string $requestedFormat): BinaryFileResponse
     {
         $resolved = $this->resolveFileForFormat($disk, $path, $requestedFormat);
@@ -97,6 +182,70 @@ class FileFormatDownloadService
         }
 
         return response()->file($resolved['absolute_path'], $headers);
+    }
+
+    private function convertPdfFirstPageWithImagick(string $pdfAbsolutePath): ?string
+    {
+        try {
+            $imagick = new \Imagick();
+            $imagick->setResolution(144, 144);
+            $imagick->readImage($pdfAbsolutePath.'[0]');
+            $imagick->setImageBackgroundColor('white');
+            $imagick = $imagick->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
+            $imagick->setImageFormat('png');
+
+            $tmpDir = storage_path('app/tmp-converted');
+            if (! is_dir($tmpDir)) {
+                mkdir($tmpDir, 0755, true);
+            }
+
+            $target = $tmpDir.'/'.Str::uuid().'.png';
+            $imagick->writeImage($target);
+            $imagick->clear();
+            $imagick->destroy();
+
+            return is_file($target) ? $target : null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function convertRasterToJpeg(string $pngAbsolutePath): string
+    {
+        $tmpDir = storage_path('app/tmp-converted');
+        if (! is_dir($tmpDir)) {
+            mkdir($tmpDir, 0755, true);
+        }
+
+        $target = $tmpDir.'/'.Str::uuid().'.jpg';
+
+        if (extension_loaded('imagick')) {
+            $img = new \Imagick($pngAbsolutePath);
+            $img->setImageFormat('jpeg');
+            $img->setImageCompressionQuality(92);
+            $img->writeImage($target);
+            $img->clear();
+            $img->destroy();
+
+            return $target;
+        }
+
+        $image = imagecreatefrompng($pngAbsolutePath);
+        if ($image === false) {
+            throw new RuntimeException('Görsel işlenemedi.');
+        }
+
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $canvas = imagecreatetruecolor($width, $height);
+        $white = imagecolorallocate($canvas, 255, 255, 255);
+        imagefill($canvas, 0, 0, $white);
+        imagecopy($canvas, $image, 0, 0, 0, 0, $width, $height);
+        imagejpeg($canvas, $target, 92);
+        imagedestroy($image);
+        imagedestroy($canvas);
+
+        return $target;
     }
 
     private function convertImageToPdf(string $sourceAbsolutePath): string
