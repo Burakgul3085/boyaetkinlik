@@ -16,7 +16,13 @@
     @endif
 
     <section class="mt-6">
-        <form method="post" action="{{ route('blog.store') }}" enctype="multipart/form-data" class="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm md:p-6">
+        <form
+            method="post"
+            action="{{ route('blog.store') }}"
+            enctype="multipart/form-data"
+            class="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm md:p-6"
+            @submit="validateCategory($event)"
+        >
             @csrf
             <div class="grid gap-4 md:grid-cols-2">
                 <label class="block text-sm font-medium text-slate-700">
@@ -45,45 +51,108 @@
                 </label>
             </div>
 
-            <div class="mt-6 rounded-2xl border border-violet-100 bg-violet-50/40 p-4">
+            <div
+                class="mt-6 rounded-2xl border border-violet-100 bg-violet-50/40 p-4"
+                x-data="{
+                    selectedCategory: @js((string) old('blog_category_id', '')),
+                    suggested: @js((string) old('suggested_category_name', '')),
+                    showCategoryWarning: false,
+                    hasListChoice() {
+                        return String(this.selectedCategory).trim() !== '';
+                    },
+                    hasSuggestion() {
+                        return String(this.suggested).trim() !== '';
+                    },
+                    listLocked() {
+                        return this.hasSuggestion();
+                    },
+                    suggestLocked() {
+                        return this.hasListChoice();
+                    },
+                    canSubmitCategory() {
+                        return this.hasListChoice() || this.hasSuggestion();
+                    },
+                    onCategoryChange() {
+                        if (this.hasListChoice()) {
+                            this.suggested = '';
+                        }
+                        this.showCategoryWarning = false;
+                    },
+                    onSuggestionInput() {
+                        if (this.hasSuggestion()) {
+                            this.selectedCategory = '';
+                        }
+                        this.showCategoryWarning = false;
+                    },
+                    validateCategory(event) {
+                        if (!this.canSubmitCategory()) {
+                            event.preventDefault();
+                            this.showCategoryWarning = true;
+                            this.$refs.categoryBlock?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                }"
+                x-ref="categoryBlock"
+            >
                 <p class="text-sm font-semibold text-slate-800">Blog kategorisi *</p>
-                <p class="mt-1 text-xs text-slate-500">İç içe kategorilerden birini seçin (ör. Boyama → Harf Boyama → A Harfi Boyama).</p>
+                <p class="mt-1 text-xs text-slate-500">
+                    Listeden <strong>bir</strong> kategori seçin <strong>veya</strong> yeni kategori önerin; en az biri zorunludur (ikisi birden değil).
+                </p>
 
                 @error('blog_category_id')
                     <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                 @enderror
 
+                <p
+                    x-show="showCategoryWarning"
+                    x-cloak
+                    class="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900"
+                    role="alert"
+                >
+                    Lütfen listeden bir kategori seçin veya yeni kategori adı yazın. Kategori olmadan onaya gönderemezsiniz.
+                </p>
+
                 @if($categoryOptions->isEmpty())
                     <p class="mt-3 text-sm text-amber-800">Henüz yayınlanmış kategori yok; lütfen aşağıdan kategori önerin.</p>
                 @else
-                    <label class="mt-3 block text-sm font-medium text-slate-700">
+                    <label class="mt-3 block text-sm font-medium" :class="listLocked() ? 'text-slate-400' : 'text-slate-700'">
                         Kategori seçin
-                        <select name="blog_category_id" class="input-ui mt-2 w-full">
+                        <select
+                            name="blog_category_id"
+                            x-model="selectedCategory"
+                            @change="onCategoryChange()"
+                            :disabled="listLocked()"
+                            class="input-ui mt-2 w-full disabled:cursor-not-allowed disabled:opacity-50"
+                        >
                             <option value="">— Seçin —</option>
                             @foreach($categoryOptions as $opt)
-                                <option value="{{ $opt['id'] }}" @selected((int) old('blog_category_id') === (int) $opt['id'])>
+                                <option value="{{ $opt['id'] }}">
                                     {{ \App\Models\BlogCategory::adminSelectOptionLabel($opt['depth'], $opt['name']) }}
                                 </option>
                             @endforeach
                         </select>
+                        <span x-show="listLocked()" x-cloak class="mt-1 block text-[11px] text-slate-400">Yeni kategori yazdığınız için liste pasif.</span>
                     </label>
                 @endif
 
-                <label class="mt-4 block text-sm font-medium text-slate-700">
-                    Kategoriniz listede yok mu? (isteğe bağlı öneri)
+                <label class="mt-4 block text-sm font-medium" :class="suggestLocked() ? 'text-slate-400' : 'text-slate-700'">
+                    Kategoriniz listede yok mu? (yeni kategori önerin)
                     <input
                         type="text"
                         name="suggested_category_name"
-                        value="{{ old('suggested_category_name') }}"
-                        class="input-ui mt-2"
+                        x-model="suggested"
+                        @input="onSuggestionInput()"
+                        :disabled="suggestLocked()"
+                        class="input-ui mt-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="Örn: Okul öncesi etkinlik fikirleri"
                     >
+                    <span x-show="suggestLocked()" x-cloak class="mt-1 block text-[11px] text-slate-400">Listeden kategori seçtiğiniz için bu alan pasif.</span>
                 </label>
                 <p class="mt-2 text-xs text-slate-500">Öneri yazarsanız admin onayında adı düzenlenebilir; onaylanınca kategori listesine eklenir.</p>
             </div>
 
             <div class="mt-5 flex flex-wrap items-center gap-3">
-                <button class="btn-primary">Blogu Gönder</button>
+                <button type="submit" class="btn-primary">Blogu Gönder</button>
                 <a href="{{ route('blog.index') }}" class="btn-secondary">Blog Sayfasına Dön</a>
             </div>
         </form>
