@@ -107,7 +107,7 @@
                 <textarea name="description" class="input-ui mt-3">{{ $category->description }}</textarea>
                 <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                        <span class="rounded-full bg-slate-100 px-2 py-1">{{ $category->parentBreadcrumbLabel() }}</span>
+                        <span class="rounded-full bg-slate-100 px-2 py-1">{{ $parentBreadcrumbLabels[$category->id] ?? 'Ana kategori' }}</span>
                         <label class="inline-flex items-center gap-2 text-sm text-slate-700">
                             <input type="hidden" name="show_in_nav" value="0">
                             <input type="checkbox" name="show_in_nav" value="1" @checked($category->show_in_nav)>

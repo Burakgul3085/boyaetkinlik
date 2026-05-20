@@ -206,28 +206,135 @@ class Category extends Model
     }
 
     /**
-     * Boyama sayfası / anasayfa filtre: tüm kategoriler ağaç sırası + derinlik (girinti).
+     * Tüm kategoriler (admin / select için tek sorgu).
+     */
+    public static function allForAdminTree(): Collection
+    {
+        return static::query()
+            ->orderBy('nav_order')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * @return array<int, list<self>>
+     */
+    public static function childrenGroupedByParentId(Collection $all): array
+    {
+        $grouped = [];
+        foreach ($all as $cat) {
+            $key = $cat->parent_id ?? 0;
+            $grouped[$key][] = $cat;
+        }
+
+        return $grouped;
+    }
+
+    /**
+     * @return list<int>
+     */
+    public static function subtreeIdsFromCollection(Collection $all, int $rootId): array
+    {
+        $byParent = static::childrenGroupedByParentId($all);
+        $ids = [$rootId];
+        $frontier = [$rootId];
+        while ($frontier !== []) {
+            $next = [];
+            foreach ($frontier as $pid) {
+                foreach ($byParent[$pid] ?? [] as $child) {
+                    $next[] = $child->id;
+                    $ids[] = $child->id;
+                }
+            }
+            $frontier = $next;
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
+     * Boyama sayfası / anasayfa filtre: tüm kategoriler ağaç sırası + derinlik (bellek içi).
      *
      * @return Collection<int, array{id: int, depth: int, name: string}>
      */
-    public static function orderedFlatWithDepth(): Collection
+    public static function orderedFlatWithDepth(?Collection $all = null): Collection
     {
+        return static::orderedFlatForParentSelect(null, $all);
+    }
+
+    /**
+     * @return Collection<int, array{id: int, depth: int, name: string}>
+     */
+    public static function orderedFlatForParentSelect(?self $editing = null, ?Collection $all = null): Collection
+    {
+        $all = $all ?? static::allForAdminTree();
+        $forbidden = [];
+        if ($editing !== null) {
+            $forbidden = array_flip(static::subtreeIdsFromCollection($all, $editing->id));
+        }
+
+        $byParent = static::childrenGroupedByParentId($all);
         $out = collect();
-        $walk = function (?int $parentId, int $depth) use (&$walk, &$out): void {
-            $q = static::query()->orderBy('nav_order')->orderBy('name');
-            if ($parentId === null) {
-                $q->whereNull('parent_id');
-            } else {
-                $q->where('parent_id', $parentId);
-            }
-            foreach ($q->get() as $cat) {
+        $walk = function (int $parentKey, int $depth) use (&$walk, &$out, $byParent, $forbidden): void {
+            foreach ($byParent[$parentKey] ?? [] as $cat) {
+                if (isset($forbidden[$cat->id])) {
+                    continue;
+                }
                 $out->push(['id' => $cat->id, 'depth' => $depth, 'name' => $cat->name]);
                 $walk($cat->id, $depth + 1);
             }
         };
-        $walk(null, 0);
+        $walk(0, 0);
 
         return $out;
+    }
+
+    /**
+     * Admin liste: her kategori id → üst kategori rozet metni (tek geçiş, ek sorgu yok).
+     *
+     * @return array<int, string>
+     */
+    public static function parentBreadcrumbLabelsFor(Collection $all): array
+    {
+        $byId = $all->keyBy('id');
+        $labels = [];
+        foreach ($all as $cat) {
+            if ($cat->parent_id === null) {
+                $labels[$cat->id] = 'Ana kategori';
+
+                continue;
+            }
+            $parts = [];
+            $id = $cat->parent_id;
+            $guard = 0;
+            while ($id && $guard < 128) {
+                $row = $byId->get($id);
+                if (! $row) {
+                    break;
+                }
+                array_unshift($parts, $row->name);
+                $id = $row->parent_id;
+                $guard++;
+            }
+            $labels[$cat->id] = $parts === [] ? 'Alt kategori' : 'Üst: '.implode(' → ', $parts);
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Düzenleme formları: kategori id → üst kategori select seçenekleri (bellek içi).
+     *
+     * @return array<int, list<array{id: int, depth: int, name: string}>>
+     */
+    public static function parentSelectOptionsForAllEdits(Collection $all): array
+    {
+        $options = [];
+        foreach ($all as $cat) {
+            $options[$cat->id] = static::orderedFlatForParentSelect($cat, $all)->all();
+        }
+
+        return $options;
     }
 
     /**
@@ -242,39 +349,6 @@ class Category extends Model
         $indentUnit = "\u{2007}\u{2007}";
 
         return str_repeat($indentUnit, $depth)."\u{203A}\u{00A0}".$name;
-    }
-
-    /**
-     * Admin üst kategori seçimi: düzenlenen kayıt ve alt ağacı listeden çıkarılır.
-     *
-     * @return Collection<int, array{id: int, depth: int, name: string}>
-     */
-    public static function orderedFlatForParentSelect(?self $editing = null): Collection
-    {
-        $forbidden = [];
-        if ($editing !== null) {
-            $forbidden = array_flip(static::forbiddenParentIdsFor($editing));
-        }
-
-        $out = collect();
-        $walk = function (?int $parentId, int $depth) use (&$walk, &$out, $forbidden): void {
-            $q = static::query()->orderBy('nav_order')->orderBy('name');
-            if ($parentId === null) {
-                $q->whereNull('parent_id');
-            } else {
-                $q->where('parent_id', $parentId);
-            }
-            foreach ($q->get() as $cat) {
-                if (isset($forbidden[$cat->id])) {
-                    continue;
-                }
-                $out->push(['id' => $cat->id, 'depth' => $depth, 'name' => $cat->name]);
-                $walk($cat->id, $depth + 1);
-            }
-        };
-        $walk(null, 0);
-
-        return $out;
     }
 
     /** Admin rozet metni: üst zinciri (Ana kategori veya A → B → C). */

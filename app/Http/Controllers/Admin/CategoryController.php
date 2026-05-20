@@ -12,19 +12,21 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::query()
-            ->with('parent')
-            ->orderBy('parent_id')
-            ->orderBy('nav_order')
-            ->orderBy('name')
-            ->get();
+        $allCategories = Category::allForAdminTree();
+
+        $categories = $allCategories
+            ->sortBy([
+                ['parent_id', 'asc'],
+                ['nav_order', 'asc'],
+                ['name', 'asc'],
+            ])
+            ->values();
 
         return view('admin.categories.index', [
             'categories' => $categories,
-            'parentSelectOptionsCreate' => Category::orderedFlatForParentSelect(null),
-            'parentSelectOptionsForEdit' => $categories->mapWithKeys(
-                fn (Category $c) => [$c->id => Category::orderedFlatForParentSelect($c)]
-            ),
+            'parentBreadcrumbLabels' => Category::parentBreadcrumbLabelsFor($allCategories),
+            'parentSelectOptionsCreate' => Category::orderedFlatForParentSelect(null, $allCategories),
+            'parentSelectOptionsForEdit' => Category::parentSelectOptionsForAllEdits($allCategories),
         ]);
     }
 

@@ -11,9 +11,11 @@ class ColoringPageController extends Controller
 {
     public function index()
     {
+        $allCategories = Category::allForAdminTree();
+
         return view('admin.pages.index', [
             'pages' => ColoringPage::query()->with('category')->latest()->get(),
-            'categoryAssignmentOptions' => Category::orderedFlatWithDepth(),
+            'categoryAssignmentOptions' => Category::orderedFlatWithDepth($allCategories),
         ]);
     }
 
