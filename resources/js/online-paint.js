@@ -14,6 +14,7 @@ function bootOnlinePaint() {
     const lineCanvas = document.getElementById('line-canvas');
     const hitLayer = document.getElementById('paint-hit-layer');
     const stage = document.getElementById('canvas-stage');
+    const scaler = document.getElementById('canvas-scaler');
     const wrap = document.getElementById('canvas-wrap');
     const loader = document.getElementById('paint-loader');
     const errBox = document.getElementById('paint-error');
@@ -29,12 +30,16 @@ function bootOnlinePaint() {
         tool: 'brush',
         color: '#ef4444',
         size: 18,
+        opacity: 100,
+        softness: 35,
+        viewZoom: 1,
         drawing: false,
         pointerId: null,
         lastX: 0,
         lastY: 0,
         undoStack: [],
         redoStack: [],
+        recentColors: [],
         naturalW: 0,
         naturalH: 0,
         scale: 1,
@@ -44,13 +49,24 @@ function bootOnlinePaint() {
 
     const toolButtons = document.querySelectorAll('[data-paint-tool]');
     const colorInput = document.getElementById('paint-color-custom');
+    const colorPreviewSwatch = document.getElementById('paint-color-preview-swatch');
+    const colorPreviewHex = document.getElementById('paint-color-preview-hex');
+    const recentColorsEl = document.getElementById('paint-recent-colors');
+    const brushSettingsEl = document.getElementById('paint-brush-settings');
     const sizeInput = document.getElementById('paint-size');
     const sizeLabel = document.getElementById('paint-size-label');
+    const opacityInput = document.getElementById('paint-opacity');
+    const opacityLabel = document.getElementById('paint-opacity-label');
+    const softnessInput = document.getElementById('paint-softness');
+    const softnessLabel = document.getElementById('paint-softness-label');
     const swatches = document.querySelectorAll('[data-paint-color]');
     const undoBtn = document.getElementById('paint-undo');
     const redoBtn = document.getElementById('paint-redo');
     const clearBtn = document.getElementById('paint-clear');
     const zoomFitBtn = document.getElementById('paint-zoom-fit');
+    const zoomInBtn = document.getElementById('paint-zoom-in');
+    const zoomOutBtn = document.getElementById('paint-zoom-out');
+    const zoomLabel = document.getElementById('paint-zoom-label');
     const downloadBtns = document.querySelectorAll('[data-paint-download]');
     const printBtn = document.getElementById('paint-print');
     const emailForm = document.getElementById('paint-email-form');
@@ -100,6 +116,17 @@ function bootOnlinePaint() {
         stage.style.width = `${displayW}px`;
         stage.style.height = `${displayH}px`;
         stage.style.aspectRatio = `${state.naturalW} / ${state.naturalH}`;
+        applyViewZoom();
+    }
+
+    function applyViewZoom() {
+        const z = state.viewZoom;
+        if (scaler) {
+            scaler.style.transform = `scale(${z})`;
+        }
+        if (zoomLabel) {
+            zoomLabel.textContent = `${Math.round(z * 100)}%`;
+        }
     }
 
     function resizeCanvases(w, h) {
@@ -208,27 +235,13 @@ function bootOnlinePaint() {
         toolButtons.forEach((btn) => {
             btn.classList.toggle('online-paint-tool--active', btn.dataset.paintTool === tool);
         });
-        const cursor = tool === 'fill' ? 'cell' : tool === 'eraser' ? 'grab' : 'crosshair';
+        const cursor =
+            tool === 'fill' ? 'cell' : tool === 'eraser' ? 'grab' : tool === 'picker' ? 'copy' : 'crosshair';
         hitLayer.style.cursor = cursor;
-    }
-
-    function drawLine(x0, y0, x1, y1) {
-        paintCtx.save();
-        paintCtx.lineCap = 'round';
-        paintCtx.lineJoin = 'round';
-        paintCtx.lineWidth = state.size;
-        if (state.tool === 'eraser') {
-            paintCtx.globalCompositeOperation = 'destination-out';
-            paintCtx.strokeStyle = 'rgba(0,0,0,1)';
-        } else {
-            paintCtx.globalCompositeOperation = 'source-over';
-            paintCtx.strokeStyle = state.color;
+        const showBrush = ['brush', 'pencil', 'marker', 'spray'].includes(tool);
+        if (brushSettingsEl) {
+            brushSettingsEl.classList.toggle('hidden', !showBrush);
         }
-        paintCtx.beginPath();
-        paintCtx.moveTo(x0, y0);
-        paintCtx.lineTo(x1, y1);
-        paintCtx.stroke();
-        paintCtx.restore();
     }
 
     function hexToRgba(hex) {
@@ -236,6 +249,159 @@ function bootOnlinePaint() {
         const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
         const n = parseInt(full, 16);
         return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 255 };
+    }
+
+    function rgbToHex(r, g, b) {
+        const h = (v) => v.toString(16).padStart(2, '0');
+        return `#${h(r)}${h(g)}${h(b)}`.toUpperCase();
+    }
+
+    function strokeColor() {
+        if (state.tool === 'eraser') {
+            return 'rgba(0,0,0,1)';
+        }
+        const c = hexToRgba(state.color);
+        const a = state.opacity / 100;
+        return `rgba(${c.r},${c.g},${c.b},${a})`;
+    }
+
+    function fillRgb() {
+        const c = hexToRgba(state.color);
+        const a = Math.round((state.opacity / 100) * 255);
+        return { ...c, a };
+    }
+
+    function updateColorPreview() {
+        if (colorPreviewSwatch) {
+            colorPreviewSwatch.style.backgroundColor = state.color;
+        }
+        if (colorPreviewHex) {
+            colorPreviewHex.textContent = state.color.toUpperCase();
+        }
+    }
+
+    function renderRecentColors() {
+        if (!recentColorsEl) return;
+        recentColorsEl.innerHTML = '';
+        state.recentColors.forEach((hex) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'online-paint-swatch';
+            btn.dataset.paintColor = hex;
+            btn.style.backgroundColor = hex;
+            btn.title = hex;
+            btn.addEventListener('click', () => setColor(hex));
+            recentColorsEl.appendChild(btn);
+        });
+    }
+
+    function pushRecentColor(hex) {
+        const normalized = hex.toLowerCase();
+        state.recentColors = state.recentColors.filter((c) => c.toLowerCase() !== normalized);
+        state.recentColors.unshift(hex);
+        if (state.recentColors.length > 8) {
+            state.recentColors.pop();
+        }
+        renderRecentColors();
+    }
+
+    function setColor(hex) {
+        state.color = hex;
+        if (colorInput) colorInput.value = hex;
+        swatches.forEach((s) => {
+            s.classList.toggle('online-paint-swatch--active', s.dataset.paintColor?.toLowerCase() === hex.toLowerCase());
+        });
+        updateColorPreview();
+        pushRecentColor(hex);
+    }
+
+    function configureBrush() {
+        paintCtx.shadowBlur = 0;
+        if (state.tool === 'eraser') {
+            paintCtx.globalCompositeOperation = 'destination-out';
+            paintCtx.lineCap = 'round';
+            paintCtx.lineJoin = 'round';
+            paintCtx.lineWidth = state.size;
+            paintCtx.strokeStyle = 'rgba(0,0,0,1)';
+            return;
+        }
+        paintCtx.globalCompositeOperation = 'source-over';
+        const soft = state.softness / 100;
+        if (state.tool === 'pencil') {
+            paintCtx.lineCap = 'round';
+            paintCtx.lineJoin = 'round';
+            paintCtx.lineWidth = Math.max(1, state.size * 0.3);
+            paintCtx.strokeStyle = strokeColor();
+        } else if (state.tool === 'marker') {
+            paintCtx.lineCap = 'square';
+            paintCtx.lineJoin = 'round';
+            paintCtx.lineWidth = state.size * 1.2;
+            paintCtx.strokeStyle = strokeColor();
+        } else if (state.tool === 'brush') {
+            paintCtx.lineCap = 'round';
+            paintCtx.lineJoin = 'round';
+            paintCtx.lineWidth = state.size;
+            paintCtx.shadowBlur = soft * state.size * 0.5;
+            paintCtx.shadowColor = strokeColor();
+            paintCtx.strokeStyle = strokeColor();
+        }
+    }
+
+    function sprayAt(x, y) {
+        paintCtx.save();
+        paintCtx.globalCompositeOperation = 'source-over';
+        paintCtx.fillStyle = strokeColor();
+        const dots = Math.max(4, Math.floor(state.size / 2));
+        const radius = state.size * 0.55;
+        for (let i = 0; i < dots; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * radius;
+            const r = Math.random() * state.size * 0.12 + 0.8;
+            paintCtx.beginPath();
+            paintCtx.arc(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist, r, 0, Math.PI * 2);
+            paintCtx.fill();
+        }
+        paintCtx.restore();
+    }
+
+    function sprayBetween(x0, y0, x1, y1) {
+        const dist = Math.hypot(x1 - x0, y1 - y0);
+        const steps = Math.max(1, Math.ceil(dist / (state.size * 0.25)));
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            sprayAt(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+        }
+    }
+
+    function drawLine(x0, y0, x1, y1) {
+        if (state.tool === 'spray') {
+            sprayBetween(x0, y0, x1, y1);
+            return;
+        }
+        paintCtx.save();
+        configureBrush();
+        paintCtx.beginPath();
+        paintCtx.moveTo(x0, y0);
+        paintCtx.lineTo(x1, y1);
+        paintCtx.stroke();
+        paintCtx.restore();
+        paintCtx.shadowBlur = 0;
+    }
+
+    function pickColorAt(x, y) {
+        const dpr = paintCanvas.width / state.naturalW;
+        const px = Math.floor(x * dpr);
+        const py = Math.floor(y * dpr);
+        const paint = paintCtx.getImageData(px, py, 1, 1).data;
+        if (paint[3] > 20) {
+            return rgbToHex(paint[0], paint[1], paint[2]);
+        }
+        const line = lineCtx.getImageData(px, py, 1, 1).data;
+        const lum = line[0] * 0.299 + line[1] * 0.587 + line[2] * 0.114;
+        if (line[3] > 40 && lum < 230) {
+            return rgbToHex(line[0], line[1], line[2]);
+        }
+        return null;
     }
 
     function floodFill(startX, startY) {
@@ -254,13 +420,13 @@ function bootOnlinePaint() {
         const startG = data[startPos + 1];
         const startB = data[startPos + 2];
         const startA = data[startPos + 3];
-        const fill = hexToRgba(state.color);
+        const fill = fillRgb();
 
         if (
             startR === fill.r &&
             startG === fill.g &&
             startB === fill.b &&
-            startA === fill.a
+            Math.abs(startA - fill.a) < 8
         ) {
             return;
         }
@@ -293,7 +459,7 @@ function bootOnlinePaint() {
             data[idx] = fill.r;
             data[idx + 1] = fill.g;
             data[idx + 2] = fill.b;
-            data[idx + 3] = 255;
+            data[idx + 3] = fill.a;
             stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
         }
 
@@ -307,6 +473,17 @@ function bootOnlinePaint() {
         e.preventDefault();
         e.stopPropagation();
 
+        const pt = canvasPoint(e.clientX, e.clientY);
+
+        if (state.tool === 'picker') {
+            const picked = pickColorAt(pt.x, pt.y);
+            if (picked) {
+                setColor(picked);
+            }
+            setTool('brush');
+            return;
+        }
+
         try {
             hitLayer.setPointerCapture(e.pointerId);
         } catch {
@@ -314,7 +491,6 @@ function bootOnlinePaint() {
         }
 
         state.pointerId = e.pointerId;
-        const pt = canvasPoint(e.clientX, e.clientY);
 
         if (state.tool === 'fill') {
             saveUndo();
@@ -412,23 +588,45 @@ function bootOnlinePaint() {
     });
 
     swatches.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            state.color = btn.dataset.paintColor;
-            if (colorInput) colorInput.value = state.color;
-            swatches.forEach((s) => s.classList.toggle('online-paint-swatch--active', s === btn));
-        });
+        btn.addEventListener('click', () => setColor(btn.dataset.paintColor || '#000000'));
     });
 
     if (colorInput) {
-        colorInput.addEventListener('input', () => {
-            state.color = colorInput.value;
-        });
+        colorInput.addEventListener('input', () => setColor(colorInput.value));
     }
 
     if (sizeInput) {
         sizeInput.addEventListener('input', () => {
             state.size = Number(sizeInput.value);
             if (sizeLabel) sizeLabel.textContent = String(state.size);
+        });
+    }
+
+    if (opacityInput) {
+        opacityInput.addEventListener('input', () => {
+            state.opacity = Number(opacityInput.value);
+            if (opacityLabel) opacityLabel.textContent = `${state.opacity}%`;
+        });
+    }
+
+    if (softnessInput) {
+        softnessInput.addEventListener('input', () => {
+            state.softness = Number(softnessInput.value);
+            if (softnessLabel) softnessLabel.textContent = `${state.softness}%`;
+        });
+    }
+
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => {
+            state.viewZoom = Math.min(2.5, Math.round((state.viewZoom + 0.15) * 100) / 100);
+            applyViewZoom();
+        });
+    }
+
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => {
+            state.viewZoom = Math.max(0.5, Math.round((state.viewZoom - 0.15) * 100) / 100);
+            applyViewZoom();
         });
     }
 
@@ -443,7 +641,12 @@ function bootOnlinePaint() {
         });
     }
 
-    if (zoomFitBtn) zoomFitBtn.addEventListener('click', fitToView);
+    if (zoomFitBtn) {
+        zoomFitBtn.addEventListener('click', () => {
+            state.viewZoom = 1;
+            fitToView();
+        });
+    }
 
     if (typeof ResizeObserver !== 'undefined') {
         const ro = new ResizeObserver(() => {
@@ -574,8 +777,8 @@ function bootOnlinePaint() {
     }
 
     loadLineArt();
+    setColor(state.color);
     setTool('brush');
-    if (swatches[0]) swatches[0].classList.add('online-paint-swatch--active');
 }
 
 window.bootOnlinePaint = bootOnlinePaint;
