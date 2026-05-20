@@ -56,19 +56,17 @@
                 @if($categories->isEmpty())
                     <p class="mt-3 text-sm text-amber-800">Henüz yayınlanmış kategori yok; lütfen aşağıdan kategori önerin.</p>
                 @else
-                    <div class="mt-3 flex flex-wrap gap-2">
+                    <div class="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-label="Blog kategorisi">
                         @foreach($categories as $cat)
-                            <label class="cursor-pointer">
+                            <label class="blog-cat-chip">
                                 <input
                                     type="radio"
                                     name="blog_category_id"
                                     value="{{ $cat->id }}"
-                                    class="peer sr-only"
+                                    class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                                     @checked((string) old('blog_category_id') === (string) $cat->id)
                                 >
-                                <span class="inline-flex rounded-full border border-violet-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition peer-checked:border-violet-500 peer-checked:bg-violet-600 peer-checked:text-white hover:border-violet-300">
-                                    {{ $cat->name }}
-                                </span>
+                                <span class="pointer-events-none relative z-0">{{ $cat->name }}</span>
                             </label>
                         @endforeach
                     </div>

@@ -121,6 +121,21 @@
         @apply inline-flex items-center justify-center rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700;
     }
 
+    /* Blog gönder: kategori chip — :has ile seçili durum (peer/sr-only yerine) */
+    .blog-cat-chip {
+        @apply relative inline-flex cursor-pointer select-none items-center rounded-full border border-violet-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-violet-300;
+    }
+
+    .blog-cat-chip:has(input:checked) {
+        @apply border-violet-500 bg-violet-600 text-white shadow-sm;
+    }
+
+    html.dark .blog-cat-chip:has(input:checked) {
+        background-color: #7c3aed !important;
+        border-color: #8b5cf6 !important;
+        color: #fff !important;
+    }
+
     .paid-marquee {
         @apply overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-r from-violet-50/70 via-white to-indigo-50/70 p-2;
         position: relative;
