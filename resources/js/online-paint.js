@@ -2,10 +2,13 @@
  * Online Boya — çizgi üstte, boyama altta; tıklamalar paint-hit-layer üzerinden.
  */
 const MAX_UNDO = 40;
+let paintStudioStarted = false;
 
 function bootOnlinePaint() {
+    if (paintStudioStarted) return;
     const config = window.__ONLINE_PAINT__;
     if (!config?.lineArtUrl) return;
+    paintStudioStarted = true;
 
     const paintCanvas = document.getElementById('paint-canvas');
     const lineCanvas = document.getElementById('line-canvas');
@@ -118,6 +121,35 @@ function bootOnlinePaint() {
         state.linePixels = lineCtx.getImageData(0, 0, w, h).data;
     }
 
+    /** JPG/PNG beyaz zeminini şeffaf yap — boyama katmanı görünsün */
+    function applyLineArtTransparency() {
+        const w = lineCanvas.width;
+        const h = lineCanvas.height;
+        const imageData = lineCtx.getImageData(0, 0, w, h);
+        const d = imageData.data;
+
+        for (let i = 0; i < d.length; i += 4) {
+            const r = d[i];
+            const g = d[i + 1];
+            const b = d[i + 2];
+            const lum = r * 0.299 + g * 0.587 + b * 0.114;
+
+            if (lum >= 245) {
+                d[i + 3] = 0;
+            } else if (lum <= 95) {
+                d[i] = 0;
+                d[i + 1] = 0;
+                d[i + 2] = 0;
+                d[i + 3] = 255;
+            } else {
+                d[i + 3] = Math.max(0, Math.min(255, Math.round((245 - lum) * 4.5)));
+            }
+        }
+
+        lineCtx.putImageData(imageData, 0, 0);
+        cacheLinePixels();
+    }
+
     function isLineBarrier(px, py) {
         const data = state.linePixels;
         if (!data) return false;
@@ -126,9 +158,9 @@ function bootOnlinePaint() {
         if (px < 0 || py < 0 || px >= w || py >= h) return true;
         const idx = (py * w + px) * 4;
         const a = data[idx + 3];
-        if (a < 48) return false;
+        if (a < 64) return false;
         const lum = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
-        return lum < 200;
+        return lum < 210;
     }
 
     function canvasPoint(clientX, clientY) {
@@ -368,6 +400,10 @@ function bootOnlinePaint() {
         state.pointerId = null;
     });
 
+    hitLayer.addEventListener('mousedown', pointerDown);
+    hitLayer.addEventListener('mousemove', pointerMove);
+    window.addEventListener('mouseup', pointerUp);
+
     toolButtons.forEach((btn) => {
         btn.addEventListener('click', (ev) => {
             ev.preventDefault();
@@ -515,7 +551,7 @@ function bootOnlinePaint() {
                 resizeCanvases(w, h);
                 lineCtx.clearRect(0, 0, state.naturalW, state.naturalH);
                 lineCtx.drawImage(img, 0, 0, state.naturalW, state.naturalH);
-                cacheLinePixels();
+                applyLineArtTransparency();
                 URL.revokeObjectURL(objectUrl);
                 state.ready = true;
                 if (loader) {
@@ -541,6 +577,8 @@ function bootOnlinePaint() {
     setTool('brush');
     if (swatches[0]) swatches[0].classList.add('online-paint-swatch--active');
 }
+
+window.bootOnlinePaint = bootOnlinePaint;
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootOnlinePaint);

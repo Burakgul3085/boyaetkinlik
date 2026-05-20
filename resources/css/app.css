@@ -302,6 +302,7 @@
     .online-paint-canvas--lines {
         @apply z-[1];
         pointer-events: none;
+        mix-blend-mode: multiply;
     }
 
     .online-paint-loader {
