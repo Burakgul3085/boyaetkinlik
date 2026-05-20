@@ -136,6 +136,42 @@
         color: #fff !important;
     }
 
+    .blog-filter-panel {
+        @apply lg:sticky lg:top-4;
+    }
+
+    .blog-filter-link {
+        @apply flex items-center justify-between gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-slate-700 transition;
+    }
+
+    .blog-filter-link:hover {
+        @apply border-violet-200 bg-violet-50 text-violet-800;
+    }
+
+    .blog-filter-link--active {
+        @apply border-violet-500 bg-violet-600 text-white shadow-sm;
+    }
+
+    .blog-filter-link--active:hover {
+        @apply border-violet-500 bg-violet-600 text-white;
+    }
+
+    .blog-filter-link--path {
+        @apply border-violet-200 bg-violet-50/80 text-violet-800;
+    }
+
+    .blog-filter-count {
+        @apply rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-slate-600;
+    }
+
+    .blog-filter-count--active {
+        @apply bg-white/25 text-white;
+    }
+
+    .blog-filter-toggle {
+        @apply mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-100 text-violet-600 transition hover:bg-violet-50;
+    }
+
     .paid-marquee {
         @apply overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-r from-violet-50/70 via-white to-indigo-50/70 p-2;
         position: relative;

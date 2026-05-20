@@ -284,6 +284,47 @@ class BlogCategory extends Model
     }
 
     /**
+     * Aktif kategori + üst zincir id'leri (filtre paneli açık tutmak için).
+     *
+     * @return list<int>
+     */
+    public static function activePathIds(?self $active): array
+    {
+        if ($active === null) {
+            return [];
+        }
+
+        return array_values(array_unique(array_merge(
+            $active->ancestorChain()->pluck('id')->all(),
+            [$active->id]
+        )));
+    }
+
+    /**
+     * Ziyaretçi blog filtresi: kökten başlayan iç içe ağaç.
+     *
+     * @return list<array{category: self, children: array}>
+     */
+    public static function buildActiveFilterTree(Collection $all): array
+    {
+        $byParent = static::childrenGroupedByParentId($all);
+
+        $build = function (int $parentKey) use (&$build, $byParent): array {
+            $nodes = [];
+            foreach ($byParent[$parentKey] ?? [] as $cat) {
+                $nodes[] = [
+                    'category' => $cat,
+                    'children' => $build($cat->id),
+                ];
+            }
+
+            return $nodes;
+        };
+
+        return $build(0);
+    }
+
+    /**
      * @return list<array{label: string, url: string|null}>
      */
     public function breadcrumbItems(): array

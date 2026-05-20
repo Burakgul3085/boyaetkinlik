@@ -14,8 +14,6 @@ class BlogController extends Controller
         $allCategories = BlogCategory::query()->active()->ordered()->get();
         $subtreeCounts = BlogCategory::subtreeBlogCounts($allCategories, approvedOnly: true);
 
-        $rootCategories = $allCategories->whereNull('parent_id')->values();
-
         $activeCategory = null;
         $categorySlug = $request->string('kategori')->toString();
         if ($categorySlug !== '') {
@@ -29,20 +27,18 @@ class BlogController extends Controller
         }
 
         $breadcrumbItems = [];
-        $childCategories = collect();
         if ($activeCategory) {
             $breadcrumbItems = $activeCategory->breadcrumbItems();
-            $activeCategory->load(['children' => fn ($q) => $q->active()->ordered()]);
-            $childCategories = $activeCategory->children;
         }
 
         return view('frontend.blog.index', [
             'blogs' => $blogsQuery->paginate(9)->withQueryString(),
-            'rootCategories' => $rootCategories,
             'subtreeCounts' => $subtreeCounts,
             'activeCategory' => $activeCategory,
             'breadcrumbItems' => $breadcrumbItems,
-            'childCategories' => $childCategories,
+            'categoryFilterTree' => BlogCategory::buildActiveFilterTree($allCategories),
+            'activePathIds' => BlogCategory::activePathIds($activeCategory),
+            'totalBlogCount' => Blog::query()->approved()->count(),
         ]);
     }
 
@@ -52,10 +48,7 @@ class BlogController extends Controller
 
         $allCategories = BlogCategory::query()->active()->ordered()->get();
         $subtreeCounts = BlogCategory::subtreeBlogCounts($allCategories, approvedOnly: true);
-        $rootCategories = $allCategories->whereNull('parent_id')->values();
         $categoryIds = BlogCategory::subtreeIdsIncludingSelf($blogCategory->id);
-
-        $blogCategory->load(['children' => fn ($q) => $q->active()->ordered()]);
 
         return view('frontend.blog.index', [
             'blogs' => Blog::query()
@@ -64,11 +57,12 @@ class BlogController extends Controller
                 ->whereIn('blog_category_id', $categoryIds)
                 ->latest()
                 ->paginate(9),
-            'rootCategories' => $rootCategories,
             'subtreeCounts' => $subtreeCounts,
             'activeCategory' => $blogCategory,
             'breadcrumbItems' => $blogCategory->breadcrumbItems(),
-            'childCategories' => $blogCategory->children,
+            'categoryFilterTree' => BlogCategory::buildActiveFilterTree($allCategories),
+            'activePathIds' => BlogCategory::activePathIds($blogCategory),
+            'totalBlogCount' => Blog::query()->approved()->count(),
         ]);
     }
 
