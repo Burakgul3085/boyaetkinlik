@@ -82,29 +82,25 @@ class ColoringPage extends Model
     }
 
     /**
-     * Online boya çizgi katmanı: önce ana dosya (pdf_path), yoksa ücretsiz ürünlerde kapak görseli.
+     * Online boya: yalnızca indirilebilir ana dosya (pdf_path). Kapak önizlemesi kullanılmaz.
      *
      * @return array{disk: FilesystemContract, path: string}
      */
     public function lineArtFileSource(): array
     {
-        $main = $this->resolveMainFileStorage();
-        if ($main !== null) {
-            return $main;
+        $path = trim((string) $this->pdf_path);
+        if ($path === '') {
+            throw new RuntimeException('Ana dosya yolu tanımlı değil.');
         }
 
-        $cover = trim((string) $this->cover_image_path);
-        if ($this->is_free && $cover !== '') {
-            $ext = strtolower((string) pathinfo($cover, PATHINFO_EXTENSION));
-            if (in_array($ext, ['png', 'jpg', 'jpeg'], true)) {
-                $disk = Storage::disk('public');
-                if ($disk->exists($cover)) {
-                    return ['disk' => $disk, 'path' => $cover];
-                }
+        foreach (['public', 'local'] as $diskName) {
+            $disk = Storage::disk($diskName);
+            if ($disk->exists($path) || is_file($disk->path($path))) {
+                return ['disk' => $disk, 'path' => $path];
             }
         }
 
-        throw new RuntimeException('Boyama dosyası bulunamadı.');
+        throw new RuntimeException('Ana dosya sunucuda bulunamadı.');
     }
 
     /**

@@ -73,6 +73,7 @@ Route::get('/boyama/{coloringPage}/free-print', [ColoringPageController::class, 
 Route::post('/boyama/{coloringPage}/ucretsiz-eposta', [ColoringPageController::class, 'sendFreeToEmail'])
     ->middleware('throttle:6,1')
     ->name('products.free.email');
+Route::redirect('/boyama/{coloringPage}/online_boya', '/boyama/{coloringPage}/online-boya');
 Route::get('/boyama/{coloringPage}/online-boya', [ColoringPageController::class, 'onlinePaint'])->name('products.online-paint');
 Route::get('/boyama/{coloringPage}/online-boya/cizgi', [ColoringPageController::class, 'onlinePaintLineArt'])->name('products.online-paint.line-art');
 Route::post('/boyama/{coloringPage}/online-boya/indir', [ColoringPageController::class, 'onlinePaintExport'])

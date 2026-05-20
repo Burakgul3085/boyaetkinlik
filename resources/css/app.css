@@ -267,20 +267,23 @@
     }
 
     .online-paint-canvas-stage {
-        @apply relative shadow-lg;
+        @apply relative mx-auto shadow-lg;
+        touch-action: none;
         background: #fff;
     }
 
     .online-paint-canvas {
-        @apply absolute left-0 top-0 block;
+        @apply absolute left-0 top-0 block h-full w-full;
     }
 
     .online-paint-canvas--paint {
-        @apply z-0;
+        @apply z-0 cursor-crosshair;
+        pointer-events: auto;
     }
 
     .online-paint-canvas--lines {
-        @apply z-10 pointer-events-none;
+        @apply z-10;
+        pointer-events: none;
     }
 
     .online-paint-loader {

@@ -202,6 +202,9 @@ class FileFormatDownloadService
 
         if (extension_loaded('imagick')) {
             $img = new \Imagick($sourceAbsolutePath);
+            if (method_exists($img, 'autoOrient')) {
+                $img->autoOrient();
+            }
             $img->setImageFormat('png');
             $img->writeImage($target);
             $img->clear();
@@ -223,6 +226,7 @@ class FileFormatDownloadService
             throw new RuntimeException('Görsel PNG\'ye dönüştürülemedi.');
         }
 
+        $image = $this->applyExifOrientation($image, $sourceAbsolutePath);
         imagepng($image, $target);
         imagedestroy($image);
 
@@ -233,11 +237,39 @@ class FileFormatDownloadService
         return ['absolute_path' => $target, 'is_temporary' => true];
     }
 
+    /**
+     * @param \GdImage|resource $image
+     * @return \GdImage|resource
+     */
+    private function applyExifOrientation($image, string $absolutePath)
+    {
+        if (! function_exists('exif_read_data')) {
+            return $image;
+        }
+
+        $ext = strtolower((string) pathinfo($absolutePath, PATHINFO_EXTENSION));
+        if (! in_array($ext, ['jpg', 'jpeg'], true)) {
+            return $image;
+        }
+
+        $exif = @exif_read_data($absolutePath);
+        if (! is_array($exif) || empty($exif['Orientation'])) {
+            return $image;
+        }
+
+        return match ((int) $exif['Orientation']) {
+            3 => imagerotate($image, 180, 0) ?: $image,
+            6 => imagerotate($image, -90, 0) ?: $image,
+            8 => imagerotate($image, 90, 0) ?: $image,
+            default => $image,
+        };
+    }
+
     private function convertPdfFirstPageWithImagick(string $pdfAbsolutePath): ?string
     {
         try {
             $imagick = new \Imagick();
-            $imagick->setResolution(144, 144);
+            $imagick->setResolution(200, 200);
             $imagick->readImage($pdfAbsolutePath.'[0]');
             $imagick->setImageBackgroundColor('white');
             $imagick = $imagick->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);

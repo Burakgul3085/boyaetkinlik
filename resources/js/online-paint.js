@@ -12,16 +12,17 @@ const MAX_UNDO = 40;
 function initOnlinePaint(config) {
     const paintCanvas = document.getElementById('paint-canvas');
     const lineCanvas = document.getElementById('line-canvas');
+    const stage = document.getElementById('canvas-stage');
     const wrap = document.getElementById('canvas-wrap');
     const loader = document.getElementById('paint-loader');
     const errBox = document.getElementById('paint-error');
 
-    if (!paintCanvas || !lineCanvas || !config?.lineArtUrl) {
+    if (!paintCanvas || !lineCanvas || !stage || !config?.lineArtUrl) {
         return;
     }
 
-    const paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
-    const lineCtx = lineCanvas.getContext('2d');
+    let paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
+    let lineCtx = lineCanvas.getContext('2d');
 
     const state = {
         tool: 'brush',
@@ -58,18 +59,22 @@ function initOnlinePaint(config) {
         }
     }
 
-    function resizeCanvases(w, h) {
+    function setupCanvasContexts() {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        paintCanvas.width = Math.floor(state.naturalW * dpr);
+        paintCanvas.height = Math.floor(state.naturalH * dpr);
+        lineCanvas.width = Math.floor(state.naturalW * dpr);
+        lineCanvas.height = Math.floor(state.naturalH * dpr);
+        paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
+        lineCtx = lineCanvas.getContext('2d');
+        paintCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        lineCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function resizeCanvases(w, h) {
         state.naturalW = w;
         state.naturalH = h;
-        [paintCanvas, lineCanvas].forEach((canvas) => {
-            canvas.width = Math.floor(w * dpr);
-            canvas.height = Math.floor(h * dpr);
-            canvas.style.width = `${w}px`;
-            canvas.style.height = `${h}px`;
-            const ctx = canvas.getContext('2d');
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        });
+        setupCanvasContexts();
         paintCtx.fillStyle = '#ffffff';
         paintCtx.fillRect(0, 0, w, h);
         fitToView();
@@ -78,23 +83,23 @@ function initOnlinePaint(config) {
     function fitToView() {
         if (!wrap || !state.naturalW) return;
         const pad = 24;
-        const maxW = wrap.clientWidth - pad;
-        const maxH = wrap.clientHeight - pad;
+        const maxW = Math.max(wrap.clientWidth - pad, 120);
+        const maxH = Math.max(wrap.clientHeight - pad, 120);
         state.scale = Math.min(maxW / state.naturalW, maxH / state.naturalH, 1);
-        const displayW = state.naturalW * state.scale;
-        const displayH = state.naturalH * state.scale;
-        const inner = document.getElementById('canvas-stage');
-        if (inner) {
-            inner.style.width = `${displayW}px`;
-            inner.style.height = `${displayH}px`;
-        }
+        const displayW = Math.round(state.naturalW * state.scale);
+        const displayH = Math.round(state.naturalH * state.scale);
+        stage.style.width = `${displayW}px`;
+        stage.style.height = `${displayH}px`;
     }
 
-    function canvasPoint(canvas, clientX, clientY) {
-        const rect = canvas.getBoundingClientRect();
+    function canvasPoint(clientX, clientY) {
+        const rect = stage.getBoundingClientRect();
         const x = ((clientX - rect.left) / rect.width) * state.naturalW;
         const y = ((clientY - rect.top) / rect.height) * state.naturalH;
-        return { x, y };
+        return {
+            x: Math.max(0, Math.min(state.naturalW, x)),
+            y: Math.max(0, Math.min(state.naturalH, y)),
+        };
     }
 
     function saveUndo() {
@@ -216,7 +221,7 @@ function initOnlinePaint(config) {
     function pointerDown(e) {
         if (e.button !== undefined && e.button !== 0) return;
         e.preventDefault();
-        const pt = canvasPoint(paintCanvas, e.clientX, e.clientY);
+        const pt = canvasPoint(e.clientX, e.clientY);
         if (state.tool === 'fill') {
             saveUndo();
             floodFill(pt.x, pt.y);
@@ -232,7 +237,7 @@ function initOnlinePaint(config) {
     function pointerMove(e) {
         if (!state.drawing) return;
         e.preventDefault();
-        const pt = canvasPoint(paintCanvas, e.clientX, e.clientY);
+        const pt = canvasPoint(e.clientX, e.clientY);
         drawLine(state.lastX, state.lastY, pt.x, pt.y);
         state.lastX = pt.x;
         state.lastY = pt.y;
@@ -278,13 +283,13 @@ function initOnlinePaint(config) {
         return res.blob();
     }
 
-    paintCanvas.addEventListener('mousedown', pointerDown);
-    paintCanvas.addEventListener('mousemove', pointerMove);
+    stage.addEventListener('mousedown', pointerDown);
+    stage.addEventListener('mousemove', pointerMove);
     window.addEventListener('mouseup', pointerUp);
-    paintCanvas.addEventListener('touchstart', (e) => {
+    stage.addEventListener('touchstart', (e) => {
         if (e.touches[0]) pointerDown(e.touches[0]);
     }, { passive: false });
-    paintCanvas.addEventListener('touchmove', (e) => {
+    stage.addEventListener('touchmove', (e) => {
         if (e.touches[0]) pointerMove(e.touches[0]);
     }, { passive: false });
     window.addEventListener('touchend', pointerUp);
@@ -418,11 +423,14 @@ function initOnlinePaint(config) {
             const objectUrl = URL.createObjectURL(blob);
             const img = new Image();
             img.onload = () => {
-                resizeCanvases(img.naturalWidth, img.naturalHeight);
+                const w = img.naturalWidth || img.width;
+                const h = img.naturalHeight || img.height;
+                resizeCanvases(w, h);
                 lineCtx.clearRect(0, 0, state.naturalW, state.naturalH);
                 lineCtx.drawImage(img, 0, 0, state.naturalW, state.naturalH);
                 URL.revokeObjectURL(objectUrl);
                 if (loader) loader.classList.add('hidden');
+                requestAnimationFrame(fitToView);
             };
             img.onerror = () => {
                 URL.revokeObjectURL(objectUrl);
