@@ -644,8 +644,8 @@
         </div>
     </div>
     <div class="border-t border-white/20">
-        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-indigo-100/90">
-            <div class="relative z-20 inline-flex flex-wrap items-center gap-2">
+        <div class="mx-auto grid max-w-7xl grid-cols-1 items-center gap-3 px-4 py-3 text-xs text-indigo-100/90 md:grid-cols-3">
+            <div class="relative z-20 inline-flex flex-wrap items-center justify-center gap-2 md:justify-start">
                 <span class="select-none">© 2026 Burak Gül tarafından geliştirilmiştir.</span>
                 {{-- Gizli giriş: geniş tıklama alanı + belirgin nokta (yönetim giriş sayfası) --}}
                 <a
@@ -657,7 +657,14 @@
                     <span class="pointer-events-none h-2 w-2 rounded-full bg-white/65 shadow-[0_0_0_1px_rgba(255,255,255,0.12)] transition group-hover:bg-white/90 group-hover:shadow-[0_0_0_1px_rgba(255,255,255,0.25)]"></span>
                 </a>
             </div>
-            <div class="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
+            <p class="order-first text-center md:order-none">
+                <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] px-4 py-1.5 text-[11px] font-medium tracking-wide text-white/95 shadow-sm backdrop-blur-sm">
+                    <span class="text-fuchsia-200/90" aria-hidden="true">✦</span>
+                    © 2026 Boya Etkinlik — Tüm hakları saklıdır.
+                    <span class="text-fuchsia-200/90" aria-hidden="true">✦</span>
+                </span>
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-2 md:justify-end">
                 <a
                     href="mailto:burakgul3085@gmail.com"
                     class="break-all rounded-md px-2 py-1 font-medium text-white/90 transition hover:bg-white/10 hover:text-white"
