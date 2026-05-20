@@ -7,8 +7,10 @@
         Listeden kategori (varsa)
         <select name="blog_category_id" class="input-ui mt-1 w-full">
             <option value="">— Seçmeyin / öneriyi kullanın —</option>
-            @foreach($activeCategories as $cat)
-                <option value="{{ $cat->id }}" @selected(old('blog_category_id', $blog->blog_category_id) == $cat->id)>{{ $cat->name }}</option>
+            @foreach($categoryAssignmentOptions as $opt)
+                <option value="{{ $opt['id'] }}" @selected((int) old('blog_category_id', $blog->blog_category_id) === (int) $opt['id'])>
+                    {{ \App\Models\BlogCategory::adminSelectOptionLabel($opt['depth'], $opt['name']) }}
+                </option>
             @endforeach
         </select>
     </label>

@@ -7,7 +7,7 @@
         <p class="inline-flex items-center rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-violet-700 shadow-sm">Topluluğa Katılın</p>
         <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Blog Yazısı Gönder</h1>
         <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 md:text-base">
-            Yazınızı başlık, kısa açıklama, detay metin ve görselle birlikte gönderin. Bir kategori seçin veya listede yoksa yeni kategori önerin. Admin onayı sonrası yayınlanır.
+            Yazınızı başlık, kısa açıklama, detay metin ve görselle birlikte gönderin. İç içe kategorilerden uygun olanı seçin veya listede yoksa yeni kategori önerin. Admin onayı sonrası yayınlanır.
         </p>
     </section>
 
@@ -47,29 +47,26 @@
 
             <div class="mt-6 rounded-2xl border border-violet-100 bg-violet-50/40 p-4">
                 <p class="text-sm font-semibold text-slate-800">Blog kategorisi *</p>
-                <p class="mt-1 text-xs text-slate-500">Aşağıdan bir kategoriye tıklayın veya listenizde yoksa alttaki kutuya önerin.</p>
+                <p class="mt-1 text-xs text-slate-500">İç içe kategorilerden birini seçin (ör. Boyama → Harf Boyama → A Harfi Boyama).</p>
 
                 @error('blog_category_id')
                     <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                 @enderror
 
-                @if($categories->isEmpty())
+                @if($categoryOptions->isEmpty())
                     <p class="mt-3 text-sm text-amber-800">Henüz yayınlanmış kategori yok; lütfen aşağıdan kategori önerin.</p>
                 @else
-                    <div class="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-label="Blog kategorisi">
-                        @foreach($categories as $cat)
-                            <label class="blog-cat-chip">
-                                <input
-                                    type="radio"
-                                    name="blog_category_id"
-                                    value="{{ $cat->id }}"
-                                    class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                                    @checked((string) old('blog_category_id') === (string) $cat->id)
-                                >
-                                <span class="pointer-events-none relative z-0">{{ $cat->name }}</span>
-                            </label>
-                        @endforeach
-                    </div>
+                    <label class="mt-3 block text-sm font-medium text-slate-700">
+                        Kategori seçin
+                        <select name="blog_category_id" class="input-ui mt-2 w-full">
+                            <option value="">— Seçin —</option>
+                            @foreach($categoryOptions as $opt)
+                                <option value="{{ $opt['id'] }}" @selected((int) old('blog_category_id') === (int) $opt['id'])>
+                                    {{ \App\Models\BlogCategory::adminSelectOptionLabel($opt['depth'], $opt['name']) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </label>
                 @endif
 
                 <label class="mt-4 block text-sm font-medium text-slate-700">

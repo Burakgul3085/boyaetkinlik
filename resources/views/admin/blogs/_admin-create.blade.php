@@ -8,8 +8,10 @@
             Kategori
             <select name="blog_category_id" class="input-ui mt-2 w-full" required>
                 <option value="">Seçin</option>
-                @foreach($activeCategories as $cat)
-                    <option value="{{ $cat->id }}" @selected(old('blog_category_id') == $cat->id)>{{ $cat->name }}</option>
+                @foreach($categoryAssignmentOptions as $opt)
+                    <option value="{{ $opt['id'] }}" @selected((int) old('blog_category_id') === (int) $opt['id'])>
+                        {{ \App\Models\BlogCategory::adminSelectOptionLabel($opt['depth'], $opt['name']) }}
+                    </option>
                 @endforeach
             </select>
         </label>

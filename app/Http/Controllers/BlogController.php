@@ -11,11 +11,10 @@ class BlogController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = BlogCategory::query()
-            ->active()
-            ->ordered()
-            ->withCount(['blogs' => fn ($q) => $q->approved()])
-            ->get();
+        $allCategories = BlogCategory::query()->active()->ordered()->get();
+        $subtreeCounts = BlogCategory::subtreeBlogCounts($allCategories, approvedOnly: true);
+
+        $rootCategories = $allCategories->whereNull('parent_id')->values();
 
         $activeCategory = null;
         $categorySlug = $request->string('kategori')->toString();
@@ -25,13 +24,25 @@ class BlogController extends Controller
 
         $blogsQuery = Blog::query()->with('category')->approved()->latest();
         if ($activeCategory) {
-            $blogsQuery->where('blog_category_id', $activeCategory->id);
+            $categoryIds = BlogCategory::subtreeIdsIncludingSelf($activeCategory->id);
+            $blogsQuery->whereIn('blog_category_id', $categoryIds);
+        }
+
+        $breadcrumbItems = [];
+        $childCategories = collect();
+        if ($activeCategory) {
+            $breadcrumbItems = $activeCategory->breadcrumbItems();
+            $activeCategory->load(['children' => fn ($q) => $q->active()->ordered()]);
+            $childCategories = $activeCategory->children;
         }
 
         return view('frontend.blog.index', [
             'blogs' => $blogsQuery->paginate(9)->withQueryString(),
-            'categories' => $categories,
+            'rootCategories' => $rootCategories,
+            'subtreeCounts' => $subtreeCounts,
             'activeCategory' => $activeCategory,
+            'breadcrumbItems' => $breadcrumbItems,
+            'childCategories' => $childCategories,
         ]);
     }
 
@@ -39,28 +50,34 @@ class BlogController extends Controller
     {
         abort_unless($blogCategory->is_active, 404);
 
-        $categories = BlogCategory::query()
-            ->active()
-            ->ordered()
-            ->withCount(['blogs' => fn ($q) => $q->approved()])
-            ->get();
+        $allCategories = BlogCategory::query()->active()->ordered()->get();
+        $subtreeCounts = BlogCategory::subtreeBlogCounts($allCategories, approvedOnly: true);
+        $rootCategories = $allCategories->whereNull('parent_id')->values();
+        $categoryIds = BlogCategory::subtreeIdsIncludingSelf($blogCategory->id);
+
+        $blogCategory->load(['children' => fn ($q) => $q->active()->ordered()]);
 
         return view('frontend.blog.index', [
             'blogs' => Blog::query()
                 ->with('category')
                 ->approved()
-                ->where('blog_category_id', $blogCategory->id)
+                ->whereIn('blog_category_id', $categoryIds)
                 ->latest()
                 ->paginate(9),
-            'categories' => $categories,
+            'rootCategories' => $rootCategories,
+            'subtreeCounts' => $subtreeCounts,
             'activeCategory' => $blogCategory,
+            'breadcrumbItems' => $blogCategory->breadcrumbItems(),
+            'childCategories' => $blogCategory->children,
         ]);
     }
 
     public function create()
     {
+        $all = BlogCategory::query()->active()->ordered()->get();
+
         return view('frontend.blog.create', [
-            'categories' => BlogCategory::query()->active()->ordered()->get(),
+            'categoryOptions' => BlogCategory::orderedFlatWithDepth($all),
         ]);
     }
 

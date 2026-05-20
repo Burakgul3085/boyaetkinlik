@@ -14,13 +14,15 @@ class BlogController extends Controller
 {
     public function index()
     {
-        $blogCategories = BlogCategory::query()
-            ->withCount('blogs')
-            ->ordered()
-            ->get();
+        $allBlogCategories = BlogCategory::allForAdminTree()->loadCount('blogs');
 
         return view('admin.blogs.index', [
-            'blogCategories' => $blogCategories,
+            'blogCategories' => $allBlogCategories,
+            'parentBreadcrumbLabels' => BlogCategory::parentBreadcrumbLabelsFor($allBlogCategories),
+            'parentSelectOptionsCreate' => BlogCategory::orderedFlatForParentSelect(null, $allBlogCategories),
+            'parentSelectOptionsForEdit' => BlogCategory::parentSelectOptionsForAllEdits($allBlogCategories),
+            'subtreeBlogCounts' => BlogCategory::subtreeBlogCounts($allBlogCategories),
+            'categoryAssignmentOptions' => BlogCategory::orderedFlatWithDepth($allBlogCategories),
             'activeCategories' => BlogCategory::query()->active()->ordered()->get(),
             'pendingBlogs' => Blog::query()->with('category')->where('status', 'pending')->latest()->get(),
             'approvedBlogs' => Blog::query()->with('category')->where('status', 'approved')->latest()->get(),

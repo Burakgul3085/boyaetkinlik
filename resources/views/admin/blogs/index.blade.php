@@ -84,7 +84,7 @@
                                     <button type="submit" onclick="return confirm('Blog silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                                 </form>
                             </div>
-                            @include('admin.blogs._edit-form', ['blog' => $blog, 'blogCategories' => $blogCategories])
+                            @include('admin.blogs._edit-form', ['blog' => $blog])
                         </div>
                     </details>
                 @empty
@@ -144,7 +144,7 @@
                                     <button type="submit" onclick="return confirm('Blog silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                                 </form>
                             </div>
-                            @include('admin.blogs._edit-form', ['blog' => $blog, 'blogCategories' => $blogCategories])
+                            @include('admin.blogs._edit-form', ['blog' => $blog])
                         </div>
                     </details>
                 @empty
@@ -197,7 +197,7 @@
                                     <button type="submit" onclick="return confirm('Blog silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                                 </form>
                             </div>
-                            @include('admin.blogs._edit-form', ['blog' => $blog, 'blogCategories' => $blogCategories])
+                            @include('admin.blogs._edit-form', ['blog' => $blog])
                         </div>
                     </details>
                 @empty

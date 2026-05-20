@@ -13,16 +13,17 @@
                 Soyisim
                 <input name="author_last_name" value="{{ $blog->author_last_name }}" required class="input-ui mt-1 w-full">
             </label>
-            @if($blog->status === 'approved' && isset($blogCategories))
+            @if($blog->status === 'approved' && isset($categoryAssignmentOptions))
                 <label class="block text-xs font-medium text-slate-600 md:col-span-2">
                     Kategori
                     <select name="blog_category_id" class="input-ui mt-1 w-full" required>
-                        @foreach($blogCategories as $cat)
-                            @if($cat->is_active || (int) $cat->id === (int) $blog->blog_category_id)
+                        @foreach($categoryAssignmentOptions as $opt)
+                            @php($catModel = $blogCategories->firstWhere('id', $opt['id']))
+                            @if($catModel && ($catModel->is_active || (int) $catModel->id === (int) $blog->blog_category_id))
                                 <option
-                                    value="{{ $cat->id }}"
-                                    @selected((int) old('blog_category_id', $blog->blog_category_id) === (int) $cat->id)
-                                >{{ $cat->name }}{{ $cat->is_active ? '' : ' (pasif)' }}</option>
+                                    value="{{ $opt['id'] }}"
+                                    @selected((int) old('blog_category_id', $blog->blog_category_id) === (int) $opt['id'])
+                                >{{ \App\Models\BlogCategory::adminSelectOptionLabel($opt['depth'], $opt['name']) }}{{ $catModel->is_active ? '' : ' (pasif)' }}</option>
                             @endif
                         @endforeach
                     </select>
