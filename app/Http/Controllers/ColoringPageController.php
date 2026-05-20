@@ -23,11 +23,16 @@ class ColoringPageController extends Controller
 {
     public function show(ColoringPage $coloringPage, FileFormatDownloadService $downloadService)
     {
-        $sourceExtension = $downloadService->sourceExtension($coloringPage->mainDownloadRelativePath());
+        $mainRelative = $coloringPage->mainDownloadRelativePath();
+        $sourceExtension = $downloadService->sourceExtension($mainRelative);
+        $mainFileReady = $mainRelative !== ''
+            && ! $coloringPage->mainFilePathLooksLikeCoverFolder()
+            && $coloringPage->resolveMainFileStorage() !== null;
 
         return view('frontend.product', [
             'coloringPage' => $coloringPage,
             'downloadFormats' => $downloadService->downloadOptions($sourceExtension),
+            'mainFileReady' => $mainFileReady,
         ]);
     }
 
@@ -80,7 +85,6 @@ class ColoringPageController extends Controller
 
     public function sendFreeToEmail(Request $request, ColoringPage $coloringPage, FileFormatDownloadService $downloadService): RedirectResponse
     {
-        abort_if(auth()->check(), 403);
         abort_unless($coloringPage->is_free, 403);
 
         $data = $request->validate([

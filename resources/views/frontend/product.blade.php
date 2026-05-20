@@ -75,14 +75,20 @@
                 @php
                     $originalFormat = strtolower(pathinfo($coloringPage->pdf_path, PATHINFO_EXTENSION) ?: 'pdf');
                     $singleOriginalPdf = count($downloadFormats) === 1 && strtolower($downloadFormats[0]) === 'pdf' && $originalFormat === 'pdf';
+                    $mainFileReady = $mainFileReady ?? true;
                 @endphp
+                @unless($mainFileReady)
+                    <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                        Bu ürün için indirilebilir ana dosya bulunamadı veya yol hatalı. Yönetim panelinde «Dosya» alanını kontrol edin.
+                    </div>
+                @endunless
                 <div class="mt-5 rounded-xl border border-violet-100 bg-violet-50/50 p-3">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">İndirme Seçenekleri</p>
                     @if($singleOriginalPdf)
                         <p class="mt-2 text-xs text-slate-500">Dosya zaten PDF formatında, doğrudan indirebilirsiniz.</p>
                         <a
                             href="{{ route('products.download.free', ['coloringPage' => $coloringPage, 'format' => 'pdf']) }}"
-                            class="btn-primary mt-3 w-full"
+                            class="btn-primary mt-3 w-full @unless($mainFileReady) pointer-events-none opacity-50 @endunless"
                         >
                             PDF İndir
                         </a>
@@ -96,7 +102,7 @@
                                 @endphp
                                 <a
                                     href="{{ route('products.download.free', ['coloringPage' => $coloringPage, 'format' => $format]) }}"
-                                    class="inline-flex items-center justify-center rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
+                                    class="inline-flex items-center justify-center rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-violet-300 hover:text-violet-700 @unless($mainFileReady) pointer-events-none opacity-50 @endunless"
                                 >
                                     {{ $formatLabel }}
                                 </a>
@@ -116,56 +122,55 @@
                 <p class="mt-2 text-center text-[11px] text-slate-500">Tarayıcıda boyayın; indir, yazdır veya e-posta ile gönderin.</p>
                 <button
                     type="button"
-                    onclick="directPrint('{{ route('products.print.free', ['coloringPage' => $coloringPage, 'format' => $originalFormat]) }}')"
-                    class="btn-secondary mt-3 w-full"
+                    @if($mainFileReady) onclick="directPrint('{{ route('products.print.free', ['coloringPage' => $coloringPage, 'format' => $originalFormat]) }}')" @else disabled @endif
+                    class="btn-secondary mt-3 w-full @unless($mainFileReady) cursor-not-allowed opacity-50 @endunless"
                 >
                     Dosyayı Yazdır
                 </button>
-                @guest
-                    <div class="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">E-posta ile gönder</p>
-                        <p class="mt-1 text-xs text-slate-500">Ücretsiz dosyayı istediğiniz adrese ek olarak gönderelim.</p>
-                        <form method="post" action="{{ route('products.free.email', $coloringPage) }}" class="mt-3 space-y-3">
-                            @csrf
-                            <div>
-                                <label for="free-email" class="mb-1 block text-sm font-medium text-slate-700">E-posta</label>
-                                <input
-                                    id="free-email"
-                                    type="email"
-                                    name="email"
-                                    value="{{ old('email') }}"
-                                    required
-                                    autocomplete="email"
-                                    class="input-ui w-full"
-                                    placeholder="ornek@eposta.com"
-                                >
-                                @error('email')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label for="free-format" class="mb-1 block text-sm font-medium text-slate-700">Dosya formatı</label>
-                                <select id="free-format" name="format" class="input-ui w-full">
-                                    @foreach ($downloadFormats as $format)
-                                        <option value="{{ $format }}" @selected(old('format', $originalFormat) === $format)>
-                                            {{ strtoupper($format) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('format')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            @error('email_send')
-                                <p class="text-xs text-red-600">{{ $message }}</p>
+
+                <div class="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 shadow-sm">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">E-posta ile gönder</p>
+                    <p class="mt-1 text-xs text-slate-600">Ücretsiz dosyayı istediğiniz kişinin e-posta adresine ek olarak gönderin.</p>
+                    <form method="post" action="{{ route('products.free.email', $coloringPage) }}" class="mt-3 space-y-3">
+                        @csrf
+                        <div>
+                            <label for="free-email" class="mb-1 block text-sm font-medium text-slate-700">Alıcı e-posta</label>
+                            <input
+                                id="free-email"
+                                type="email"
+                                name="email"
+                                value="{{ old('email') }}"
+                                required
+                                autocomplete="email"
+                                class="input-ui w-full"
+                                placeholder="alici@eposta.com"
+                            >
+                            @error('email')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
-                            @if (session('free_email_sent'))
-                                <p class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Dosya e-posta adresinize gönderildi.</p>
-                            @endif
-                            <button type="submit" class="btn-primary w-full">E-postaya gönder</button>
-                        </form>
-                    </div>
-                @endguest
+                        </div>
+                        <div>
+                            <label for="free-format" class="mb-1 block text-sm font-medium text-slate-700">Dosya formatı</label>
+                            <select id="free-format" name="format" class="input-ui w-full">
+                                @foreach ($downloadFormats as $format)
+                                    <option value="{{ $format }}" @selected(old('format', $originalFormat) === $format)>
+                                        {{ strtoupper($format) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('format')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        @error('email_send')
+                            <p class="text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @if (session('free_email_sent'))
+                            <p class="rounded-lg bg-emerald-100 px-3 py-2 text-sm font-semibold text-emerald-900">Dosya belirttiğiniz e-posta adresine gönderildi.</p>
+                        @endif
+                        <button type="submit" class="btn-primary w-full">E-postaya gönder</button>
+                    </form>
+                </div>
                 @else
                     @php
                         $shopierProductUrl = trim((string) ($coloringPage->shopier_product_url ?? ''));
