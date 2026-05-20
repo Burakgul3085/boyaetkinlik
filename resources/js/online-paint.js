@@ -33,7 +33,6 @@ function bootOnlinePaint() {
     const orbitRing = document.getElementById('paint-orbit-ring');
     const orbitGlow = document.getElementById('paint-orbit-glow');
     const wrap = document.getElementById('canvas-wrap');
-    const stageWrap = document.querySelector('.online-paint-stage-wrap');
     const loader = document.getElementById('paint-loader');
     const errBox = document.getElementById('paint-error');
 
@@ -126,13 +125,25 @@ function bootOnlinePaint() {
         lineCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
+    function isCanvasFullscreen() {
+        const fs = document.fullscreenElement;
+        return fs === wrap || (fs && wrap && fs.contains(wrap));
+    }
+
     /** Ürün önizlemesi gibi: önce genişliği doldur */
     function fitToView() {
         if (!state.naturalW || !state.naturalH) return;
 
         const pad = 12;
-        const maxW = Math.max(wrap.clientWidth - pad, 320);
-        const maxH = Math.max(wrap.clientHeight - pad, 400);
+        let maxW;
+        let maxH;
+        if (isCanvasFullscreen()) {
+            maxW = Math.max(window.innerWidth - 40, 320);
+            maxH = Math.max(window.innerHeight - 56, 320);
+        } else {
+            maxW = Math.max(wrap.clientWidth - pad, 320);
+            maxH = Math.max(wrap.clientHeight - pad, 400);
+        }
 
         let scale = maxW / state.naturalW;
         let displayH = state.naturalH * scale;
@@ -790,31 +801,42 @@ function bootOnlinePaint() {
         glowToggle.addEventListener('change', syncOrbitEffects);
     }
 
-    if (fullscreenBtn && stageWrap) {
+    function afterFullscreenLayout() {
+        requestAnimationFrame(() => {
+            if (state.ready) {
+                fitToView();
+                requestAnimationFrame(fitToView);
+            }
+        });
+    }
+
+    if (fullscreenBtn && wrap) {
         fullscreenBtn.addEventListener('click', async () => {
             try {
-                if (document.fullscreenElement) {
+                if (isCanvasFullscreen()) {
                     await document.exitFullscreen();
-                    fullscreenBtn.textContent = 'Tam ekran tuval';
                 } else {
-                    await stageWrap.requestFullscreen();
+                    await wrap.requestFullscreen();
                     fullscreenBtn.textContent = 'Tam ekrandan çık';
-                    requestAnimationFrame(() => {
-                        if (state.ready) fitToView();
-                    });
+                    afterFullscreenLayout();
                 }
             } catch {
                 alert('Tam ekran bu tarayıcıda desteklenmiyor olabilir.');
             }
         });
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement && fullscreenBtn) {
+
+        const onFullscreenChange = () => {
+            if (isCanvasFullscreen()) {
+                fullscreenBtn.textContent = 'Tam ekrandan çık';
+                afterFullscreenLayout();
+            } else {
                 fullscreenBtn.textContent = 'Tam ekran tuval';
-                requestAnimationFrame(() => {
-                    if (state.ready) fitToView();
-                });
+                afterFullscreenLayout();
             }
-        });
+        };
+
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
     }
 
     syncOrbitEffects();

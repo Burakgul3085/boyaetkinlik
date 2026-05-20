@@ -213,6 +213,7 @@
 
             <div class="online-paint-stage-wrap">
                 <div id="canvas-wrap" class="online-paint-canvas-wrap">
+                    <p id="paint-fs-hint" class="online-paint-fs-hint">Esc — tam ekrandan çık</p>
                     <div id="paint-loader" class="online-paint-loader">
                         <span class="online-paint-spinner"></span>
                         <p>Çizim yükleniyor…</p>
