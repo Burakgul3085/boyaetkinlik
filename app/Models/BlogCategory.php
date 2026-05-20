@@ -44,7 +44,10 @@ class BlogCategory extends Model
 
     public function children(): HasMany
     {
-        return $this->hasMany(self::class, 'parent_id')->orderBy('sort_order')->orderBy('name');
+        return $this->hasMany(self::class, 'parent_id')
+            ->orderByRaw(static::generalFirstOrderSql())
+            ->orderBy('sort_order')
+            ->orderBy('name');
     }
 
     public function childrenRecursive(): HasMany
@@ -59,7 +62,49 @@ class BlogCategory extends Model
 
     public function scopeOrdered($query)
     {
-        return $query->orderBy('sort_order')->orderBy('name');
+        return $query
+            ->orderByRaw(static::generalFirstOrderSql())
+            ->orderBy('sort_order')
+            ->orderBy('name');
+    }
+
+    /** Genel kategorisi (slug veya ad) listelerde her zaman önce gelir. */
+    public function isGeneralCategory(): bool
+    {
+        return Str::lower($this->slug) === 'genel' || Str::lower($this->name) === 'genel';
+    }
+
+    public static function generalFirstOrderSql(): string
+    {
+        return "CASE WHEN LOWER(slug) = 'genel' OR LOWER(name) = 'genel' THEN 0 ELSE 1 END";
+    }
+
+    public static function compareDisplayOrder(self $a, self $b): int
+    {
+        if ($a->isGeneralCategory() && ! $b->isGeneralCategory()) {
+            return -1;
+        }
+        if (! $a->isGeneralCategory() && $b->isGeneralCategory()) {
+            return 1;
+        }
+
+        $bySort = $a->sort_order <=> $b->sort_order;
+        if ($bySort !== 0) {
+            return $bySort;
+        }
+
+        return strcasecmp($a->name, $b->name);
+    }
+
+    /**
+     * @param  list<self>  $categories
+     * @return list<self>
+     */
+    public static function sortSiblingCategories(array $categories): array
+    {
+        usort($categories, fn (self $a, self $b) => static::compareDisplayOrder($a, $b));
+
+        return $categories;
     }
 
     public function scopeRoots($query)
@@ -119,10 +164,7 @@ class BlogCategory extends Model
 
     public static function allForAdminTree(): Collection
     {
-        return static::query()
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
+        return static::query()->ordered()->get();
     }
 
     /**
@@ -134,6 +176,10 @@ class BlogCategory extends Model
         foreach ($all as $cat) {
             $key = $cat->parent_id ?? 0;
             $grouped[$key][] = $cat;
+        }
+
+        foreach ($grouped as $key => $siblings) {
+            $grouped[$key] = static::sortSiblingCategories($siblings);
         }
 
         return $grouped;
