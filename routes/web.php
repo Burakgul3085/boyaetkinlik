@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdController as AdminAdController;
 use App\Http\Controllers\Admin\AdminManagementController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\BlogCategoryController as AdminBlogCategoryController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ColoringPageController as AdminColoringPageController;
@@ -51,6 +52,7 @@ Route::view('/gizlilik-politikasi', 'frontend.gizlilik-politikasi')->name('priva
 Route::view('/kullanim-kosullari', 'frontend.kullanim-kosullari')->name('terms');
 Route::view('/cerez-politikasi', 'frontend.cerez-politikasi')->name('cookies');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/kategori/{blogCategory:slug}', [BlogController::class, 'category'])->name('blog.category');
 Route::get('/blog/yaz', [BlogController::class, 'create'])->name('blog.create');
 Route::post('/blog/yaz', [BlogController::class, 'store'])
     ->middleware('throttle:6,1')
@@ -184,6 +186,10 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::delete('/pages/{coloringPage}', [AdminColoringPageController::class, 'destroy'])->name('pages.destroy');
 
         Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs.index');
+        Route::post('/blogs', [AdminBlogController::class, 'store'])->name('blogs.store');
+        Route::post('/blog-categories', [AdminBlogCategoryController::class, 'store'])->name('blog-categories.store');
+        Route::put('/blog-categories/{blogCategory}', [AdminBlogCategoryController::class, 'update'])->name('blog-categories.update');
+        Route::delete('/blog-categories/{blogCategory}', [AdminBlogCategoryController::class, 'destroy'])->name('blog-categories.destroy');
         Route::put('/blogs/{blog}', [AdminBlogController::class, 'update'])->name('blogs.update');
         Route::post('/blogs/{blog}/approve', [AdminBlogController::class, 'approve'])->name('blogs.approve');
         Route::post('/blogs/{blog}/reject', [AdminBlogController::class, 'reject'])->name('blogs.reject');

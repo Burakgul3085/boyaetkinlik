@@ -13,6 +13,18 @@
                 Soyisim
                 <input name="author_last_name" value="{{ $blog->author_last_name }}" required class="input-ui mt-1 w-full">
             </label>
+            @if($blog->status === 'approved' && isset($blogCategories))
+                <label class="block text-xs font-medium text-slate-600 md:col-span-2">
+                    Kategori
+                    <select name="blog_category_id" class="input-ui mt-1 w-full" required>
+                        @foreach($blogCategories as $cat)
+                            @if($cat->is_active || $cat->id === $blog->blog_category_id)
+                                <option value="{{ $cat->id }}" @selected($blog->blog_category_id === $cat->id)>{{ $cat->name }}{{ $cat->is_active ? '' : ' (pasif)' }}</option>
+                            @endif
+                        @endforeach
+                    </select>
+                </label>
+            @endif
             <label class="block text-xs font-medium text-slate-600 md:col-span-2">
                 Başlık
                 <input name="title" value="{{ $blog->title }}" required class="input-ui mt-1 w-full">

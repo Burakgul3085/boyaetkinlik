@@ -22,8 +22,13 @@
             </ul>
         </div>
     @endif
+    @error('blog_category')
+        <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ $message }}</div>
+    @enderror
 
     <section class="mt-6 space-y-4">
+        @include('admin.blogs._categories-panel')
+        @include('admin.blogs._admin-create')
         <div class="card p-5">
             <div class="mb-4 flex items-center justify-between gap-2">
                 <h2 class="text-lg font-bold text-slate-900">Onay Bekleyenler ({{ $pendingBlogs->count() }})</h2>
@@ -45,6 +50,7 @@
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-semibold text-slate-900">{{ $blog->title }}</p>
                                 <p class="mt-0.5 text-xs text-slate-500">{{ $blog->authorFullName() }} · {{ $blog->created_at?->format('d.m.Y H:i') }}</p>
+                                <p class="mt-1 text-[11px] font-medium text-violet-700">{{ $blog->pendingCategoryLabel() }}</p>
                             </div>
                             <span class="shrink-0 rounded-lg bg-violet-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-700">Aç</span>
                         </summary>
@@ -66,11 +72,8 @@
                                 <summary class="cursor-pointer text-xs font-semibold text-violet-700">Metin detayını göster</summary>
                                 <p class="mt-2 whitespace-pre-line text-sm text-slate-700">{{ $blog->content }}</p>
                             </details>
+                            @include('admin.blogs._approve-form', ['blog' => $blog])
                             <div class="flex flex-wrap gap-2">
-                                <form method="post" action="{{ route('admin.blogs.approve', $blog) }}">
-                                    @csrf
-                                    <button type="submit" class="btn-primary px-3 py-1.5 text-xs">Onayla</button>
-                                </form>
                                 <form method="post" action="{{ route('admin.blogs.reject', $blog) }}">
                                     @csrf
                                     <button type="submit" class="btn-secondary px-3 py-1.5 text-xs">Reddet</button>
@@ -81,7 +84,7 @@
                                     <button type="submit" onclick="return confirm('Blog silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                                 </form>
                             </div>
-                            @include('admin.blogs._edit-form', ['blog' => $blog])
+                            @include('admin.blogs._edit-form', ['blog' => $blog, 'blogCategories' => $blogCategories])
                         </div>
                     </details>
                 @empty
@@ -109,6 +112,9 @@
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-semibold text-slate-900">{{ $blog->title }}</p>
                                 <p class="mt-0.5 text-xs text-slate-500">{{ $blog->authorFullName() }} · {{ $blog->approved_at?->format('d.m.Y H:i') ?? '-' }}</p>
+                                @if($blog->category)
+                                    <p class="mt-1 text-[11px] font-medium text-emerald-800">{{ $blog->category->name }}</p>
+                                @endif
                             </div>
                             <span class="shrink-0 rounded-lg bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">Aç</span>
                         </summary>
@@ -138,7 +144,7 @@
                                     <button type="submit" onclick="return confirm('Blog silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                                 </form>
                             </div>
-                            @include('admin.blogs._edit-form', ['blog' => $blog])
+                            @include('admin.blogs._edit-form', ['blog' => $blog, 'blogCategories' => $blogCategories])
                         </div>
                     </details>
                 @empty
@@ -183,18 +189,15 @@
                                 @endif
                             </div>
                             <p class="line-clamp-3 text-sm text-slate-600">{{ $blog->excerpt }}</p>
+                            @include('admin.blogs._approve-form', ['blog' => $blog])
                             <div class="flex flex-wrap gap-2">
-                                <form method="post" action="{{ route('admin.blogs.approve', $blog) }}">
-                                    @csrf
-                                    <button type="submit" class="btn-primary px-3 py-1.5 text-xs">Onaya Al</button>
-                                </form>
                                 <form method="post" action="{{ route('admin.blogs.destroy', $blog) }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" onclick="return confirm('Blog silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                                 </form>
                             </div>
-                            @include('admin.blogs._edit-form', ['blog' => $blog])
+                            @include('admin.blogs._edit-form', ['blog' => $blog, 'blogCategories' => $blogCategories])
                         </div>
                     </details>
                 @empty

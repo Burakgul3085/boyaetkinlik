@@ -7,9 +7,13 @@
         <p class="inline-flex items-center rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-violet-700 shadow-sm">Topluluğa Katılın</p>
         <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Blog Yazısı Gönder</h1>
         <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 md:text-base">
-            Yazınızı başlık, kısa açıklama, detay metin ve görselle birlikte gönderin. Blog yazısı admin onayı sonrası yayınlanır.
+            Yazınızı başlık, kısa açıklama, detay metin ve görselle birlikte gönderin. Bir kategori seçin veya listede yoksa yeni kategori önerin. Admin onayı sonrası yayınlanır.
         </p>
     </section>
+
+    @if(session('success'))
+        <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('success') }}</div>
+    @endif
 
     <section class="mt-6">
         <form method="post" action="{{ route('blog.store') }}" enctype="multipart/form-data" class="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm md:p-6">
@@ -40,6 +44,49 @@
                     <input type="file" name="image_file" accept=".png,.jpg,.jpeg,.webp" class="input-ui mt-2">
                 </label>
             </div>
+
+            <div class="mt-6 rounded-2xl border border-violet-100 bg-violet-50/40 p-4">
+                <p class="text-sm font-semibold text-slate-800">Blog kategorisi *</p>
+                <p class="mt-1 text-xs text-slate-500">Aşağıdan bir kategoriye tıklayın veya listenizde yoksa alttaki kutuya önerin.</p>
+
+                @error('blog_category_id')
+                    <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                @enderror
+
+                @if($categories->isEmpty())
+                    <p class="mt-3 text-sm text-amber-800">Henüz yayınlanmış kategori yok; lütfen aşağıdan kategori önerin.</p>
+                @else
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        @foreach($categories as $cat)
+                            <label class="cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="blog_category_id"
+                                    value="{{ $cat->id }}"
+                                    class="peer sr-only"
+                                    @checked((string) old('blog_category_id') === (string) $cat->id)
+                                >
+                                <span class="inline-flex rounded-full border border-violet-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition peer-checked:border-violet-500 peer-checked:bg-violet-600 peer-checked:text-white hover:border-violet-300">
+                                    {{ $cat->name }}
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                @endif
+
+                <label class="mt-4 block text-sm font-medium text-slate-700">
+                    Kategoriniz listede yok mu? (isteğe bağlı öneri)
+                    <input
+                        type="text"
+                        name="suggested_category_name"
+                        value="{{ old('suggested_category_name') }}"
+                        class="input-ui mt-2"
+                        placeholder="Örn: Okul öncesi etkinlik fikirleri"
+                    >
+                </label>
+                <p class="mt-2 text-xs text-slate-500">Öneri yazarsanız admin onayında adı düzenlenebilir; onaylanınca kategori listesine eklenir.</p>
+            </div>
+
             <div class="mt-5 flex flex-wrap items-center gap-3">
                 <button class="btn-primary">Blogu Gönder</button>
                 <a href="{{ route('blog.index') }}" class="btn-secondary">Blog Sayfasına Dön</a>

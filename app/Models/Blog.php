@@ -14,6 +14,8 @@ class Blog extends Model
     protected $fillable = [
         'title',
         'slug',
+        'blog_category_id',
+        'suggested_category_name',
         'excerpt',
         'content',
         'image_path',
@@ -40,9 +42,52 @@ class Blog extends Model
         });
     }
 
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(BlogCategory::class, 'blog_category_id');
+    }
+
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function pendingCategoryLabel(): string
+    {
+        if ($this->category) {
+            return $this->category->name;
+        }
+
+        if (trim((string) $this->suggested_category_name) !== '') {
+            return 'Önerilen: '.$this->suggested_category_name;
+        }
+
+        return 'Kategori seçilmedi';
+    }
+
+    /**
+     * Onay sırasında kategori: seçili id veya düzenlenmiş yeni kategori adı.
+     */
+    public static function resolveCategoryIdForApproval(self $blog, ?int $categoryId, ?string $categoryName): int
+    {
+        if ($categoryId) {
+            return (int) BlogCategory::query()->findOrFail($categoryId)->id;
+        }
+
+        $name = trim((string) $categoryName);
+        if ($name === '') {
+            $name = trim((string) $blog->suggested_category_name);
+        }
+
+        if ($name === '' && $blog->blog_category_id) {
+            return (int) $blog->blog_category_id;
+        }
+
+        if ($name === '') {
+            abort(422, 'Onay için kategori seçin veya kategori adı girin.');
+        }
+
+        return BlogCategory::createFromName($name, 'visitor')->id;
     }
 
     public function scopeApproved($query)

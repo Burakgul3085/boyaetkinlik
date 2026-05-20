@@ -9,7 +9,12 @@
             <div class="pointer-events-none absolute -bottom-12 -left-12 h-24 w-24 rounded-full bg-indigo-300/20 blur-2xl transition duration-500 group-hover:scale-125"></div>
             <p class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-violet-700 shadow-sm transition duration-300 group-hover:bg-violet-100">Blog Detayı</p>
             <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 transition-colors duration-300 group-hover:text-violet-900 md:text-4xl">{{ $blog->title }}</h1>
-            <p class="mt-2 text-xs text-slate-500 transition duration-300 group-hover:text-slate-600">{{ $blog->authorFullName() }} · {{ $blog->created_at?->format('d.m.Y H:i') }}</p>
+            <p class="mt-2 text-xs text-slate-500 transition duration-300 group-hover:text-slate-600">
+                {{ $blog->authorFullName() }} · {{ $blog->created_at?->format('d.m.Y H:i') }}
+                @if($blog->category)
+                    · <a href="{{ route('blog.category', $blog->category) }}" class="font-semibold text-violet-700 hover:text-violet-800">{{ $blog->category->name }}</a>
+                @endif
+            </p>
             <p class="mt-4 rounded-2xl border border-violet-100 bg-white/90 p-4 text-sm leading-relaxed text-slate-700 transition-all duration-300 group-hover:border-violet-200 group-hover:bg-white">
                 {{ $blog->excerpt }}
             </p>
