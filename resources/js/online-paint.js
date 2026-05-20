@@ -33,6 +33,7 @@ function bootOnlinePaint() {
     const orbitRing = document.getElementById('paint-orbit-ring');
     const orbitGlow = document.getElementById('paint-orbit-glow');
     const wrap = document.getElementById('canvas-wrap');
+    const studioFs = document.getElementById('paint-studio-fullscreen');
     const loader = document.getElementById('paint-loader');
     const errBox = document.getElementById('paint-error');
 
@@ -125,9 +126,9 @@ function bootOnlinePaint() {
         lineCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function isCanvasFullscreen() {
+    function isStudioFullscreen() {
         const fs = document.fullscreenElement;
-        return fs === wrap || (fs && wrap && fs.contains(wrap));
+        return studioFs !== null && fs === studioFs;
     }
 
     /** Ürün önizlemesi gibi: önce genişliği doldur */
@@ -137,9 +138,9 @@ function bootOnlinePaint() {
         const pad = 12;
         let maxW;
         let maxH;
-        if (isCanvasFullscreen()) {
-            maxW = Math.max(window.innerWidth - 40, 320);
-            maxH = Math.max(window.innerHeight - 56, 320);
+        if (isStudioFullscreen()) {
+            maxW = Math.max(wrap.clientWidth - pad, 280);
+            maxH = Math.max(wrap.clientHeight - pad, 280);
         } else {
             maxW = Math.max(wrap.clientWidth - pad, 320);
             maxH = Math.max(wrap.clientHeight - pad, 400);
@@ -810,13 +811,13 @@ function bootOnlinePaint() {
         });
     }
 
-    if (fullscreenBtn && wrap) {
+    if (fullscreenBtn && studioFs) {
         fullscreenBtn.addEventListener('click', async () => {
             try {
-                if (isCanvasFullscreen()) {
+                if (isStudioFullscreen()) {
                     await document.exitFullscreen();
                 } else {
-                    await wrap.requestFullscreen();
+                    await studioFs.requestFullscreen();
                     fullscreenBtn.textContent = 'Tam ekrandan çık';
                     afterFullscreenLayout();
                 }
@@ -826,7 +827,7 @@ function bootOnlinePaint() {
         });
 
         const onFullscreenChange = () => {
-            if (isCanvasFullscreen()) {
+            if (isStudioFullscreen()) {
                 fullscreenBtn.textContent = 'Tam ekrandan çık';
                 afterFullscreenLayout();
             } else {

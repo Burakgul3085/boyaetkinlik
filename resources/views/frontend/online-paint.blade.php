@@ -13,7 +13,8 @@
             <span class="online-paint-badge">Ücretsiz</span>
         </header>
 
-        <div class="online-paint-workspace">
+        <div id="paint-studio-fullscreen" class="online-paint-workspace">
+            <p id="paint-fs-hint" class="online-paint-fs-hint">Esc — tam ekrandan çık · boyama araçları açık</p>
             <aside
                 class="online-paint-toolbar"
                 aria-label="Boyama araçları"
@@ -213,7 +214,6 @@
 
             <div class="online-paint-stage-wrap">
                 <div id="canvas-wrap" class="online-paint-canvas-wrap">
-                    <p id="paint-fs-hint" class="online-paint-fs-hint">Esc — tam ekrandan çık</p>
                     <div id="paint-loader" class="online-paint-loader">
                         <span class="online-paint-spinner"></span>
                         <p>Çizim yükleniyor…</p>
