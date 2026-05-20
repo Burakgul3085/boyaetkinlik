@@ -18,12 +18,19 @@
                     Kategori
                     <select name="blog_category_id" class="input-ui mt-1 w-full" required>
                         @foreach($blogCategories as $cat)
-                            @if($cat->is_active || $cat->id === $blog->blog_category_id)
-                                <option value="{{ $cat->id }}" @selected($blog->blog_category_id === $cat->id)>{{ $cat->name }}{{ $cat->is_active ? '' : ' (pasif)' }}</option>
+                            @if($cat->is_active || (int) $cat->id === (int) $blog->blog_category_id)
+                                <option
+                                    value="{{ $cat->id }}"
+                                    @selected((int) old('blog_category_id', $blog->blog_category_id) === (int) $cat->id)
+                                >{{ $cat->name }}{{ $cat->is_active ? '' : ' (pasif)' }}</option>
                             @endif
                         @endforeach
                     </select>
+                    <span class="mt-1 block text-[11px] text-slate-500">Yayında olan yazının kategorisini değiştirmek için seçip kaydedin.</span>
                 </label>
+                @error('blog_category_id')
+                    <p class="text-xs text-rose-600 md:col-span-2">{{ $message }}</p>
+                @enderror
             @endif
             <label class="block text-xs font-medium text-slate-600 md:col-span-2">
                 Başlık

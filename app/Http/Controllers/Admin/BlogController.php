@@ -65,8 +65,8 @@ class BlogController extends Controller
 
     public function update(Request $request, Blog $blog): RedirectResponse
     {
-        $data = $request->validate([
-            'blog_category_id' => ['nullable', 'exists:blog_categories,id'],
+        $rules = [
+            'blog_category_id' => ['nullable', 'integer', 'exists:blog_categories,id'],
             'title' => ['required', 'string', 'max:255'],
             'excerpt' => ['required', 'string', 'max:400'],
             'content' => ['required', 'string', 'min:10'],
@@ -74,7 +74,13 @@ class BlogController extends Controller
             'author_last_name' => ['required', 'string', 'max:100'],
             'image_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:8192'],
             'remove_image' => ['nullable', 'boolean'],
-        ]);
+        ];
+
+        if ($blog->status === 'approved') {
+            $rules['blog_category_id'] = ['required', 'integer', 'exists:blog_categories,id'];
+        }
+
+        $data = $request->validate($rules);
 
         $payload = [
             'title' => $data['title'],
@@ -84,8 +90,21 @@ class BlogController extends Controller
             'author_last_name' => $data['author_last_name'],
         ];
 
-        if ($blog->status === 'approved' && ! empty($data['blog_category_id'])) {
-            $payload['blog_category_id'] = $data['blog_category_id'];
+        $previousCategoryId = (int) $blog->blog_category_id;
+        $categoryChanged = false;
+
+        if ($blog->status === 'approved') {
+            $categoryId = (int) $data['blog_category_id'];
+            $category = BlogCategory::query()->find($categoryId);
+
+            if (! $category || (! $category->is_active && $categoryId !== $previousCategoryId)) {
+                throw ValidationException::withMessages([
+                    'blog_category_id' => 'Seçilen kategori geçersiz veya pasif. Aktif bir kategori seçin.',
+                ]);
+            }
+
+            $payload['blog_category_id'] = $categoryId;
+            $categoryChanged = $categoryId !== $previousCategoryId;
         }
 
         if ($blog->title !== $data['title']) {
@@ -106,7 +125,14 @@ class BlogController extends Controller
 
         $blog->update($payload);
 
-        return back()->with('success', 'Blog yazısı güncellendi.');
+        $message = 'Blog yazısı güncellendi.';
+        if ($categoryChanged && isset($category)) {
+            $message = 'Blog yazısı güncellendi. Yeni kategori: '.$category->name;
+        }
+
+        return back()
+            ->withInput(['_edit_blog_id' => $blog->id])
+            ->with('success', $message);
     }
 
     public function approve(Request $request, Blog $blog): RedirectResponse
