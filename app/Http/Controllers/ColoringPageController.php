@@ -355,7 +355,6 @@ HTML;
 
     public function onlinePaintEmail(Request $request, ColoringPage $coloringPage, FileFormatDownloadService $downloadService): RedirectResponse
     {
-        abort_if(auth()->check(), 403);
         abort_unless($coloringPage->is_free, 403);
 
         $data = $request->validate([

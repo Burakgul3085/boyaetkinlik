@@ -892,7 +892,8 @@ function bootOnlinePaint() {
             const email = emailForm.querySelector('[name="email"]')?.value;
             const format = emailForm.querySelector('[name="format"]')?.value || 'png';
             if (!email) return;
-            const submitBtn = emailForm.querySelector('[type="submit"]');
+            const submitBtn = document.getElementById('paint-email-submit') || emailForm.querySelector('[type="submit"]');
+            const defaultBtnText = submitBtn?.textContent || 'Boyanmış çalışmayı gönder';
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Gönderiliyor…';
@@ -907,18 +908,23 @@ function bootOnlinePaint() {
                 const res = await fetch(config.emailUrl, {
                     method: 'POST',
                     body: form,
+                    credentials: 'same-origin',
                     redirect: 'follow',
                 });
-                if (res.redirected || res.ok) {
+                if (res.redirected) {
                     window.location.href = res.url;
+                    return;
+                }
+                if (res.ok) {
+                    window.location.reload();
                     return;
                 }
                 throw new Error();
             } catch {
-                alert('E-posta gönderilemedi.');
+                alert('E-posta gönderilemedi. SMTP ayarlarını veya adresi kontrol edip tekrar deneyin.');
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'E-postaya gönder';
+                    submitBtn.textContent = defaultBtnText;
                 }
             }
         });

@@ -13,12 +13,6 @@
             <span class="online-paint-badge">Ücretsiz</span>
         </header>
 
-        @if(session('paint_email_sent'))
-            <div class="mx-4 mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 md:mx-6">
-                Boyanmış çalışmanız e-posta adresinize gönderildi.
-            </div>
-        @endif
-
         <div class="online-paint-workspace">
             <aside
                 class="online-paint-toolbar"
@@ -243,33 +237,74 @@
             </div>
 
             <aside class="online-paint-export" aria-label="Dışa aktar">
-                <p class="online-paint-toolbar__title">Sonuç</p>
-                <p class="text-xs leading-relaxed text-slate-500">Boyadıktan sonra indirin, yazdırın veya e-posta ile gönderin. Sunucuya kayıt yapılmaz.</p>
-
-                <p class="online-paint-toolbar__title mt-4">İndir</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button type="button" class="online-paint-export-btn" data-paint-download="png">PNG</button>
-                    <button type="button" class="online-paint-export-btn" data-paint-download="jpg">JPG</button>
-                    <button type="button" class="online-paint-export-btn col-span-2" data-paint-download="pdf">PDF</button>
+                <div class="online-paint-toolbar__head">
+                    <div>
+                        <p class="online-paint-toolbar__title">Sonuç</p>
+                        <p class="online-paint-toolbar__sub">Boyadıktan sonra paylaşın</p>
+                    </div>
                 </div>
 
-                <button type="button" id="paint-print" class="btn-secondary mt-3 w-full">Yazdır</button>
+                <p class="text-xs leading-relaxed text-slate-500">İndirin, yazdırın veya boyanmış çalışmayı e-posta ile gönderin. Sunucuya kayıt yapılmaz.</p>
 
-                @guest
-                    <div class="mt-5 rounded-xl border border-violet-100 bg-violet-50/50 p-3">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">E-posta ile gönder</p>
-                        <form id="paint-email-form" method="post" action="{{ $emailUrl }}" class="mt-3 space-y-2">
-                            @csrf
-                            <input type="email" name="email" required class="input-ui w-full text-sm" placeholder="ornek@eposta.com" value="{{ old('email') }}">
-                            <select name="format" class="input-ui w-full text-sm">
+                @if(session('paint_email_sent'))
+                    <div class="online-paint-alert online-paint-alert--success mt-3">
+                        Boyanmış çalışmanız belirttiğiniz e-posta adresine gönderildi.
+                    </div>
+                @endif
+
+                <section class="online-paint-export-panel mt-4">
+                    <p class="online-paint-section-label">İndir</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" class="online-paint-export-btn" data-paint-download="png">PNG</button>
+                        <button type="button" class="online-paint-export-btn" data-paint-download="jpg">JPG</button>
+                        <button type="button" class="online-paint-export-btn col-span-2" data-paint-download="pdf">PDF</button>
+                    </div>
+                    <button type="button" id="paint-print" class="btn-secondary mt-3 w-full">Yazdır</button>
+                </section>
+
+                <section class="online-paint-export-panel online-paint-export-panel--email mt-4">
+                    <p class="online-paint-section-label">E-posta ile gönder</p>
+                    <p class="text-[11px] leading-relaxed text-slate-500">Boyama bittikten sonra güncel tuval görüntüsü ek olarak iletilir.</p>
+
+                    <form id="paint-email-form" method="post" action="{{ $emailUrl }}" class="mt-3 space-y-3">
+                        @csrf
+                        <div>
+                            <label for="paint-email-to" class="online-paint-field-label">Alıcı e-posta</label>
+                            <input
+                                id="paint-email-to"
+                                type="email"
+                                name="email"
+                                required
+                                autocomplete="email"
+                                class="input-ui w-full text-sm"
+                                placeholder="ornek@eposta.com"
+                                value="{{ old('email') }}"
+                            >
+                            @error('email')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="paint-email-format" class="online-paint-field-label">Ek formatı</label>
+                            <select id="paint-email-format" name="format" class="input-ui w-full text-sm">
                                 @foreach($exportFormats as $fmt)
-                                    <option value="{{ $fmt }}">{{ strtoupper($fmt === 'jpeg' ? 'jpg' : $fmt) }}</option>
+                                    <option value="{{ $fmt }}" @selected(old('format', 'png') === $fmt)>
+                                        {{ strtoupper($fmt === 'jpeg' ? 'jpg' : $fmt) }}
+                                    </option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn-primary w-full text-sm">E-postaya gönder</button>
-                        </form>
-                    </div>
-                @endguest
+                            @error('format')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        @error('email_send')
+                            <p class="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{{ $message }}</p>
+                        @enderror
+                        <button type="submit" class="btn-primary w-full text-sm" id="paint-email-submit">
+                            Boyanmış çalışmayı gönder
+                        </button>
+                    </form>
+                </section>
             </aside>
         </div>
     </div>
