@@ -202,76 +202,161 @@
     }
 
     .online-paint-toolbar {
-        @apply max-h-[min(88vh,920px)] shrink-0 overflow-y-auto lg:w-[12.5rem];
+        @apply max-h-[min(90vh,940px)] shrink-0 space-y-3 overflow-y-auto pr-0.5 lg:w-[15.5rem] xl:w-[16.5rem];
     }
 
     .online-paint-toolbar__head {
-        @apply mb-2 flex items-center justify-between gap-2;
+        @apply flex items-start justify-between gap-3 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-white px-3.5 py-3;
+    }
+
+    .online-paint-toolbar__sub {
+        @apply mt-0.5 text-[11px] text-slate-500;
     }
 
     .online-paint-toolbar__badge {
-        @apply rounded-full bg-violet-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white;
+        @apply shrink-0 rounded-full bg-violet-600 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-white;
     }
 
-    .online-paint-section-label {
-        @apply text-[10px] font-bold uppercase tracking-wider text-violet-700/80;
+    .online-paint-panel {
+        @apply overflow-hidden rounded-2xl border border-violet-100/90 bg-white shadow-sm;
     }
 
-    .online-paint-tools--grid {
-        @apply grid grid-cols-2 gap-1.5;
+    .online-paint-panel__toggle {
+        @apply flex w-full items-center justify-between gap-2 px-3.5 py-3 text-left text-xs font-bold uppercase tracking-wide text-violet-800 transition hover:bg-violet-50/80;
     }
 
-    .online-paint-tool--wide {
-        @apply col-span-2;
+    .online-paint-panel__chevron {
+        @apply inline-block text-lg font-bold text-violet-400 transition-transform;
+        transform: rotate(90deg);
+    }
+
+    .online-paint-panel__chevron--open {
+        transform: rotate(-90deg);
+    }
+
+    .online-paint-panel__body {
+        @apply space-y-3 border-t border-violet-50 px-3.5 pb-3.5 pt-3;
+    }
+
+    .online-paint-mini-label {
+        @apply text-[10px] font-semibold uppercase tracking-wide text-slate-400;
+    }
+
+    .online-paint-tools--icons {
+        @apply grid grid-cols-3 gap-2;
+    }
+
+    .online-paint-tool--icon {
+        @apply flex flex-col items-center justify-center gap-1 rounded-xl border border-transparent px-1.5 py-2.5 text-center;
+    }
+
+    .online-paint-tool--icon span {
+        @apply text-[10px] font-semibold leading-tight;
+    }
+
+    .online-paint-tool--icon svg {
+        @apply h-6 w-6;
+    }
+
+    .online-paint-tool--icon-wide {
+        @apply col-span-3 flex-row justify-center gap-2 py-2;
+    }
+
+    .online-paint-preset-row {
+        @apply flex flex-wrap gap-1.5;
+    }
+
+    .online-paint-chip {
+        @apply rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-1.5 text-[11px] font-semibold text-violet-900 transition hover:border-violet-300 hover:bg-violet-100;
+    }
+
+    .online-paint-chip--active {
+        @apply border-violet-500 bg-violet-600 text-white;
     }
 
     .online-paint-color-preview {
-        @apply mb-2 flex items-center gap-2 rounded-xl border border-violet-100 bg-violet-50/50 px-2 py-2;
+        @apply flex items-center gap-3 rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-3;
     }
 
     .online-paint-color-preview__swatch {
-        @apply h-9 w-9 shrink-0 rounded-lg border border-white shadow ring-1 ring-violet-200/80;
+        @apply h-11 w-11 shrink-0 rounded-xl border-2 border-white shadow-md ring-1 ring-violet-200/80;
         background: #ef4444;
     }
 
     .online-paint-color-preview__hex {
-        @apply font-mono text-xs font-semibold text-slate-700;
+        @apply block font-mono text-sm font-bold text-slate-800;
+    }
+
+    .online-paint-link-btn {
+        @apply mt-1 text-[11px] font-semibold text-violet-600 underline-offset-2 hover:text-violet-800 hover:underline;
+    }
+
+    .online-paint-theme-strip {
+        @apply flex flex-wrap gap-2 rounded-xl border border-dashed border-violet-200 bg-violet-50/30 p-2;
+    }
+
+    .online-paint-theme-strip.hidden {
+        display: none;
+    }
+
+    .online-paint-theme-strip .online-paint-swatch {
+        @apply h-8 w-8;
+    }
+
+    .online-paint-field span {
+        @apply mb-1.5 block text-[11px] font-medium text-slate-600;
+    }
+
+    .online-paint-color-input {
+        @apply h-10 w-full cursor-pointer rounded-xl border border-violet-200 bg-white;
     }
 
     .online-paint-recent {
-        @apply flex min-h-[1.75rem] flex-wrap gap-1;
+        @apply flex min-h-[2.25rem] flex-wrap gap-2 rounded-xl border border-violet-50 bg-slate-50/80 p-2;
+    }
+
+    .online-paint-recent__empty {
+        @apply text-[11px] text-slate-400;
     }
 
     .online-paint-recent .online-paint-swatch {
-        @apply h-6 w-6;
-    }
-
-    .online-paint-brush-settings {
-        @apply rounded-xl border border-violet-100/80 bg-slate-50/80 p-2.5;
+        @apply h-7 w-7;
     }
 
     .online-paint-slider-row {
-        @apply mb-2 flex items-center gap-2 text-[10px] text-slate-600 last:mb-0;
+        @apply flex flex-col gap-1.5 text-[11px] text-slate-600;
+    }
+
+    .online-paint-slider-row > span:first-child {
+        @apply font-medium text-slate-500;
+    }
+
+    .online-paint-slider-row .online-paint-range {
+        @apply w-full;
     }
 
     .online-paint-slider-row strong {
-        @apply w-8 shrink-0 text-right text-[10px] font-bold text-violet-800;
+        @apply text-right text-[11px] font-bold text-violet-800;
     }
 
     .online-paint-zoom-row {
-        @apply flex items-center gap-1.5;
+        @apply flex items-center justify-center gap-2;
     }
 
     .online-paint-zoom-label {
-        @apply min-w-[2.75rem] text-center text-xs font-semibold text-slate-600;
+        @apply min-w-[3.25rem] rounded-lg bg-violet-50 px-2 py-1.5 text-center text-sm font-bold text-violet-900;
     }
 
     .online-paint-icon-btn {
-        @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-violet-200 bg-white text-base font-bold text-violet-800 transition hover:bg-violet-50;
+        @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-200 bg-white text-lg font-bold text-violet-800 transition hover:bg-violet-50;
+    }
+
+    .online-paint-action-btn--warn {
+        @apply border-rose-200 bg-rose-50/80 text-rose-800 hover:bg-rose-100;
     }
 
     .online-paint-hint {
-        @apply mt-3 text-[10px] leading-relaxed text-slate-400;
+        @apply rounded-xl border border-violet-100/80 bg-violet-50/30 px-3 py-2.5 text-[11px] leading-relaxed text-slate-500;
     }
 
     .online-paint-canvas-scaler {
@@ -286,7 +371,6 @@
         @apply min-h-0 min-w-0 flex-1 min-h-[min(70vh,720px)] rounded-2xl border border-violet-100 bg-slate-100/80 p-2 shadow-inner md:min-h-[min(82vh,900px)] md:p-3;
     }
 
-    .online-paint-toolbar,
     .online-paint-export {
         @apply rounded-2xl border border-violet-100 bg-white p-4 shadow-sm;
     }
@@ -403,8 +487,12 @@
             @apply grid-cols-1;
         }
 
-        .online-paint-tools--grid {
-            @apply grid-cols-2;
+        .online-paint-tools--icons {
+            @apply grid-cols-4;
+        }
+
+        .online-paint-tool--icon-wide {
+            @apply col-span-4;
         }
 
         .online-paint-actions {

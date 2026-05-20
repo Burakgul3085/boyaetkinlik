@@ -4,6 +4,20 @@
 const MAX_UNDO = 40;
 let paintStudioStarted = false;
 
+const COLOR_THEMES = {
+    pastel: ['#fecaca', '#fed7aa', '#fef08a', '#bbf7d0', '#a5f3fc', '#ddd6fe', '#fbcfe8', '#f5f5f4'],
+    vivid: ['#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#0891b2', '#2563eb', '#7c3aed', '#db2777'],
+    nature: ['#166534', '#3f6212', '#854d0e', '#0f766e', '#1d4ed8', '#78716c', '#a16207', '#4ade80'],
+    skin: ['#fef3c7', '#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706', '#b45309', '#92400e'],
+};
+
+const BRUSH_PRESETS = {
+    detail: { tool: 'pencil', size: 6, opacity: 100, softness: 0 },
+    normal: { tool: 'brush', size: 18, opacity: 100, softness: 35 },
+    wide: { tool: 'marker', size: 40, opacity: 92, softness: 0 },
+    spraySoft: { tool: 'spray', size: 28, opacity: 55, softness: 40 },
+};
+
 function bootOnlinePaint() {
     if (paintStudioStarted) return;
     const config = window.__ONLINE_PAINT__;
@@ -32,6 +46,7 @@ function bootOnlinePaint() {
         size: 18,
         opacity: 100,
         softness: 35,
+        fillTolerance: 40,
         viewZoom: 1,
         drawing: false,
         pointerId: null,
@@ -52,7 +67,10 @@ function bootOnlinePaint() {
     const colorPreviewSwatch = document.getElementById('paint-color-preview-swatch');
     const colorPreviewHex = document.getElementById('paint-color-preview-hex');
     const recentColorsEl = document.getElementById('paint-recent-colors');
-    const brushSettingsEl = document.getElementById('paint-brush-settings');
+    const themeStripEl = document.getElementById('paint-theme-strip');
+    const randomColorBtn = document.getElementById('paint-random-color');
+    const fillToleranceInput = document.getElementById('paint-fill-tolerance');
+    const fillToleranceLabel = document.getElementById('paint-fill-tolerance-label');
     const sizeInput = document.getElementById('paint-size');
     const sizeLabel = document.getElementById('paint-size-label');
     const opacityInput = document.getElementById('paint-opacity');
@@ -238,10 +256,52 @@ function bootOnlinePaint() {
         const cursor =
             tool === 'fill' ? 'cell' : tool === 'eraser' ? 'grab' : tool === 'picker' ? 'copy' : 'crosshair';
         hitLayer.style.cursor = cursor;
-        const showBrush = ['brush', 'pencil', 'marker', 'spray'].includes(tool);
-        if (brushSettingsEl) {
-            brushSettingsEl.classList.toggle('hidden', !showBrush);
-        }
+    }
+
+    function applyBrushPreset(presetKey) {
+        const preset = BRUSH_PRESETS[presetKey];
+        if (!preset) return;
+        setTool(preset.tool);
+        state.size = preset.size;
+        state.opacity = preset.opacity;
+        state.softness = preset.softness;
+        if (sizeInput) sizeInput.value = String(state.size);
+        if (sizeLabel) sizeLabel.textContent = String(state.size);
+        if (opacityInput) opacityInput.value = String(state.opacity);
+        if (opacityLabel) opacityLabel.textContent = `${state.opacity}%`;
+        if (softnessInput) softnessInput.value = String(state.softness);
+        if (softnessLabel) softnessLabel.textContent = `${state.softness}%`;
+        document.querySelectorAll('[data-paint-brush-preset]').forEach((btn) => {
+            btn.classList.toggle('online-paint-chip--active', btn.dataset.paintBrushPreset === presetKey);
+        });
+    }
+
+    function showThemeStrip(themeKey) {
+        const colors = COLOR_THEMES[themeKey];
+        if (!themeStripEl || !colors) return;
+        themeStripEl.innerHTML = '';
+        themeStripEl.classList.remove('hidden');
+        colors.forEach((hex) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'online-paint-swatch';
+            btn.dataset.paintColor = hex;
+            btn.style.backgroundColor = hex;
+            btn.title = hex;
+            btn.addEventListener('click', () => setColor(hex));
+            themeStripEl.appendChild(btn);
+        });
+        setColor(colors[0]);
+        document.querySelectorAll('[data-paint-theme]').forEach((btn) => {
+            btn.classList.toggle('online-paint-chip--active', btn.dataset.paintTheme === themeKey);
+        });
+    }
+
+    function randomColor() {
+        const hex = `#${Math.floor(Math.random() * 0xffffff)
+            .toString(16)
+            .padStart(6, '0')}`;
+        setColor(hex);
     }
 
     function hexToRgba(hex) {
@@ -283,6 +343,13 @@ function bootOnlinePaint() {
     function renderRecentColors() {
         if (!recentColorsEl) return;
         recentColorsEl.innerHTML = '';
+        if (state.recentColors.length === 0) {
+            const empty = document.createElement('span');
+            empty.className = 'online-paint-recent__empty';
+            empty.textContent = 'Henüz yok';
+            recentColorsEl.appendChild(empty);
+            return;
+        }
         state.recentColors.forEach((hex) => {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -431,7 +498,7 @@ function bootOnlinePaint() {
             return;
         }
 
-        const tolerance = 40;
+        const tolerance = state.fillTolerance;
         const stack = [[x, y]];
         const visited = new Uint8Array(w * h);
 
@@ -615,6 +682,25 @@ function bootOnlinePaint() {
             if (softnessLabel) softnessLabel.textContent = `${state.softness}%`;
         });
     }
+
+    if (fillToleranceInput) {
+        fillToleranceInput.addEventListener('input', () => {
+            state.fillTolerance = Number(fillToleranceInput.value);
+            if (fillToleranceLabel) fillToleranceLabel.textContent = String(state.fillTolerance);
+        });
+    }
+
+    if (randomColorBtn) {
+        randomColorBtn.addEventListener('click', randomColor);
+    }
+
+    document.querySelectorAll('[data-paint-brush-preset]').forEach((btn) => {
+        btn.addEventListener('click', () => applyBrushPreset(btn.dataset.paintBrushPreset || 'normal'));
+    });
+
+    document.querySelectorAll('[data-paint-theme]').forEach((btn) => {
+        btn.addEventListener('click', () => showThemeStrip(btn.dataset.paintTheme || 'pastel'));
+    });
 
     if (zoomInBtn) {
         zoomInBtn.addEventListener('click', () => {

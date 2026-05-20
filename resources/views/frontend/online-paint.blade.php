@@ -20,110 +20,183 @@
         @endif
 
         <div class="online-paint-workspace">
-            <aside class="online-paint-toolbar" aria-label="Boyama araçları">
+            <aside
+                class="online-paint-toolbar"
+                aria-label="Boyama araçları"
+                x-data="{
+                    openTools: true,
+                    openColor: true,
+                    openBrush: true,
+                    openView: true,
+                    openEdit: true
+                }"
+            >
                 <div class="online-paint-toolbar__head">
-                    <p class="online-paint-toolbar__title">Stüdyo</p>
+                    <div>
+                        <p class="online-paint-toolbar__title">Stüdyo</p>
+                        <p class="online-paint-toolbar__sub">Online boya araçları</p>
+                    </div>
                     <span class="online-paint-toolbar__badge">Pro</span>
                 </div>
 
-                <p class="online-paint-section-label">Araçlar</p>
-                <div class="online-paint-tools online-paint-tools--grid">
-                    <button type="button" class="online-paint-tool" data-paint-tool="brush" title="Yumuşak fırça">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
-                        <span>Fırça</span>
+                {{-- Araçlar --}}
+                <section class="online-paint-panel">
+                    <button type="button" class="online-paint-panel__toggle" @click="openTools = !openTools">
+                        <span>Araçlar</span>
+                        <span class="online-paint-panel__chevron" :class="openTools && 'online-paint-panel__chevron--open'">›</span>
                     </button>
-                    <button type="button" class="online-paint-tool" data-paint-tool="pencil" title="İnce kalem">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"/><path d="M14 6l4 4"/></svg>
-                        <span>Kalem</span>
+                    <div class="online-paint-panel__body" x-show="openTools" x-cloak>
+                        <div class="online-paint-tools online-paint-tools--icons">
+                            <button type="button" class="online-paint-tool online-paint-tool--icon" data-paint-tool="brush" title="Yumuşak fırça">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+                                <span>Fırça</span>
+                            </button>
+                            <button type="button" class="online-paint-tool online-paint-tool--icon" data-paint-tool="pencil" title="İnce kalem">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"/><path d="M14 6l4 4"/></svg>
+                                <span>Kalem</span>
+                            </button>
+                            <button type="button" class="online-paint-tool online-paint-tool--icon" data-paint-tool="marker" title="Keçeli">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 20h12"/><path d="M8 20l2-14 4 14"/></svg>
+                                <span>Keçeli</span>
+                            </button>
+                            <button type="button" class="online-paint-tool online-paint-tool--icon" data-paint-tool="spray" title="Sprey">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="2"/><circle cx="14" cy="6" r="1.5"/><circle cx="11" cy="13" r="2"/></svg>
+                                <span>Sprey</span>
+                            </button>
+                            <button type="button" class="online-paint-tool online-paint-tool--icon" data-paint-tool="fill" title="Doldur">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.56 5.44l-1.45 1.45A5 5 0 1 0 14 10.9V12h2v-1.1a5 5 0 0 0 1.11-7.46zM7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+                                <span>Doldur</span>
+                            </button>
+                            <button type="button" class="online-paint-tool online-paint-tool--icon" data-paint-tool="eraser" title="Silgi">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-5 5"/></svg>
+                                <span>Silgi</span>
+                            </button>
+                            <button type="button" class="online-paint-tool online-paint-tool--icon online-paint-tool--icon-wide" data-paint-tool="picker" title="Pipet">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10 3 3L10 20l-3 3z"/></svg>
+                                <span>Pipet</span>
+                            </button>
+                        </div>
+                        <p class="online-paint-mini-label">Hazır fırça</p>
+                        <div class="online-paint-preset-row">
+                            <button type="button" class="online-paint-chip" data-paint-brush-preset="detail">İnce</button>
+                            <button type="button" class="online-paint-chip" data-paint-brush-preset="normal">Normal</button>
+                            <button type="button" class="online-paint-chip" data-paint-brush-preset="wide">Geniş</button>
+                            <button type="button" class="online-paint-chip" data-paint-brush-preset="spraySoft">Sprey</button>
+                        </div>
+                    </div>
+                </section>
+
+                {{-- Renk --}}
+                <section class="online-paint-panel">
+                    <button type="button" class="online-paint-panel__toggle" @click="openColor = !openColor">
+                        <span>Renk & palet</span>
+                        <span class="online-paint-panel__chevron" :class="openColor && 'online-paint-panel__chevron--open'">›</span>
                     </button>
-                    <button type="button" class="online-paint-tool" data-paint-tool="marker" title="Keçeli kalem">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 20h12"/><path d="M8 20l2-14 4 14"/></svg>
-                        <span>Keçeli</span>
+                    <div class="online-paint-panel__body" x-show="openColor" x-cloak>
+                        <div class="online-paint-color-preview" id="paint-color-preview">
+                            <span class="online-paint-color-preview__swatch" id="paint-color-preview-swatch"></span>
+                            <div class="min-w-0 flex-1">
+                                <span class="online-paint-color-preview__hex" id="paint-color-preview-hex">#EF4444</span>
+                                <button type="button" id="paint-random-color" class="online-paint-link-btn">Rastgele renk</button>
+                            </div>
+                        </div>
+
+                        <p class="online-paint-mini-label">Tema setleri</p>
+                        <div class="online-paint-preset-row online-paint-preset-row--themes">
+                            <button type="button" class="online-paint-chip" data-paint-theme="pastel">Pastel</button>
+                            <button type="button" class="online-paint-chip" data-paint-theme="vivid">Canlı</button>
+                            <button type="button" class="online-paint-chip" data-paint-theme="nature">Doğa</button>
+                            <button type="button" class="online-paint-chip" data-paint-theme="skin">Ten</button>
+                        </div>
+
+                        <div id="paint-theme-strip" class="online-paint-theme-strip hidden"></div>
+
+                        <p class="online-paint-mini-label mt-3">Ana palet</p>
+                        <div class="online-paint-swatches">
+                            @foreach ([
+                                '#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
+                                '#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1',
+                                '#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e','#78716c',
+                                '#44403c','#000000','#ffffff','#fca5a5','#fde047','#86efac',
+                            ] as $hex)
+                                <button type="button" class="online-paint-swatch" data-paint-color="{{ $hex }}" style="background-color: {{ $hex }}" title="{{ $hex }}"></button>
+                            @endforeach
+                        </div>
+
+                        <label class="online-paint-field mt-3">
+                            <span>Özel renk</span>
+                            <input type="color" id="paint-color-custom" value="#ef4444" class="online-paint-color-input">
+                        </label>
+
+                        <p class="online-paint-mini-label mt-3">Son kullanılan</p>
+                        <div id="paint-recent-colors" class="online-paint-recent">
+                            <span class="online-paint-recent__empty">Henüz yok</span>
+                        </div>
+                    </div>
+                </section>
+
+                {{-- Fırça ayarları --}}
+                <section class="online-paint-panel">
+                    <button type="button" class="online-paint-panel__toggle" @click="openBrush = !openBrush">
+                        <span>Fırça & doldur</span>
+                        <span class="online-paint-panel__chevron" :class="openBrush && 'online-paint-panel__chevron--open'">›</span>
                     </button>
-                    <button type="button" class="online-paint-tool" data-paint-tool="spray" title="Sprey">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="2"/><circle cx="14" cy="6" r="1.5"/><circle cx="11" cy="13" r="2"/><circle cx="17" cy="11" r="1"/></svg>
-                        <span>Sprey</span>
+                    <div id="paint-brush-settings" class="online-paint-panel__body" x-show="openBrush" x-cloak>
+                        <label class="online-paint-slider-row">
+                            <span>Kalınlık</span>
+                            <input type="range" id="paint-size" min="2" max="80" value="18" class="online-paint-range flex-1">
+                            <strong id="paint-size-label">18</strong>
+                        </label>
+                        <label class="online-paint-slider-row">
+                            <span>Opaklık</span>
+                            <input type="range" id="paint-opacity" min="5" max="100" value="100" class="online-paint-range flex-1">
+                            <strong id="paint-opacity-label">100%</strong>
+                        </label>
+                        <label class="online-paint-slider-row">
+                            <span>Yumuşaklık</span>
+                            <input type="range" id="paint-softness" min="0" max="100" value="35" class="online-paint-range flex-1">
+                            <strong id="paint-softness-label">35%</strong>
+                        </label>
+                        <label class="online-paint-slider-row">
+                            <span>Doldur hassasiyeti</span>
+                            <input type="range" id="paint-fill-tolerance" min="8" max="72" value="40" class="online-paint-range flex-1">
+                            <strong id="paint-fill-tolerance-label">40</strong>
+                        </label>
+                    </div>
+                </section>
+
+                {{-- Görünüm --}}
+                <section class="online-paint-panel">
+                    <button type="button" class="online-paint-panel__toggle" @click="openView = !openView">
+                        <span>Görünüm</span>
+                        <span class="online-paint-panel__chevron" :class="openView && 'online-paint-panel__chevron--open'">›</span>
                     </button>
-                    <button type="button" class="online-paint-tool" data-paint-tool="fill" title="Alan doldur">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.56 5.44l-1.45 1.45A5 5 0 1 0 14 10.9V12h2v-1.1a5 5 0 0 0 1.11-7.46zM7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
-                        <span>Doldur</span>
+                    <div class="online-paint-panel__body" x-show="openView" x-cloak>
+                        <div class="online-paint-zoom-row">
+                            <button type="button" id="paint-zoom-out" class="online-paint-icon-btn" title="Uzaklaştır">−</button>
+                            <span id="paint-zoom-label" class="online-paint-zoom-label">100%</span>
+                            <button type="button" id="paint-zoom-in" class="online-paint-icon-btn" title="Yakınlaştır">+</button>
+                        </div>
+                        <button type="button" id="paint-zoom-fit" class="online-paint-action-btn mt-2 w-full">Tuvali sığdır</button>
+                    </div>
+                </section>
+
+                {{-- Düzenle --}}
+                <section class="online-paint-panel">
+                    <button type="button" class="online-paint-panel__toggle" @click="openEdit = !openEdit">
+                        <span>Düzenle</span>
+                        <span class="online-paint-panel__chevron" :class="openEdit && 'online-paint-panel__chevron--open'">›</span>
                     </button>
-                    <button type="button" class="online-paint-tool" data-paint-tool="eraser" title="Silgi">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-5 5"/><path d="M13.5 6.5l5 5"/></svg>
-                        <span>Silgi</span>
-                    </button>
-                    <button type="button" class="online-paint-tool online-paint-tool--wide" data-paint-tool="picker" title="Renk seç (pipet)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 22l1-1"/><path d="M7 17l10-10 3 3L10 20l-3 3z"/><path d="M18 6l-2-2"/></svg>
-                        <span>Pipet</span>
-                    </button>
-                </div>
+                    <div class="online-paint-panel__body" x-show="openEdit" x-cloak>
+                        <div class="online-paint-actions">
+                            <button type="button" id="paint-undo" class="online-paint-action-btn">↶ Geri al</button>
+                            <button type="button" id="paint-redo" class="online-paint-action-btn">↷ İleri al</button>
+                            <button type="button" id="paint-clear" class="online-paint-action-btn online-paint-action-btn--warn col-span-2">Tüm boyayı temizle</button>
+                        </div>
+                    </div>
+                </section>
 
-                <p class="online-paint-section-label mt-4">Renk paleti</p>
-                <div class="online-paint-color-preview" id="paint-color-preview">
-                    <span class="online-paint-color-preview__swatch" id="paint-color-preview-swatch"></span>
-                    <span class="online-paint-color-preview__hex" id="paint-color-preview-hex">#EF4444</span>
-                </div>
-
-                <div class="online-paint-swatches">
-                    @foreach ([
-                        '#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
-                        '#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1',
-                        '#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e','#78716c',
-                        '#44403c','#000000','#ffffff','#fca5a5','#fde047','#86efac',
-                    ] as $hex)
-                        <button
-                            type="button"
-                            class="online-paint-swatch"
-                            data-paint-color="{{ $hex }}"
-                            style="background-color: {{ $hex }}"
-                            title="{{ $hex }}"
-                        ></button>
-                    @endforeach
-                </div>
-
-                <label class="online-paint-custom-color mt-2">
-                    <span>Özel renk</span>
-                    <input type="color" id="paint-color-custom" value="#ef4444" class="h-9 w-full cursor-pointer rounded-lg border border-violet-200">
-                </label>
-
-                <p class="online-paint-section-label mt-3">Son kullanılan</p>
-                <div id="paint-recent-colors" class="online-paint-recent"></div>
-
-                <div id="paint-brush-settings" class="online-paint-brush-settings mt-4">
-                    <p class="online-paint-section-label">Fırça ayarları</p>
-                    <label class="online-paint-slider-row">
-                        <span>Kalınlık</span>
-                        <input type="range" id="paint-size" min="2" max="80" value="18" class="online-paint-range flex-1">
-                        <strong id="paint-size-label">18</strong>
-                    </label>
-                    <label class="online-paint-slider-row">
-                        <span>Opaklık</span>
-                        <input type="range" id="paint-opacity" min="5" max="100" value="100" class="online-paint-range flex-1">
-                        <strong id="paint-opacity-label">100%</strong>
-                    </label>
-                    <label class="online-paint-slider-row">
-                        <span>Yumuşaklık</span>
-                        <input type="range" id="paint-softness" min="0" max="100" value="35" class="online-paint-range flex-1">
-                        <strong id="paint-softness-label">35%</strong>
-                    </label>
-                </div>
-
-                <p class="online-paint-section-label mt-4">Görünüm</p>
-                <div class="online-paint-zoom-row">
-                    <button type="button" id="paint-zoom-out" class="online-paint-icon-btn" title="Uzaklaştır">−</button>
-                    <span id="paint-zoom-label" class="online-paint-zoom-label">100%</span>
-                    <button type="button" id="paint-zoom-in" class="online-paint-icon-btn" title="Yakınlaştır">+</button>
-                    <button type="button" id="paint-zoom-fit" class="online-paint-action-btn flex-1">Sığdır</button>
-                </div>
-
-                <p class="online-paint-section-label mt-4">Düzenle</p>
-                <div class="online-paint-actions">
-                    <button type="button" id="paint-undo" class="online-paint-action-btn">↶ Geri</button>
-                    <button type="button" id="paint-redo" class="online-paint-action-btn">↷ İleri</button>
-                    <button type="button" id="paint-clear" class="online-paint-action-btn col-span-2">Temizle</button>
-                </div>
-
-                <p class="online-paint-hint">İpucu: Doldur ile kapalı alanları, sprey ile gölgelendirme yapın.</p>
+                <p class="online-paint-hint">Kısayol: Doldur kapalı alanlar · Sprey gölge · Pipet renk alır</p>
             </aside>
 
             <div class="online-paint-stage-wrap">
