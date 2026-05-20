@@ -10,62 +10,146 @@
         <button class="btn-primary md:col-span-4">Kategori Ekle</button>
     </form>
 
-    <div class="mt-4 overflow-x-auto">
-        <table class="min-w-full text-sm">
-            <thead>
-                <tr class="text-left text-xs text-slate-500">
-                    <th class="py-2 pr-3">Ad</th>
-                    <th class="py-2 pr-3">Yazı</th>
-                    <th class="py-2 pr-3">Kaynak</th>
-                    <th class="py-2 pr-3">Durum</th>
-                    <th class="py-2">İşlem</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($blogCategories as $cat)
-                    <tr class="border-t border-slate-100">
-                        <td class="py-3 pr-3 align-top">
-                            <form method="post" action="{{ route('admin.blog-categories.update', $cat) }}" class="space-y-2">
-                                @csrf @method('PUT')
-                                <input name="name" value="{{ $cat->name }}" class="input-ui w-full min-w-[10rem]" required>
-                                <input name="description" value="{{ $cat->description }}" placeholder="Açıklama" class="input-ui w-full text-xs">
-                                <input type="number" name="sort_order" value="{{ $cat->sort_order }}" min="0" class="input-ui w-24 text-xs">
+    <div
+        class="mt-5"
+        x-data="{
+            search: '',
+            openIds: {},
+            names: @js($blogCategories->pluck('name', 'id')->all()),
+            descriptions: @js($blogCategories->pluck('description', 'id')->map(fn ($d) => (string) ($d ?? ''))->all()),
+            matchId(id) {
+                const q = this.search.trim().toLocaleLowerCase('tr-TR');
+                if (!q) return true;
+                const name = String(this.names[id] ?? '').toLocaleLowerCase('tr-TR');
+                const desc = String(this.descriptions[id] ?? '').toLocaleLowerCase('tr-TR');
+                return name.includes(q) || desc.includes(q);
+            },
+            visibleIds() {
+                return Object.keys(this.names).map(Number).filter((id) => this.matchId(id));
+            },
+            isOpen(id) {
+                return !!this.openIds[id];
+            },
+            toggle(id) {
+                this.openIds[id] = !this.openIds[id];
+            },
+            expandAll() {
+                this.visibleIds().forEach((id) => { this.openIds[id] = true; });
+            },
+            collapseAll() {
+                this.openIds = {};
+            }
+        }"
+    >
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+            <div class="min-w-0 flex-1 sm:max-w-md">
+                <label for="blog-category-filter" class="text-sm font-medium text-slate-700">Kategoride ara</label>
+                <input
+                    id="blog-category-filter"
+                    type="search"
+                    x-model.debounce.150ms="search"
+                    autocomplete="off"
+                    placeholder="Ad veya açıklamada ara..."
+                    class="input-ui mt-2 w-full"
+                >
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" class="btn-secondary px-3 py-1.5 text-xs" @click="expandAll()">Tümünü aç</button>
+                <button type="button" class="btn-secondary px-3 py-1.5 text-xs" @click="collapseAll()">Tümünü kapat</button>
+            </div>
+        </div>
+        <p class="mt-2 text-xs text-slate-500">
+            <span x-text="visibleIds().length"></span> / {{ $blogCategories->count() }} kategori gösteriliyor. Düzenlemek için satıra tıklayın.
+        </p>
+
+        <div class="mt-3 max-h-[28rem] space-y-2 overflow-y-auto pr-1">
+            @forelse($blogCategories as $cat)
+                <div
+                    x-show="matchId({{ $cat->id }})"
+                    x-cloak
+                    class="overflow-hidden rounded-xl border border-violet-100 bg-white shadow-sm transition"
+                    :class="isOpen({{ $cat->id }}) ? 'border-violet-300 ring-1 ring-violet-100' : 'hover:border-violet-200'"
+                >
+                    <button
+                        type="button"
+                        class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition hover:bg-violet-50/60"
+                        @click="toggle({{ $cat->id }})"
+                        :aria-expanded="isOpen({{ $cat->id }})"
+                    >
+                        <span
+                            class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-violet-200 bg-violet-50 text-violet-700 transition-transform duration-150"
+                            :class="isOpen({{ $cat->id }}) ? 'rotate-90' : ''"
+                            aria-hidden="true"
+                        >
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                        <span class="min-w-0 flex-1 font-semibold text-slate-800">{{ $cat->name }}</span>
+                        <span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{ $cat->blogs_count }} yazı</span>
+                        <span class="hidden shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 sm:inline">
+                            {{ $cat->source === 'visitor' ? 'Ziyaretçi' : 'Admin' }}
+                        </span>
+                        @if($cat->is_active)
+                            <span class="shrink-0 text-xs font-medium text-emerald-700">Aktif</span>
+                        @else
+                            <span class="shrink-0 text-xs font-medium text-slate-500">Pasif</span>
+                        @endif
+                    </button>
+
+                    <div
+                        x-show="isOpen({{ $cat->id }})"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 -translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        class="border-t border-violet-100 bg-violet-50/30 px-3 py-3"
+                    >
+                        <form method="post" action="{{ route('admin.blog-categories.update', $cat) }}" class="grid gap-3 md:grid-cols-2">
+                            @csrf @method('PUT')
+                            <div>
+                                <label class="text-xs font-medium text-slate-600">Kategori adı</label>
+                                <input name="name" value="{{ $cat->name }}" class="input-ui mt-1 w-full" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-slate-600">Sıra</label>
+                                <input type="number" name="sort_order" value="{{ $cat->sort_order }}" min="0" class="input-ui mt-1 w-full">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="text-xs font-medium text-slate-600">Açıklama</label>
+                                <input name="description" value="{{ $cat->description }}" placeholder="Opsiyonel" class="input-ui mt-1 w-full text-sm">
+                            </div>
+                            <div class="flex flex-wrap items-center justify-between gap-3 md:col-span-2">
                                 <label class="inline-flex items-center gap-2 text-xs text-slate-600">
                                     <input type="hidden" name="is_active" value="0">
                                     <input type="checkbox" name="is_active" value="1" @checked($cat->is_active)>
                                     Aktif (yeni gönderimde görünür)
                                 </label>
-                                <button class="btn-secondary px-3 py-1 text-xs">Kaydet</button>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="submit" class="btn-secondary px-3 py-1.5 text-xs">Kaydet</button>
+                                    @if($cat->blogs_count > 0)
+                                        <span class="text-xs text-slate-400">Silinemez ({{ $cat->blogs_count }} yazı)</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </form>
+                        @if($cat->blogs_count === 0)
+                            <form method="post" action="{{ route('admin.blog-categories.destroy', $cat) }}" class="mt-2 flex justify-end border-t border-violet-100/80 pt-2">
+                                @csrf @method('DELETE')
+                                <button type="submit" onclick="return confirm('Kategori silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                             </form>
-                        </td>
-                        <td class="py-3 pr-3 align-top text-slate-600">{{ $cat->blogs_count }}</td>
-                        <td class="py-3 pr-3 align-top">
-                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs">{{ $cat->source === 'visitor' ? 'Ziyaretçi' : 'Admin' }}</span>
-                        </td>
-                        <td class="py-3 pr-3 align-top">
-                            @if($cat->is_active)
-                                <span class="text-xs font-medium text-emerald-700">Aktif</span>
-                            @else
-                                <span class="text-xs font-medium text-slate-500">Pasif</span>
-                            @endif
-                        </td>
-                        <td class="py-3 align-top">
-                            @if($cat->blogs_count > 0)
-                                <span class="text-xs text-slate-400">Silinemez</span>
-                            @else
-                                <form method="post" action="{{ route('admin.blog-categories.destroy', $cat) }}">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" onclick="return confirm('Kategori silinsin mi?')" class="btn-danger px-3 py-1 text-xs">Sil</button>
-                                </form>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="py-4 text-slate-500">Henüz blog kategorisi yok.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <p class="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">Henüz blog kategorisi yok.</p>
+            @endforelse
+            <p
+                x-show="search.trim() !== '' && visibleIds().length === 0"
+                x-cloak
+                class="rounded-xl border border-dashed border-amber-200 bg-amber-50 px-4 py-4 text-center text-sm text-amber-800"
+            >
+                Aramanızla eşleşen kategori yok.
+            </p>
+        </div>
     </div>
 </div>
