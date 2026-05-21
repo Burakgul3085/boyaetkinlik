@@ -119,8 +119,8 @@ class OnlineExperimentLab
             'cizgi-tamamlama' => [
                 'slug' => 'cizgi-tamamlama',
                 'type' => self::TYPE_LINE_TRACE,
-                'title' => 'Çizgi Tamamlama',
-                'excerpt' => 'Çizgi çalışması gibi desenin üzerinden geç; el-göz koordinasyonunu güçlendir. Ev, kelebek veya dalga seç.',
+                'title' => 'Çizgi Tamamlama Stüdyosu',
+                'excerpt' => 'Profesyonel çizgi çalışması: ev, kelebek, çiçek, yıldız veya dalga. Kalem kalınlığı seç, ilerlemeyi takip et.',
                 'age_label' => '4–10 yaş',
                 'duration_label' => '3–8 dk',
                 'sort_order' => 4,
