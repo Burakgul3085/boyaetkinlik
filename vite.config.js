@@ -13,6 +13,8 @@ export default defineConfig({
                 'resources/js/online-experiment-color-wheel.js',
                 'resources/js/online-experiment-warm-cool.js',
                 'resources/js/online-experiment-line-trace.js',
+                'resources/js/online-experiment-letter-trace.js',
+                'resources/js/online-experiment-number-trace.js',
             ],
             refresh: true,
         }),

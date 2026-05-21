@@ -17,6 +17,10 @@ class OnlineExperimentLab
 
     public const TYPE_LINE_TRACE = 'cizgi_tamamlama';
 
+    public const TYPE_LETTER_TRACE = 'harf_tamamlama';
+
+    public const TYPE_NUMBER_TRACE = 'sayi_tamamlama';
+
     /**
      * @return array<string, array{label: string, description: string, ready: bool}>
      */
@@ -46,6 +50,16 @@ class OnlineExperimentLab
             self::TYPE_LINE_TRACE => [
                 'label' => 'Çizgi tamamlama',
                 'description' => 'Çizgiyi takip et, çizimi tamamla',
+                'ready' => true,
+            ],
+            self::TYPE_LETTER_TRACE => [
+                'label' => 'Harf çizgi stüdyosu',
+                'description' => 'Türkçe harf yollarını takip ederek yazmaya hazırlan',
+                'ready' => true,
+            ],
+            self::TYPE_NUMBER_TRACE => [
+                'label' => 'Sayı çizgi stüdyosu',
+                'description' => '0–9 rakam yollarını takip ederek sayı yaz',
                 'ready' => true,
             ],
         ];
@@ -128,6 +142,30 @@ class OnlineExperimentLab
                 'icon' => '✏️',
                 'article_slug' => null,
             ],
+            'harf-cizgi-studyosu' => [
+                'slug' => 'harf-cizgi-studyosu',
+                'type' => self::TYPE_LETTER_TRACE,
+                'title' => 'Harf Çizgi Stüdyosu',
+                'excerpt' => 'Türkçe alfabedeki büyük harflerin çizgi yollarını takip et. Ç, Ğ, İ, Ö, Ş, Ü dahil tüm harfler.',
+                'age_label' => '4–8 yaş',
+                'duration_label' => '5–12 dk',
+                'sort_order' => 5,
+                'ready' => true,
+                'icon' => '🔤',
+                'article_slug' => null,
+            ],
+            'sayi-cizgi-studyosu' => [
+                'slug' => 'sayi-cizgi-studyosu',
+                'type' => self::TYPE_NUMBER_TRACE,
+                'title' => 'Sayı Çizgi Stüdyosu',
+                'excerpt' => '0’dan 9’a rakam çizgi yolları. İlerleme halkası, kalem seçimi ve kutlama ile sayı yazımına hazırlan.',
+                'age_label' => '4–7 yaş',
+                'duration_label' => '4–10 dk',
+                'sort_order' => 6,
+                'ready' => true,
+                'icon' => '🔢',
+                'article_slug' => null,
+            ],
         ];
     }
 
@@ -188,6 +226,8 @@ class OnlineExperimentLab
             self::TYPE_COLOR_WHEEL => 'resources/js/online-experiment-color-wheel.js',
             self::TYPE_WARM_COOL => 'resources/js/online-experiment-warm-cool.js',
             self::TYPE_LINE_TRACE => 'resources/js/online-experiment-line-trace.js',
+            self::TYPE_LETTER_TRACE => 'resources/js/online-experiment-letter-trace.js',
+            self::TYPE_NUMBER_TRACE => 'resources/js/online-experiment-number-trace.js',
             default => 'resources/js/online-experiment.js',
         };
     }
@@ -198,8 +238,17 @@ class OnlineExperimentLab
             self::TYPE_COLOR_MIX => 'frontend.experiments._online-play-palette-mix',
             self::TYPE_COLOR_WHEEL => 'frontend.experiments._online-play-color-wheel',
             self::TYPE_WARM_COOL => 'frontend.experiments._online-play-warm-cool',
-            self::TYPE_LINE_TRACE => 'frontend.experiments._online-play-line-trace',
+            self::TYPE_LINE_TRACE, self::TYPE_LETTER_TRACE, self::TYPE_NUMBER_TRACE => 'frontend.experiments._online-play-trace-studio',
             default => 'frontend.experiments._online-play-walk-water',
+        };
+    }
+
+    public static function traceStudioVariant(string $type): string
+    {
+        return match ($type) {
+            self::TYPE_LETTER_TRACE => 'letter',
+            self::TYPE_NUMBER_TRACE => 'number',
+            default => 'shape',
         };
     }
 
@@ -210,6 +259,8 @@ class OnlineExperimentLab
             self::TYPE_COLOR_WHEEL => 'Renk çarkı',
             self::TYPE_WARM_COOL => 'Sıcak-soğuk renkler',
             self::TYPE_LINE_TRACE => 'Çizgi çalışması',
+            self::TYPE_LETTER_TRACE => 'Harf çizgi stüdyosu',
+            self::TYPE_NUMBER_TRACE => 'Sayı çizgi stüdyosu',
             default => '3D laboratuvar modeli',
         };
     }

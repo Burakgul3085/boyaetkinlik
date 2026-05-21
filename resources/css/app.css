@@ -1331,9 +1331,154 @@
         100% { transform: translate(-50%, -80%) scale(0); opacity: 0; }
     }
 
+    /* Harf / sayı stüdyosu varyantları */
+    .online-exp-trace-patterns--letter {
+        @apply grid-cols-4 gap-1.5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8;
+        max-height: min(42vh, 320px);
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .online-exp-trace-patterns--number {
+        @apply grid-cols-5 gap-2 sm:grid-cols-5 md:max-w-lg md:mx-auto;
+    }
+
+    .online-exp-trace-card--glyph {
+        @apply relative min-h-[88px] p-1.5;
+    }
+
+    .online-exp-trace-card--glyph .online-exp-trace-card__preview {
+        @apply opacity-90;
+    }
+
+    .online-exp-trace-card__glyph {
+        @apply pointer-events-none absolute inset-0 flex items-center justify-center text-2xl font-bold text-slate-200/90;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .online-exp-trace-card--glyph.online-exp-trace-card--active .online-exp-trace-card__glyph {
+        @apply text-indigo-200/90;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-card {
+        @apply border-indigo-100 hover:border-indigo-300;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-card--active {
+        @apply border-indigo-500 bg-indigo-50 ring-indigo-300;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-workspace {
+        @apply border-indigo-100 from-white to-indigo-50/40;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-workspace--live {
+        @apply border-indigo-200;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-brush {
+        @apply border-indigo-100 bg-indigo-50 text-indigo-800 hover:bg-indigo-100;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-brush--active {
+        @apply border-indigo-500 bg-indigo-600 text-white;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-ring__bg {
+        stroke: #e0e7ff;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-ring__fill {
+        stroke: #4f46e5;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-ring__pct {
+        @apply text-indigo-800;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-sheet__corner {
+        border-color: transparent #eef2ff transparent transparent;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-celebrate {
+        @apply bg-indigo-900/20;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-celebrate__inner {
+        @apply border-indigo-200;
+    }
+
+    .online-exp-stage--trace-letter .online-exp-trace-celebrate__title {
+        @apply text-indigo-900;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-card {
+        @apply border-emerald-100 hover:border-emerald-300;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-card--active {
+        @apply border-emerald-500 bg-emerald-50 ring-emerald-300;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-workspace {
+        @apply border-emerald-100 from-white to-emerald-50/40;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-workspace--live {
+        @apply border-emerald-200;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-brush {
+        @apply border-emerald-100 bg-emerald-50 text-emerald-800 hover:bg-emerald-100;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-brush--active {
+        @apply border-emerald-600 bg-emerald-600 text-white;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-ring__bg {
+        stroke: #d1fae5;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-ring__fill {
+        stroke: #059669;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-ring__pct {
+        @apply text-emerald-800;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-sheet__corner {
+        border-color: transparent #ecfdf5 transparent transparent;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-celebrate {
+        @apply bg-emerald-900/15;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-celebrate__inner {
+        @apply border-emerald-200;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-celebrate__title {
+        @apply text-emerald-900;
+    }
+
+    .online-exp-stage--trace-number .online-exp-trace-card--glyph.online-exp-trace-card--active .online-exp-trace-card__glyph {
+        @apply text-emerald-200/90;
+    }
+
     @media (max-width: 640px) {
         .online-exp-trace-patterns {
             @apply grid-cols-2;
+        }
+
+        .online-exp-trace-patterns--letter {
+            @apply grid-cols-4;
+        }
+
+        .online-exp-trace-patterns--number {
+            @apply grid-cols-5;
         }
 
         .online-exp-trace-toolbar {
