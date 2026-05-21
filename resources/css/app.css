@@ -625,7 +625,7 @@
     }
 
     .online-exp-stage {
-        @apply min-h-[26rem] rounded-2xl border border-violet-200 bg-gradient-to-b from-slate-50 via-white to-violet-50/90 p-4 shadow-lg;
+        @apply min-h-[26rem] overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-b from-slate-50 via-white to-violet-50/90 p-4 shadow-lg;
     }
 
     .online-exp-stage-label {
@@ -633,7 +633,7 @@
     }
 
     .online-exp-stage__inner {
-        @apply flex min-h-[20rem] flex-col items-center justify-center;
+        @apply flex min-h-[20rem] w-full max-w-full flex-col items-center justify-center overflow-hidden;
     }
 
     .online-exp-palette {
@@ -645,11 +645,19 @@
     }
 
     .online-exp-palette-colors {
-        @apply mt-3 flex flex-wrap justify-center gap-3;
+        @apply mt-3 flex flex-wrap justify-center gap-2 sm:gap-2.5;
+    }
+
+    .online-exp-custom-color {
+        @apply mt-3 flex items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2 text-xs font-semibold text-slate-700;
+    }
+
+    .online-exp-custom-color input[type='color'] {
+        @apply h-9 w-12 cursor-pointer rounded-lg border border-violet-200 bg-white p-0.5;
     }
 
     .online-exp-color-btn {
-        @apply flex h-12 w-12 flex-col items-center justify-center rounded-full border-2 border-white shadow-lg transition hover:scale-110;
+        @apply flex h-10 w-10 flex-col items-center justify-center rounded-full border-2 border-white shadow-lg transition hover:scale-110 sm:h-11 sm:w-11;
         cursor: pointer;
         padding: 0;
     }
@@ -664,17 +672,17 @@
 
     /* 3D arena */
     .online-exp-3d-arena {
-        @apply relative w-full max-w-4xl px-2 py-6;
+        @apply relative isolate w-full max-w-3xl overflow-hidden px-2 py-6;
         perspective: 1100px;
     }
 
     .online-exp-3d-arena__glow {
-        @apply pointer-events-none absolute inset-0 rounded-3xl opacity-60;
-        background: radial-gradient(ellipse 70% 50% at 50% 80%, rgb(167 139 250 / 0.35), transparent 70%);
+        @apply pointer-events-none absolute inset-0 rounded-3xl opacity-50;
+        background: radial-gradient(ellipse 55% 40% at 50% 85%, rgb(167 139 250 / 0.3), transparent 65%);
     }
 
     .online-exp-3d-world {
-        @apply relative mx-auto;
+        @apply relative mx-auto max-w-full overflow-hidden;
         transform-style: preserve-3d;
         transform: rotateX(14deg);
         transition: transform 0.6s ease;
@@ -690,14 +698,18 @@
     }
 
     .online-exp-3d-floor {
-        @apply absolute left-1/2 top-[55%] h-24 w-[92%] -translate-x-1/2 rounded-[50%];
-        background: linear-gradient(180deg, rgb(196 181 253 / 0.5), rgb(139 92 246 / 0.15));
-        transform: rotateX(75deg) translateZ(-30px);
-        filter: blur(2px);
+        @apply absolute left-1/2 top-[58%] h-12 w-[min(100%,22rem)] max-w-full -translate-x-1/2 rounded-[50%];
+        background: linear-gradient(180deg, rgb(196 181 253 / 0.45), rgb(139 92 246 / 0.1));
+        transform: rotateX(78deg) translateZ(-20px);
+        filter: blur(1px);
+    }
+
+    .online-exp-3d-arena:not(.online-exp-3d-arena--intro) .online-exp-3d-floor {
+        opacity: 0.35;
     }
 
     .online-exp-3d-row {
-        @apply relative z-10 flex flex-wrap items-end justify-center gap-0.5 sm:gap-1;
+        @apply relative z-10 flex max-w-full flex-nowrap items-end justify-center gap-0.5 overflow-hidden sm:gap-1;
         transform-style: preserve-3d;
     }
 
@@ -792,7 +804,7 @@
 
     /* Köprüler (bardaklar arası) */
     .online-exp-bridge--3d {
-        @apply relative mb-6 flex h-14 w-7 flex-col items-center justify-end sm:w-8;
+        @apply relative mb-6 flex h-14 w-7 flex-col items-center justify-end overflow-hidden sm:w-8;
         cursor: pointer;
         border: none;
         background: transparent;
@@ -805,7 +817,8 @@
     }
 
     .online-exp-bridge__flow {
-        @apply pointer-events-none absolute bottom-4 left-1/2 h-10 w-2 -translate-x-1/2 origin-bottom scale-y-0 rounded-full opacity-0;
+        @apply pointer-events-none absolute bottom-4 left-1/2 h-10 w-2 max-w-full origin-bottom scale-y-0 rounded-full opacity-0;
+        transform: translateX(-50%) scaleY(0);
         background: linear-gradient(to top, var(--flow-color, #a78bfa), transparent);
     }
 
@@ -835,7 +848,12 @@
     @keyframes online-exp-capillary {
         0% { transform: translateX(-50%) scaleY(0); opacity: 0; }
         40% { opacity: 1; }
-        100% { transform: translateX(-50%) scaleY(1); opacity: 0.9; }
+        100% { transform: translateX(-50%) scaleY(1); opacity: 0.85; }
+    }
+
+    .online-exp-start-btn[hidden],
+    .online-exp-side-actions[hidden] {
+        display: none !important;
     }
 
     .online-exp-3d-arena--intro .online-exp-3d-world {

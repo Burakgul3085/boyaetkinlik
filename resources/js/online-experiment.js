@@ -19,13 +19,15 @@
         const SOURCE_INDEXES = [0, 2, 4, 6];
         const MIX_INDEXES = [1, 3, 5];
         const PALETTE = [
-            { id: 'red', hex: '#ef4444', label: 'Kırmızı' },
-            { id: 'yellow', hex: '#eab308', label: 'Sarı' },
-            { id: 'blue', hex: '#3b82f6', label: 'Mavi' },
+            { hex: '#ef4444', label: 'Kırmızı' },
+            { hex: '#f97316', label: 'Turuncu' },
+            { hex: '#eab308', label: 'Sarı' },
+            { hex: '#22c55e', label: 'Yeşil' },
+            { hex: '#14b8a6', label: 'Turkuaz' },
+            { hex: '#3b82f6', label: 'Mavi' },
+            { hex: '#a855f7', label: 'Mor' },
+            { hex: '#ec4899', label: 'Pembe' },
         ];
-        const MIX_HEX = ['#f97316', '#22c55e', '#a855f7'];
-        const MIX_LABELS = ['Turuncu (kırmızı + sarı)', 'Yeşil (sarı + mavi)', 'Mor (mavi + kırmızı)'];
-        const DEFAULT_SOURCES = ['#ef4444', '#eab308', '#3b82f6', '#ef4444'];
 
         const steps = [
             {
@@ -42,7 +44,7 @@
                     '<p class="online-exp-info-box__title">Gerçek deneyde ne lazım?</p>' +
                     '<ul class="online-exp-info-list">' +
                     '<li>7 şeffaf bardak + su</li>' +
-                    '<li>Gıda boyası: kırmızı, sarı, mavi</li>' +
+                    '<li>Gıda boyası (istediğin renkler)</li>' +
                     '<li>6 adet kağıt havlu şeridi</li>' +
                     '</ul>' +
                     '<p class="online-exp-info-box__note">Ana bardaklar: <strong>1 · 3 · 5 · 7</strong> renkli. Ara bardaklar <strong>2 · 4 · 6</strong> başta boş; renkler köprüden geçince dolar.</p>' +
@@ -61,11 +63,11 @@
             },
             {
                 title: 'Renkleri yerleştir',
-                text: 'Önce paletten bir renk seç (kırmızı, sarı veya mavi). Sonra parlayan 1, 3, 5 veya 7 numaralı bardağa tıkla. Hepsi dolunca otomatik devam edebilirsin.',
-                hint: 'İpucu: 1=kırmızı, 3=sarı, 5=mavi, 7=kırmızı (klasik düzen).',
-                checklist: ['En az bir renk seç', '1, 3, 5 ve 7 dolu olmalı'],
+                text: 'Paletten veya «özel renk»ten seç. Her ana bardağa (1, 3, 5, 7) farklı renk koyabilirsin — ara bardaklarda komşu renkler karışacak.',
+                hint: 'Dört ana bardak da dolunca sonraki adıma geç.',
+                checklist: ['8 hazır renk veya özel renk', '1, 3, 5 ve 7 dolu olmalı'],
                 sideHtml:
-                    '<p class="text-sm text-slate-600">Renkleri istediğin gibi de deneyebilirsin; animasyon yine çalışır. Dört ana bardak dolunca «Sonraki adım» açılır.</p>',
+                    '<p class="text-sm text-slate-600">Örneğin 1=mavi, 3=sarı, 5=kırmızı, 7=yeşil seçersen ara bardaklarda otomatik karışımlar oluşur.</p>',
             },
             {
                 title: 'Kağıt havlu köprüleri',
@@ -77,7 +79,7 @@
             },
             {
                 title: 'Deneyi başlat',
-                text: 'Her şey hazır! Büyük butona bas: renkler köprülerden akacak, ara bardaklar turuncu, yeşil ve mor olacak.',
+                text: 'Her şey hazır! Büyük butona bas: renkler köprülerden akacak, 2 · 4 · 6 numaralı bardaklarda senin seçtiğin renklerin karışımı oluşacak.',
                 hint: 'Animasyon birkaç saniye sürer; gözün masada olsun.',
                 checklist: ['Renkler ve köprüler tamam'],
                 sideHtml:
@@ -85,7 +87,7 @@
             },
             {
                 title: 'Sonuç ve bilim',
-                text: 'Harika! Ara bardaklarda turuncu, yeşil ve mor oluştu. Gerçek deneyde de aynı renk karışımlarını görürsün.',
+                text: 'Harika! Ara bardaklarda komşu renklerin karışımı oluştu. Gerçek deneyde de seçtiğin renklere göre benzer sonuç görürsün.',
                 hint: 'Sağdan yeniden dene veya sonucu PNG olarak indir.',
                 checklist: [],
                 sideHtml: '',
@@ -95,8 +97,10 @@
         let stepIndex = 0;
         let selectedColor = PALETTE[0].hex;
         const cupColors = Array(7).fill(null);
+        const mixFillColors = Array(7).fill(null);
         const bridges = Array(6).fill(false);
         let animating = false;
+        let lastMixSummary = [];
 
         const el = {
             progressBar: document.getElementById('exp-progress-bar'),
@@ -108,6 +112,7 @@
             btnNext: document.getElementById('exp-btn-next'),
             palette: document.getElementById('exp-palette'),
             paletteColors: document.getElementById('exp-palette-colors'),
+            colorPicker: document.getElementById('exp-color-picker'),
             cupsRow: document.getElementById('exp-cups-row'),
             arena: document.getElementById('exp-3d-arena'),
             world: document.getElementById('exp-3d-world'),
@@ -176,14 +181,64 @@
                 b.dataset.hex = c.hex;
                 b.innerHTML = '<span class="online-exp-color-btn__name">' + c.label + '</span>';
                 if (c.hex === selectedColor) b.classList.add('online-exp-color-btn--active');
-                b.addEventListener('click', () => {
-                    selectedColor = c.hex;
-                    el.paletteColors.querySelectorAll('.online-exp-color-btn').forEach((btn) => {
-                        btn.classList.toggle('online-exp-color-btn--active', btn.dataset.hex === selectedColor);
-                    });
-                });
+                b.addEventListener('click', () => selectColor(c.hex));
                 el.paletteColors.appendChild(b);
             });
+
+            if (el.colorPicker) {
+                el.colorPicker.addEventListener('input', () => {
+                    selectColor(el.colorPicker.value);
+                });
+            }
+        }
+
+        function selectColor(hex) {
+            selectedColor = hex;
+            if (el.colorPicker) el.colorPicker.value = hex;
+            el.paletteColors.querySelectorAll('.online-exp-color-btn').forEach((btn) => {
+                btn.classList.toggle('online-exp-color-btn--active', btn.dataset.hex === selectedColor);
+            });
+        }
+
+        function hexToRgb(hex) {
+            const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+            if (!m) return null;
+            return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+        }
+
+        function rgbToHex(r, g, b) {
+            const clamp = (n) => Math.max(0, Math.min(255, Math.round(n)));
+            return (
+                '#' +
+                [clamp(r), clamp(g), clamp(b)]
+                    .map((x) => x.toString(16).padStart(2, '0'))
+                    .join('')
+            );
+        }
+
+        function blendHex(a, b) {
+            const A = hexToRgb(a);
+            const B = hexToRgb(b);
+            if (!A && B) return b;
+            if (A && !B) return a;
+            if (!A && !B) return '#94a3b8';
+            return rgbToHex((A.r + B.r) / 2, (A.g + B.g) / 2, (A.b + B.b) / 2);
+        }
+
+        function colorAt(index) {
+            return cupColors[index] || mixFillColors[index] || null;
+        }
+
+        function computeMixForCup(mixIdx) {
+            return blendHex(colorAt(mixIdx - 1), colorAt(mixIdx + 1));
+        }
+
+        function computeAllMixes() {
+            const out = {};
+            MIX_INDEXES.forEach((idx) => {
+                out[idx] = computeMixForCup(idx);
+            });
+            return out;
         }
 
         function bindEvents() {
@@ -277,11 +332,7 @@
             el.arena.classList.toggle('online-exp-3d-arena--intro', stepIndex <= 1);
             el.arena.classList.toggle('online-exp-3d-arena--colors', stepIndex === 2);
             el.arena.classList.toggle('online-exp-3d-arena--bridges', stepIndex === 3);
-            el.arena.classList.toggle('online-exp-3d-arena--run', stepIndex === 4 || isResult);
-
-            if (stepIndex === 2 && !sourcesReady()) {
-                applyDefaultSources();
-            }
+            el.arena.classList.toggle('online-exp-3d-arena--run', stepIndex === 4);
 
             updateCupVisuals();
             updateBridgeVisuals();
@@ -319,26 +370,20 @@
             });
         }
 
-        function applyDefaultSources() {
-            SOURCE_INDEXES.forEach((idx, n) => {
-                if (!cupColors[idx]) cupColors[idx] = DEFAULT_SOURCES[n];
-            });
-        }
-
         function updateCupVisuals() {
             el.cupsRow.querySelectorAll('.online-exp-cup').forEach((cup) => {
                 const i = parseInt(cup.dataset.index, 10);
                 const water = cup.querySelector('.online-exp-cup__water');
                 const role = cup.querySelector('.online-exp-cup__role');
-                const color = cupColors[i];
+                const color = cupColors[i] || mixFillColors[i];
                 const isSource = SOURCE_INDEXES.includes(i);
                 const mixLevel = parseFloat(water.style.height) || 0;
 
                 if (color) {
                     water.style.backgroundColor = color;
-                    water.style.height = isSource ? '78%' : water.style.height;
+                    water.style.height = isSource ? '78%' : water.style.height || '72%';
                     cup.classList.add('online-exp-cup--filled');
-                    role.textContent = 'Renkli';
+                    role.textContent = isSource ? 'Renkli' : 'Karışım';
                 } else if (MIX_INDEXES.includes(i) && mixLevel > 8) {
                     role.textContent = 'Karışım';
                 } else {
@@ -379,16 +424,21 @@
             el.hint.textContent = 'Renkler köprülerden yürüyor… İzle!';
             el.world.classList.add('online-exp-3d-world--animating');
 
+            const plannedMixes = computeAllMixes();
+            lastMixSummary = MIX_INDEXES.map((idx) => ({
+                cup: idx + 1,
+                hex: plannedMixes[idx],
+                left: colorAt(idx - 1),
+                right: colorAt(idx + 1),
+            }));
+
             bridges.forEach((on, bridgeIdx) => {
                 if (!on) return;
                 const bridgeEl = el.cupsRow.querySelector('.online-exp-bridge[data-index="' + bridgeIdx + '"]');
                 if (bridgeEl) {
                     setTimeout(() => {
                         bridgeEl.classList.add('online-exp-bridge--flowing');
-                        const leftCup = SOURCE_INDEXES.includes(bridgeIdx) || MIX_INDEXES.includes(bridgeIdx - 1)
-                            ? bridgeIdx
-                            : bridgeIdx;
-                        const fromColor = cupColors[bridgeIdx] || cupColors[bridgeIdx + 1] || selectedColor;
+                        const fromColor = colorAt(bridgeIdx) || colorAt(bridgeIdx + 1) || selectedColor;
                         bridgeEl.style.setProperty('--flow-color', fromColor);
                     }, 300 + bridgeIdx * 450);
                 }
@@ -398,11 +448,13 @@
                 setTimeout(() => {
                     const cup = el.cupsRow.querySelector('.online-exp-cup[data-index="' + idx + '"]');
                     if (!cup) return;
+                    const mixHex = plannedMixes[idx];
+                    mixFillColors[idx] = mixHex;
                     const water = cup.querySelector('.online-exp-cup__water');
-                    water.style.backgroundColor = MIX_HEX[n];
+                    water.style.backgroundColor = mixHex;
                     water.style.height = '72%';
                     cup.classList.add('online-exp-cup--filled', 'online-exp-cup--glow');
-                    cup.querySelector('.online-exp-cup__role').textContent = 'Doldu!';
+                    cup.querySelector('.online-exp-cup__role').textContent = 'Karışım';
                     spawnRipple(cup);
                 }, 900 + n * 850);
             });
@@ -427,21 +479,35 @@
         }
 
         function buildResultSideHtml() {
+            if (!lastMixSummary.length) {
+                const planned = computeAllMixes();
+                lastMixSummary = MIX_INDEXES.map((idx) => ({
+                    cup: idx + 1,
+                    hex: planned[idx],
+                    left: colorAt(idx - 1),
+                    right: colorAt(idx + 1),
+                }));
+            }
+            let list = '';
+            lastMixSummary.forEach((row) => {
+                list +=
+                    '<li class="flex items-start gap-2">' +
+                    '<span class="mt-0.5 inline-block h-3 w-3 shrink-0 rounded-full" style="background:' +
+                    row.hex +
+                    '"></span>' +
+                    '<span><strong>' +
+                    row.cup +
+                    '. bardak</strong> — yan renklerin karışımı</span>' +
+                    '</li>';
+            });
+
             return (
                 '<div class="online-exp-result">' +
-                '<p class="font-semibold text-violet-800">Ne öğrendik?</p>' +
+                '<p class="font-semibold text-violet-800">Senin karışımların</p>' +
                 '<ul class="mt-2 space-y-2 text-sm text-slate-700">' +
-                '<li><span style="color:#f97316">■</span> 2. bardak: ' +
-                MIX_LABELS[0] +
-                '</li>' +
-                '<li><span style="color:#22c55e">■</span> 4. bardak: ' +
-                MIX_LABELS[1] +
-                '</li>' +
-                '<li><span style="color:#a855f7">■</span> 6. bardak: ' +
-                MIX_LABELS[2] +
-                '</li>' +
+                list +
                 '</ul>' +
-                '<p class="online-exp-science mt-3">Su kağıt havluda <strong>emilerek</strong> yükselir (kapiler etki). Renkler de suyla birlikte taşınır — buna «yürüyen renkler» denir.</p>' +
+                '<p class="online-exp-science mt-3">Ara bardaklardaki renk, iki komşu bardaktaki renklerin <strong>karışımıdır</strong>. Su kağıt havluda emilerek yükselir (kapiler etki).</p>' +
                 '</div>'
             );
         }
@@ -451,6 +517,8 @@
             animating = false;
             bridges.fill(false);
             cupColors.fill(null);
+            mixFillColors.fill(null);
+            lastMixSummary = [];
             el.btnStart.disabled = false;
             el.flowLayer.innerHTML = '';
             el.cupsRow.querySelectorAll('.online-exp-cup').forEach((c) => {
@@ -493,11 +561,7 @@
                 ctx.strokeStyle = '#a78bfa';
                 ctx.lineWidth = 3;
                 ctx.strokeRect(x, baseY - 200, cupW, 200);
-                let col = cupColors[i];
-                if (!col && MIX_INDEXES.includes(i)) {
-                    const mi = MIX_INDEXES.indexOf(i);
-                    col = MIX_HEX[mi];
-                }
+                let col = cupColors[i] || mixFillColors[i];
                 if (col) {
                     const level = MIX_INDEXES.includes(i) ? 0.72 : 0.78;
                     ctx.fillStyle = col;

@@ -40,8 +40,12 @@
                 <p class="online-exp-stage-label">3D deney masası — tıklayarak kur, sonra animasyonu izle</p>
                 <div class="online-exp-stage__inner" id="exp-stage-inner">
                     <div class="online-exp-palette" id="exp-palette" hidden>
-                        <p class="online-exp-palette-label">① Bir renk seç · ② Yanan 1, 3, 5 veya 7 numaralı bardağa tıkla</p>
+                        <p class="online-exp-palette-label">① Paletten veya özel renkten seç · ② Parlayan 1, 3, 5, 7 bardaklara tıkla (her bardak farklı renk olabilir)</p>
                         <div class="online-exp-palette-colors" id="exp-palette-colors"></div>
+                        <label class="online-exp-custom-color">
+                            <span>Özel renk</span>
+                            <input type="color" id="exp-color-picker" value="#e11d48" title="İstediğin rengi seç">
+                        </label>
                     </div>
 
                     <div class="online-exp-3d-arena" id="exp-3d-arena">
