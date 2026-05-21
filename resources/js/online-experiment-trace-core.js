@@ -152,6 +152,7 @@ export function initTraceStudio(config) {
                 (idx === 0 ? ' online-exp-trace-card--active' : '') +
                 (variant === 'letter' || variant === 'number' ? ' online-exp-trace-card--glyph' : '');
             btn.dataset.pattern = key;
+            btn.setAttribute('data-pattern', key);
             btn.setAttribute('role', 'option');
 
             const canvas = document.createElement('canvas');
@@ -239,7 +240,9 @@ export function initTraceStudio(config) {
     }
 
     function selectPattern(key) {
-        if (!patternsNormalized[key]) return;
+        const resolved = patternsNormalized[key] ? key : findPatternKey(key);
+        if (!resolved || !patternsNormalized[resolved]) return;
+        key = resolved;
         currentPattern = key;
         samples = buildSamples(patternsNormalized[key]);
         hitCount = 0;
@@ -255,11 +258,21 @@ export function initTraceStudio(config) {
         el.patterns.querySelectorAll('.online-exp-trace-card').forEach((b) => {
             b.classList.toggle('online-exp-trace-card--active', b.dataset.pattern === key);
         });
+        bgCache = null;
         invalidateBgCache();
         progressGrad = null;
-        scheduleRedraw();
+        redraw();
         updateProgressUI();
         updatePatternLabel();
+    }
+
+    function findPatternKey(key) {
+        if (!key) return null;
+        const keys = Object.keys(patternsNormalized);
+        const exact = keys.find((k) => k === key);
+        if (exact) return exact;
+        const upper = key.toUpperCase();
+        return keys.find((k) => k.toUpperCase() === upper) || null;
     }
 
     function updatePatternLabel() {

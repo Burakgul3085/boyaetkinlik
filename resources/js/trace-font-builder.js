@@ -1,9 +1,11 @@
 /**
  * Gerçek font konturundan harf/rakam çizgi yolları (Nunito Sans)
+ * latin + latin-ext: rakamlar ve Z latin'te, İ/Ğ latin-ext'te
  */
 import { parse as parseFont } from 'opentype.js';
 
-const FONT_URL = '/fonts/nunito-sans-bold.woff';
+const FONT_LATIN_URL = '/fonts/nunito-sans-latin.woff';
+const FONT_LATIN_EXT_URL = '/fonts/nunito-sans-latin-ext.woff';
 const FONT_SIZE = 220;
 
 const LETTER_LEVELS = {
@@ -18,7 +20,8 @@ const NUMBER_LEVELS = {
     Zor: '6,8',
 };
 
-let fontCache = null;
+let fontLatin = null;
+let fontLatinExt = null;
 
 function levelForChar(char, map) {
     for (const [level, chars] of Object.entries(map)) {
@@ -27,13 +30,29 @@ function levelForChar(char, map) {
     return 'Kolay';
 }
 
+async function loadWoff(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Font yüklenemedi: ' + url);
+    return parseFont(await res.arrayBuffer());
+}
+
+function hasRealGlyph(font, char) {
+    const g = font.charToGlyph(char);
+    return g.index !== 0;
+}
+
+function fontForChar(char) {
+    if (fontLatin && hasRealGlyph(fontLatin, char)) return fontLatin;
+    if (fontLatinExt && hasRealGlyph(fontLatinExt, char)) return fontLatinExt;
+    return fontLatin || fontLatinExt;
+}
+
 export async function loadTraceFont() {
-    if (fontCache) return fontCache;
-    const res = await fetch(FONT_URL);
-    if (!res.ok) throw new Error('Font yüklenemedi');
-    const buf = await res.arrayBuffer();
-    fontCache = parseFont(buf);
-    return fontCache;
+    if (fontLatin && fontLatinExt) return { fontLatin, fontLatinExt };
+    const [latin, ext] = await Promise.all([loadWoff(FONT_LATIN_URL), loadWoff(FONT_LATIN_EXT_URL)]);
+    fontLatin = latin;
+    fontLatinExt = ext;
+    return { fontLatin, fontLatinExt };
 }
 
 function sampleCubic(x0, y0, x1, y1, x2, y2, x3, y3, steps = 14) {
@@ -134,7 +153,13 @@ function pathToSegments(path) {
 }
 
 export function buildCharPattern(char, level = 'Kolay') {
-    const path = fontCache.getPath(char, 0, 0, FONT_SIZE);
+    const font = fontForChar(char);
+    if (!font) throw new Error('Font hazır değil');
+    const glyph = font.charToGlyph(char);
+    if (glyph.index === 0) {
+        console.warn('[trace-font] Glyph bulunamadı:', char);
+    }
+    const path = font.getPath(char, 0, 0, FONT_SIZE);
     const segments = pathToSegments(path);
     return {
         name: char,

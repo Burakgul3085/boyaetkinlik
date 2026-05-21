@@ -1127,10 +1127,20 @@
 
     @font-face {
         font-family: 'Nunito Sans Trace';
-        src: url('/fonts/nunito-sans-bold.woff') format('woff');
+        src: url('/fonts/nunito-sans-latin.woff') format('woff');
         font-weight: 700;
         font-style: normal;
         font-display: swap;
+        unicode-range: U+0000-00FF, U+0130, U+011E, U+015E, U+015F, U+00C7, U+00E7, U+00D6, U+00F6, U+00DC, U+00FC;
+    }
+
+    @font-face {
+        font-family: 'Nunito Sans Trace';
+        src: url('/fonts/nunito-sans-latin-ext.woff') format('woff');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+        unicode-range: U+0100-024F, U+1E00-1EFF;
     }
 
     /* Çizgi tamamlama stüdyosu */
