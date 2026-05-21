@@ -172,6 +172,199 @@
         @apply mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-100 text-violet-600 transition hover:bg-violet-50;
     }
 
+    /* Deneyler — 3D görünüm & filtre */
+    .exp-filter-panel {
+        @apply lg:sticky lg:top-4;
+    }
+
+    .exp-filter-link {
+        @apply flex items-center justify-between gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-slate-700 transition;
+    }
+
+    .exp-filter-link:hover {
+        @apply border-violet-200 bg-violet-50 text-violet-800;
+    }
+
+    .exp-filter-link--active {
+        @apply border-violet-500 bg-violet-600 text-white shadow-sm;
+    }
+
+    .exp-filter-link--active:hover {
+        @apply border-violet-500 bg-violet-600 text-white;
+    }
+
+    .exp-filter-link--path {
+        @apply border-violet-200 bg-violet-50/80 text-violet-800;
+    }
+
+    .exp-filter-count {
+        @apply rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-slate-600;
+    }
+
+    .exp-filter-count--active {
+        @apply bg-white/25 text-white;
+    }
+
+    .exp-filter-toggle {
+        @apply mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-100 text-violet-600 transition hover:bg-violet-50;
+    }
+
+    .exp-3d-grid-perspective {
+        perspective: 1400px;
+    }
+
+    .exp-3d-hero {
+        transform-style: preserve-3d;
+        animation: exp-hero-float 8s ease-in-out infinite;
+    }
+
+    .exp-3d-orb {
+        position: absolute;
+        border-radius: 9999px;
+        filter: blur(40px);
+        opacity: 0.55;
+    }
+
+    .exp-3d-orb--a {
+        top: -2rem;
+        right: 10%;
+        width: 10rem;
+        height: 10rem;
+        background: radial-gradient(circle, rgba(192, 132, 252, 0.9), transparent 70%);
+        animation: exp-orb-drift 12s ease-in-out infinite;
+    }
+
+    .exp-3d-orb--b {
+        bottom: -1.5rem;
+        left: 8%;
+        width: 8rem;
+        height: 8rem;
+        background: radial-gradient(circle, rgba(129, 140, 248, 0.85), transparent 70%);
+        animation: exp-orb-drift 14s ease-in-out infinite reverse;
+    }
+
+    .exp-3d-card {
+        transform-style: preserve-3d;
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
+        animation: exp-card-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    .exp-3d-card:nth-child(2) { animation-delay: 0.06s; }
+    .exp-3d-card:nth-child(3) { animation-delay: 0.12s; }
+    .exp-3d-card:nth-child(4) { animation-delay: 0.18s; }
+    .exp-3d-card:nth-child(5) { animation-delay: 0.24s; }
+    .exp-3d-card:nth-child(6) { animation-delay: 0.3s; }
+
+    .exp-3d-card:hover {
+        transform: translateY(-10px) rotateX(6deg) rotateY(-4deg) scale(1.02);
+        filter: drop-shadow(0 28px 36px rgba(124, 58, 237, 0.28));
+    }
+
+    .exp-3d-card__inner {
+        transform: translateZ(12px);
+        box-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.9) inset,
+            0 18px 40px -12px rgba(79, 70, 229, 0.35),
+            0 4px 12px rgba(15, 23, 42, 0.08);
+        transition: box-shadow 0.4s ease;
+    }
+
+    .exp-3d-card:hover .exp-3d-card__inner {
+        box-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.95) inset,
+            0 32px 56px -16px rgba(124, 58, 237, 0.45),
+            0 8px 20px rgba(15, 23, 42, 0.12);
+    }
+
+    .exp-3d-panel {
+        transform-style: preserve-3d;
+        box-shadow: 0 16px 40px -20px rgba(99, 102, 241, 0.35);
+    }
+
+    .exp-3d-video__frame {
+        transform-style: preserve-3d;
+        transform: rotateX(4deg) rotateY(-2deg);
+        transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .exp-3d-video:hover .exp-3d-video__frame {
+        transform: rotateX(0deg) rotateY(0deg) scale(1.01);
+    }
+
+    .exp-3d-image-frame {
+        padding: 3px;
+        border-radius: 1.35rem;
+        background: linear-gradient(135deg, #a78bfa, #e879f9, #818cf8);
+        box-shadow: 0 24px 48px -16px rgba(124, 58, 237, 0.5);
+        transform: rotateX(5deg) rotateY(3deg);
+        transition: transform 0.5s ease;
+    }
+
+    .exp-3d-image-frame:hover {
+        transform: rotateX(0deg) rotateY(0deg) scale(1.03);
+    }
+
+    .exp-3d-content-card {
+        animation: exp-panel-in 0.6s ease backwards;
+        animation-delay: 0.15s;
+        box-shadow: 0 20px 50px -24px rgba(79, 70, 229, 0.25);
+    }
+
+    .exp-3d-mini-card {
+        transition: transform 0.35s ease;
+    }
+
+    .exp-3d-mini-card:hover {
+        transform: translateY(-4px) translateZ(8px);
+    }
+
+    @keyframes exp-hero-float {
+        0%, 100% { transform: translateY(0) rotateX(0deg); }
+        50% { transform: translateY(-6px) rotateX(1deg); }
+    }
+
+    @keyframes exp-orb-drift {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(12px, -8px) scale(1.08); }
+    }
+
+    @keyframes exp-card-rise {
+        from {
+            opacity: 0;
+            transform: translateY(28px) rotateX(12deg) scale(0.96);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) rotateX(0) scale(1);
+        }
+    }
+
+    @keyframes exp-panel-in {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .exp-3d-hero,
+        .exp-3d-orb,
+        .exp-3d-card,
+        .exp-3d-content-card {
+            animation: none;
+        }
+
+        .exp-3d-card:hover,
+        .exp-3d-video__frame,
+        .exp-3d-image-frame {
+            transform: none;
+        }
+    }
+
     /* Online Boya stüdyosu */
     .online-paint-page {
         @apply -mx-2 min-h-[calc(100vh-12rem)] sm:-mx-0;

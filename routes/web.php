@@ -18,6 +18,9 @@ use App\Http\Controllers\Admin\TransactionController as AdminTransactionControll
 use App\Http\Controllers\Admin\VisitorFeedbackController as AdminVisitorFeedbackController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ExperimentController;
+use App\Http\Controllers\Admin\ExperimentController as AdminExperimentController;
+use App\Http\Controllers\Admin\ExperimentCategoryController as AdminExperimentCategoryController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ColoringPageController;
 use App\Http\Controllers\DownloadController;
@@ -58,6 +61,9 @@ Route::post('/blog/yaz', [BlogController::class, 'store'])
     ->middleware('throttle:6,1')
     ->name('blog.store');
 Route::get('/blog/{blog:slug}', [BlogController::class, 'show'])->name('blog.show');
+Route::get('/deneyler', [ExperimentController::class, 'index'])->name('experiments.index');
+Route::get('/deneyler/kategori/{experimentCategory:slug}', [ExperimentController::class, 'category'])->name('experiments.category');
+Route::get('/deneyler/{experiment:slug}', [ExperimentController::class, 'show'])->name('experiments.show');
 Route::post('/iletisim', [ContactController::class, 'send'])->name('contact.send');
 Route::post('/iletisim/whatsapp', [ContactController::class, 'sendWhatsApp'])->name('contact.whatsapp');
 Route::post('/e-bulten/kayit', [NewsletterController::class, 'store'])->name('newsletter.store');
@@ -203,6 +209,16 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/blogs/{blog}/approve', [AdminBlogController::class, 'approve'])->name('blogs.approve');
         Route::post('/blogs/{blog}/reject', [AdminBlogController::class, 'reject'])->name('blogs.reject');
         Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->name('blogs.destroy');
+
+        Route::get('/deneyler', [AdminExperimentController::class, 'index'])->name('experiments.index');
+        Route::post('/deneyler', [AdminExperimentController::class, 'store'])->name('experiments.store');
+        Route::post('/deney-kategorileri', [AdminExperimentCategoryController::class, 'store'])->name('experiment-categories.store');
+        Route::put('/deney-kategorileri/{experimentCategory}', [AdminExperimentCategoryController::class, 'update'])->name('experiment-categories.update');
+        Route::delete('/deney-kategorileri/{experimentCategory}', [AdminExperimentCategoryController::class, 'destroy'])->name('experiment-categories.destroy');
+        Route::put('/deneyler/{experiment}', [AdminExperimentController::class, 'update'])->name('experiments.update');
+        Route::post('/deneyler/{experiment}/yayinla', [AdminExperimentController::class, 'publish'])->name('experiments.publish');
+        Route::post('/deneyler/{experiment}/yayindan-kaldir', [AdminExperimentController::class, 'unpublish'])->name('experiments.unpublish');
+        Route::delete('/deneyler/{experiment}', [AdminExperimentController::class, 'destroy'])->name('experiments.destroy');
 
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');

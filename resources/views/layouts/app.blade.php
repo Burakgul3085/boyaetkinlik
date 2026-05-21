@@ -158,6 +158,7 @@
         $menuItems->push($navItem);
     }
 
+    $menuItems->push(['label' => 'Deneyler', 'url' => '/deneyler', 'children' => []]);
     $menuItems->push(['label' => 'Blog', 'url' => '/blog', 'children' => []]);
 
     if ($hasContact) {
