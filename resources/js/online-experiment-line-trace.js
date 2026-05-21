@@ -21,7 +21,7 @@ initTraceStudio({
         },
         {
             title: 'Desenini seç',
-            text: 'Beş desenden birini seç. Kartlarda küçük önizleme görünür; zorluk etiketine bakabilirsin.',
+            text: '25 desenden birini seç. Kartlarda küçük önizleme görünür; zorluk etiketine bakabilirsin.',
             hint: 'Seçtikten sonra «Sonraki adım».',
             checklist: ['Bir desen seçildi'],
             sideHtml: '',

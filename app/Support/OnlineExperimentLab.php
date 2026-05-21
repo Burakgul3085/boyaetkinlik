@@ -134,7 +134,7 @@ class OnlineExperimentLab
                 'slug' => 'cizgi-tamamlama',
                 'type' => self::TYPE_LINE_TRACE,
                 'title' => 'Çizgi Tamamlama Stüdyosu',
-                'excerpt' => 'Profesyonel çizgi çalışması: ev, kelebek, çiçek, yıldız veya dalga. Kalem kalınlığı seç, ilerlemeyi takip et.',
+                'excerpt' => '25 desenli çizgi çalışması: ev, kelebek, kalp, roket, araba ve daha fazlası. Kalem kalınlığı seç, ilerlemeyi takip et.',
                 'age_label' => '4–10 yaş',
                 'duration_label' => '3–8 dk',
                 'sort_order' => 4,
