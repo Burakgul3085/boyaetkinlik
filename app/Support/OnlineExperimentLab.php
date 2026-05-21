@@ -19,8 +19,8 @@ class OnlineExperimentLab
     {
         return [
             self::TYPE_WALK_WATER => [
-                'label' => 'Yürüyen renkler (gökkuşağı)',
-                'description' => 'Bardaklar, renkler ve kağıt havlu köprüleri',
+                'label' => 'Kapiler renk karışımı',
+                'description' => 'Yedi bardakta emilim ve renk birleşimi',
                 'ready' => true,
             ],
             self::TYPE_COLOR_MIX => [
@@ -50,16 +50,16 @@ class OnlineExperimentLab
     public static function catalog(): array
     {
         return [
-            'yuruyen-renkler' => [
-                'slug' => 'yuruyen-renkler',
+            'renk-karisim' => [
+                'slug' => 'renk-karisim',
                 'type' => self::TYPE_WALK_WATER,
-                'title' => 'Yürüyen renkler (gökkuşağı)',
-                'excerpt' => 'Bardaklara renk ekle, kağıt havlu köprüleri kur ve renklerin birleşmesini izle.',
+                'title' => 'Renk Karışım Deneyi',
+                'excerpt' => 'Yedi bardakta kapiler etki ile renklerin birleşmesini modelle; istediğin renkleri seç, karışımları gözlemle.',
                 'age_label' => '5–9 yaş',
                 'duration_label' => '5–10 dk',
                 'sort_order' => 0,
                 'ready' => true,
-                'icon' => '🌈',
+                'icon' => '🧪',
                 'article_slug' => null,
             ],
         ];
@@ -67,6 +67,14 @@ class OnlineExperimentLab
 
     public static function findBySlug(string $slug): ?array
     {
+        $aliases = [
+            'yuruyen-renkler' => 'renk-karisim',
+        ];
+
+        if (isset($aliases[$slug])) {
+            $slug = $aliases[$slug];
+        }
+
         return static::catalog()[$slug] ?? null;
     }
 

@@ -65,6 +65,7 @@ Route::get('/blog/{blog:slug}', [BlogController::class, 'show'])->name('blog.sho
 Route::get('/deneyler', [ExperimentController::class, 'index'])->name('experiments.index');
 Route::get('/deneyler/kategori/{experimentCategory:slug}', [ExperimentController::class, 'category'])->name('experiments.category');
 Route::get('/deneyler/online-dene', [OnlineExperimentController::class, 'hub'])->name('experiments.online.hub');
+Route::redirect('/deneyler/online-dene/yuruyen-renkler', '/deneyler/online-dene/renk-karisim', 301);
 Route::get('/deneyler/online-dene/{labSlug}', [OnlineExperimentController::class, 'play'])
     ->where('labSlug', '[a-z0-9\-]+')
     ->name('experiments.online.play');

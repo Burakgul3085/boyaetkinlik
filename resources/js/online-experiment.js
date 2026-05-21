@@ -1,5 +1,5 @@
 /**
- * Online Deney Laboratuvarı — Yürüyen renkler (3D model + adım adım rehber)
+ * Online Deney Laboratuvarı — Renk karışım deneyi (3D model + adım adım rehber)
  */
 (function () {
     const app = document.getElementById('online-exp-app');
@@ -32,7 +32,7 @@
         const steps = [
             {
                 title: 'Bu deney ne?',
-                text: 'Yürüyen renkler (gökkuşağı) deneyinde renkli sular, kağıt havlu köprüleriyle yan bardaklara «yürür». Burada aynı olayı 3D animasyonla güvenle izleyeceksin.',
+                text: 'Renk Karışım Deneyi’nde renkli sular, kağıt havlu köprüleriyle yan bardaklara emilerek taşınır ve yeni tonlar oluşur. Burada süreci 3D modelde adım adım izleyeceksin.',
                 hint: 'Soldaki adımları sırayla takip et. Hazırsan «Sonraki adım»a bas.',
                 checklist: [
                     '7 bardak ve 6 kağıt havlu köprüsü göreceksin',
@@ -58,7 +58,7 @@
                 sideHtml:
                     '<div class="online-exp-diagram">' +
                     '<p class="font-semibold text-violet-800">Düzen</p>' +
-                    '<p class="mt-2 text-xs leading-relaxed text-slate-600">Renkli sular yan yana durunca, aradaki boş bardaklara su emilerek yeni renkler oluşur — tıpkı gökkuşağı gibi.</p>' +
+                    '<p class="mt-2 text-xs leading-relaxed text-slate-600">Renkli sular yan yana durunca, aradaki boş bardaklara su emilerek komşu renklerin karışımı oluşur.</p>' +
                     '</div>',
             },
             {
@@ -75,7 +75,7 @@
                 hint: 'Her boşluğa bir köprü: 1↔2, 2↔3, 3↔4, 4↔5, 5↔6, 6↔7',
                 checklist: ['6 köprü de kurulu olmalı'],
                 sideHtml:
-                    '<p class="text-sm text-slate-600"><strong>Emilim (kapiler etki):</strong> Kağıt havlu suyu ve rengi yukarı çeker; bu yüzden renk «yürür» gibi görünür.</p>',
+                    '<p class="text-sm text-slate-600"><strong>Kapiler etki:</strong> Kağıt havlu suyu ve rengi yukarı çeker; ara bardaklarda renkler birleşir.</p>',
             },
             {
                 title: 'Deneyi başlat',
@@ -506,7 +506,7 @@
                 '<ul class="mt-2 space-y-2 text-sm text-slate-700">' +
                 list +
                 '</ul>' +
-                '<p class="online-exp-science mt-3">Ara bardaklardaki renk, iki komşu bardaktaki renklerin <strong>karışımıdır</strong>. Su kağıt havluda emilerek yükselir (kapiler etki).</p>' +
+                '<p class="online-exp-science mt-3">Ara bardaklardaki renk, iki komşu bardaktaki renklerin <strong>karışımıdır</strong>. Gerçek deneyde su kağıt havluda emilerek yükselir (kapiler etki).</p>' +
                 '</div>'
             );
         }
@@ -545,7 +545,7 @@
 
             ctx.fillStyle = '#5b21b6';
             ctx.font = 'bold 24px system-ui, sans-serif';
-            ctx.fillText('Yürüyen Renkler — Online Deney Sonucu', 36, 48);
+            ctx.fillText('Renk Karışım Deneyi — Sonuç', 36, 48);
 
             ctx.font = '14px system-ui';
             ctx.fillStyle = '#64748b';
@@ -576,7 +576,7 @@
                 if (!blob) return;
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = 'yuruyen-renkler-sonuc.png';
+                a.download = 'renk-karisim-deneyi-sonuc.png';
                 a.click();
                 URL.revokeObjectURL(a.href);
             });

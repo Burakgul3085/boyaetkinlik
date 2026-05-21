@@ -8,7 +8,7 @@
             <div class="min-w-0">
                 <a href="{{ route('experiments.online.hub') }}" class="online-exp-back">← Laboratuvar</a>
                 <h1 class="online-exp-title">{{ $lab['title'] }}</h1>
-                <p class="online-exp-sub">Adım adım rehber · 3D animasyonlu model · Gerçek deneyde aynı mantık</p>
+                <p class="online-exp-sub">{{ $labTypeLabel }} · Adım adım rehber · 3D laboratuvar modeli</p>
             </div>
             @if($articleUrl)
                 <a href="{{ $articleUrl }}" class="online-exp-link-article">Deney yazısı</a>
@@ -58,7 +58,7 @@
 
                     <p class="online-exp-stage-hint" id="exp-stage-hint"></p>
                     <button type="button" class="btn-primary online-exp-start-btn" id="exp-btn-start" hidden>
-                        Deneyi başlat — renkler yürüsün ✨
+                        Deneyi başlat — karışımları izle ✨
                     </button>
                 </div>
             </main>
