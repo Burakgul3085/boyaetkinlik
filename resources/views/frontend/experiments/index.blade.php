@@ -51,34 +51,12 @@
                     @endif
                 </div>
             @else
-                <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
+                <div class="grid items-start gap-5 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
                     @foreach($experiments as $experiment)
-                        <article class="exp-3d-card group">
-                            <div class="exp-3d-card__inner overflow-hidden rounded-2xl border border-violet-100/90 bg-white">
-                                @if($experiment->youtubeEmbedUrl() && ! $experiment->image_path)
-                                    <div class="relative aspect-video overflow-hidden bg-slate-900">
-                                        <img
-                                            src="{{ $experiment->youtubeThumbnailUrl() }}"
-                                            alt="{{ $experiment->title }} video önizleme"
-                                            class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                                            loading="lazy"
-                                        >
-                                        <span class="absolute inset-0 flex items-center justify-center bg-slate-900/25">
-                                            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-red-600 text-white shadow-lg">▶</span>
-                                        </span>
-                                    </div>
-                                @elseif($experiment->image_path)
-                                    <div class="bg-gradient-to-br from-violet-50 to-fuchsia-50/50 p-3">
-                                        <img
-                                            src="{{ asset('storage/'.$experiment->image_path) }}"
-                                            alt="{{ $experiment->title }} görseli"
-                                            class="h-52 w-full rounded-xl object-contain select-none"
-                                            draggable="false"
-                                            loading="lazy"
-                                        >
-                                    </div>
-                                @endif
-                                <div class="p-4 {{ ($experiment->image_path || $experiment->youtubeEmbedUrl()) ? 'pt-2' : 'pt-4' }}">
+                        <article class="exp-3d-card group h-full">
+                            <div class="exp-3d-card__inner flex h-full flex-col overflow-hidden rounded-2xl border border-violet-100/90 bg-white">
+                                @include('partials.experiment-media', ['experiment' => $experiment, 'variant' => 'card'])
+                                <div class="flex flex-1 flex-col p-4 {{ ($experiment->image_path || $experiment->youtubeEmbedUrl()) ? 'pt-3' : 'pt-4' }}">
                                     <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                                         <span>{{ $experiment->authorFullName() }} · {{ $experiment->published_at?->format('d.m.Y') ?? $experiment->created_at?->format('d.m.Y') }}</span>
                                         @if($experiment->category)
@@ -90,7 +68,7 @@
                                     </div>
                                     <h2 class="mt-2 line-clamp-2 text-lg font-bold text-slate-900">{{ $experiment->title }}</h2>
                                     <p class="mt-2 line-clamp-3 text-sm text-slate-600">{{ $experiment->excerpt }}</p>
-                                    <a href="{{ route('experiments.show', $experiment) }}" class="mt-4 inline-flex items-center rounded-xl bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-100">
+                                    <a href="{{ route('experiments.show', $experiment) }}" class="mt-auto inline-flex items-center rounded-xl bg-violet-50 px-3 py-2 pt-4 text-sm font-semibold text-violet-700 transition hover:bg-violet-100">
                                         Deney Detayı
                                     </a>
                                 </div>

@@ -291,17 +291,173 @@
         transform: rotateX(0deg) rotateY(0deg) scale(1.01);
     }
 
-    .exp-3d-image-frame {
-        padding: 3px;
-        border-radius: 1.35rem;
-        background: linear-gradient(135deg, #a78bfa, #e879f9, #818cf8);
-        box-shadow: 0 24px 48px -16px rgba(124, 58, 237, 0.5);
-        transform: rotateX(5deg) rotateY(3deg);
-        transition: transform 0.5s ease;
+    /* Deney görselleri — tüm en-boy oranları, kırpılmadan */
+    .exp-media-stage {
+        position: relative;
+        margin: 0;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
     }
 
-    .exp-3d-image-frame:hover {
-        transform: rotateX(0deg) rotateY(0deg) scale(1.03);
+    .exp-media-stage__backdrop {
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(196, 181, 253, 0.45), transparent 70%),
+            linear-gradient(160deg, #f5f3ff 0%, #ede9fe 40%, #faf5ff 100%);
+        pointer-events: none;
+    }
+
+    .exp-media-stage__backdrop--dark {
+        background: linear-gradient(160deg, #1e1b4b 0%, #312e81 50%, #1e293b 100%);
+    }
+
+    .exp-media-stage__frame {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 0.85rem 1rem;
+    }
+
+    .exp-media-img {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        object-fit: contain;
+        object-position: center;
+        border-radius: 0.85rem;
+        box-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.9) inset,
+            0 12px 32px -8px rgba(79, 70, 229, 0.28),
+            0 4px 12px rgba(15, 23, 42, 0.08);
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
+    }
+
+    .exp-media-img--cover {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        object-fit: cover;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    /* Liste kartı */
+    .exp-media-stage--card {
+        min-height: 10.5rem;
+        max-height: min(32rem, 72vh);
+        border-bottom: 1px solid rgb(237 233 254 / 0.9);
+    }
+
+    .exp-media-stage--card .exp-media-img {
+        max-height: min(30rem, 68vh);
+    }
+
+    .exp-media-stage--card.exp-media-stage--video-only {
+        min-height: 11rem;
+        max-height: 14rem;
+        aspect-ratio: 16 / 9;
+    }
+
+    .exp-media-stage--card.exp-media-stage--video-only .exp-media-img--cover {
+        position: absolute;
+        inset: 0;
+    }
+
+    .exp-3d-card:hover .exp-media-stage--card .exp-media-img:not(.exp-media-img--cover) {
+        transform: scale(1.02) translateY(-2px);
+        box-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.95) inset,
+            0 20px 40px -10px rgba(124, 58, 237, 0.35),
+            0 8px 16px rgba(15, 23, 42, 0.1);
+    }
+
+    .exp-media-badge {
+        position: absolute;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        border-radius: 9999px;
+        background: rgb(220 38 38 / 0.92);
+        padding: 0.25rem 0.55rem;
+        font-size: 10px;
+        font-weight: 700;
+        color: #fff;
+        box-shadow: 0 4px 12px rgb(220 38 38 / 0.35);
+    }
+
+    .exp-media-play {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgb(15 23 42 / 0.2);
+    }
+
+    .exp-media-play__icon {
+        display: flex;
+        height: 3rem;
+        width: 3rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        background: rgb(220 38 38);
+        font-size: 0.85rem;
+        color: #fff;
+        box-shadow: 0 8px 20px rgb(0 0 0 / 0.35);
+    }
+
+    /* Detay sayfası */
+    .exp-media-section {
+        width: 100%;
+        max-width: 56rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .exp-media-stage--detail {
+        min-height: 12rem;
+        max-height: none;
+        padding: 0.25rem 0;
+        border-radius: 1.25rem;
+        border: 1px solid rgb(221 214 254);
+        background: linear-gradient(145deg, #faf5ff 0%, #f5f3ff 50%, #eef2ff 100%);
+        box-shadow:
+            0 24px 56px -20px rgba(124, 58, 237, 0.35),
+            0 8px 20px rgba(15, 23, 42, 0.06);
+        transform: perspective(1200px) rotateX(2deg);
+        transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .exp-media-stage--detail:hover {
+        transform: perspective(1200px) rotateX(0deg) translateY(-4px);
+    }
+
+    .exp-media-stage--detail .exp-media-stage__frame {
+        padding: 1rem 1.25rem;
+    }
+
+    .exp-media-stage--detail .exp-media-img {
+        max-height: min(85vh, 1100px);
+        border-radius: 1rem;
+    }
+
+    @media (min-width: 768px) {
+        .exp-media-stage--detail .exp-media-stage__frame {
+            padding: 1.25rem 1.75rem;
+        }
     }
 
     .exp-3d-content-card {
@@ -360,7 +516,12 @@
 
         .exp-3d-card:hover,
         .exp-3d-video__frame,
-        .exp-3d-image-frame {
+        .exp-media-stage--detail,
+        .exp-media-stage--detail:hover {
+            transform: none;
+        }
+
+        .exp-3d-card:hover .exp-media-stage--card .exp-media-img {
             transform: none;
         }
     }
