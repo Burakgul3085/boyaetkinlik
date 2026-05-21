@@ -103,16 +103,20 @@ export function initTraceStudio(config) {
         Object.keys(RAW_PATTERNS).forEach((key) => {
             const segs = patternSegments(key);
             const pad = variant === 'shape' ? 36 : 40;
-            patternsNormalized[key] = segs.map((seg) => normalizePoints(seg, LOGICAL_W, LOGICAL_H, pad));
+            patternsNormalized[key] = normalizeSegmentGroups(segs, LOGICAL_W, LOGICAL_H, pad);
         });
     }
 
-    function normalizePoints(points, w, h, pad) {
+    /** Tüm segmentleri birlikte ölçekle (her parça ayrı büyütülmesin) */
+    function normalizeSegmentGroups(segments, w, h, pad) {
+        const flat = segments.flat();
+        if (!flat.length) return segments;
+
         let minX = Infinity,
             maxX = -Infinity,
             minY = Infinity,
             maxY = -Infinity;
-        points.forEach((p) => {
+        flat.forEach((p) => {
             minX = Math.min(minX, p[0]);
             maxX = Math.max(maxX, p[0]);
             minY = Math.min(minY, p[1]);
@@ -123,7 +127,9 @@ export function initTraceStudio(config) {
         const scale = Math.min((w - pad * 2) / rw, (h - pad * 2) / rh);
         const ox = (w - rw * scale) / 2;
         const oy = (h - rh * scale) / 2;
-        return points.map((p) => [ox + (p[0] - minX) * scale, oy + (p[1] - minY) * scale]);
+        const mapPt = (p) => [ox + (p[0] - minX) * scale, oy + (p[1] - minY) * scale];
+
+        return segments.map((seg) => seg.map(mapPt));
     }
 
     function buildPatternCards() {
@@ -240,14 +246,26 @@ export function initTraceStudio(config) {
         scanFrom = 0;
         strokeTrail = [];
         completed = false;
-        if (el.celebrate) el.celebrate.hidden = true;
+        drawing = false;
+        if (el.celebrate) {
+            el.celebrate.hidden = true;
+            el.celebrate.setAttribute('aria-hidden', 'true');
+        }
 
         el.patterns.querySelectorAll('.online-exp-trace-card').forEach((b) => {
             b.classList.toggle('online-exp-trace-card--active', b.dataset.pattern === key);
         });
         invalidateBgCache();
+        progressGrad = null;
         scheduleRedraw();
         updateProgressUI();
+        updatePatternLabel();
+    }
+
+    function updatePatternLabel() {
+        const p = RAW_PATTERNS[currentPattern];
+        const name = p?.display || p?.name || currentPattern;
+        if (el.canvas) el.canvas.setAttribute('aria-label', 'Çizim alanı — ' + name);
     }
 
     function scheduleRedraw() {
@@ -476,7 +494,7 @@ export function initTraceStudio(config) {
             return;
         }
 
-        const segs = patternSegments(key).map((seg) => normalizePoints(seg, pw, ph, 8));
+        const segs = normalizeSegmentGroups(patternSegments(key), pw, ph, 8);
         pctx.strokeStyle = config.previewStroke || '#a78bfa';
         pctx.lineWidth = 2.5;
         pctx.lineCap = 'round';
@@ -604,10 +622,14 @@ export function initTraceStudio(config) {
     function updateProgressUI() {
         const pct = samples.length ? Math.round((hitCount / samples.length) * 100) : 0;
         const target = Math.round(TARGET_PCT * 100);
+        const p = RAW_PATTERNS[currentPattern];
+        const sel = p?.display || p?.name || currentPattern;
         if (el.progress) {
             el.progress.innerHTML = completed
                 ? '<span class="online-exp-trace-progress__done">✓ Tamamlandı — aferin!</span>'
-                : 'İlerleme: <strong>%' +
+                : '<span class="online-exp-trace-progress__sel">Seçili: <strong>' +
+                  sel +
+                  '</strong></span> · İlerleme: <strong>%' +
                   pct +
                   '</strong> · hedef %' +
                   target +
@@ -644,12 +666,11 @@ export function initTraceStudio(config) {
         if (el.patterns) {
             el.patterns.addEventListener('click', (e) => {
                 const card = e.target.closest('.online-exp-trace-card');
-                if (!card) return;
-                selectPattern(card.dataset.pattern);
-                if (stepIndex >= 1) {
-                    const p = RAW_PATTERNS[card.dataset.pattern];
-                    flashHint((p?.display || p?.name) + ' seçildi.');
-                }
+                if (!card || !card.dataset.pattern) return;
+                const key = card.dataset.pattern;
+                selectPattern(key);
+                const p = RAW_PATTERNS[key];
+                flashHint((p?.display || p?.name) + ' seçildi — çizim alanı güncellendi.');
             });
         }
         document.querySelectorAll('.online-exp-trace-brush').forEach((b) => {

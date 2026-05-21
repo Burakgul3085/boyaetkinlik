@@ -1277,6 +1277,14 @@
         @apply font-bold text-emerald-700;
     }
 
+    .online-exp-trace-progress__sel {
+        @apply text-slate-600;
+    }
+
+    .online-exp-trace-progress__sel strong {
+        @apply text-violet-800;
+    }
+
     .online-exp-trace-progress__dots {
         @apply inline-flex items-center gap-1;
     }
