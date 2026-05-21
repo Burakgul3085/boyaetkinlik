@@ -1,12 +1,15 @@
 /**
  * Gerçek font konturundan harf/rakam çizgi yolları (Nunito Sans)
- * latin + latin-ext: rakamlar ve Z latin'te, İ/Ğ latin-ext'te
+ * Koordinatlar doğrudan tuval (canvas) uzayında — y ekseni aşağı
  */
 import { parse as parseFont } from 'opentype.js';
 
+export const CANVAS_W = 560;
+export const CANVAS_H = 360;
 const FONT_LATIN_URL = '/fonts/nunito-sans-latin.woff';
 const FONT_LATIN_EXT_URL = '/fonts/nunito-sans-latin-ext.woff';
 const FONT_SIZE = 220;
+const CANVAS_PAD = 48;
 
 const LETTER_LEVELS = {
     Kolay: 'A,C,E,F,I,L,O,T,V',
@@ -37,8 +40,7 @@ async function loadWoff(url) {
 }
 
 function hasRealGlyph(font, char) {
-    const g = font.charToGlyph(char);
-    return g.index !== 0;
+    return font.charToGlyph(char).index !== 0;
 }
 
 function fontForChar(char) {
@@ -78,17 +80,9 @@ function sampleQuad(x0, y0, x1, y1, x2, y2, steps = 12) {
     return pts;
 }
 
-function normPoint(x, y, bb, pad = 0.1) {
-    const fw = bb.x2 - bb.x1 || 1;
-    const fh = bb.y2 - bb.y1 || 1;
-    const s = Math.min((1 - pad * 2) / fw, (1 - pad * 2) / fh);
-    const ox = pad + (1 - pad * 2 - fw * s) / 2;
-    const oy = pad + (1 - pad * 2 - fh * s) / 2;
-    return [ox + (x - bb.x1) * s, oy + (bb.y2 - y) * s];
-}
-
-function pathToSegments(path) {
-    const bb = path.getBoundingBox();
+/** Font yukarı → tuval y aşağı: canvasY = 2*baseline - fontY */
+function pathToCanvasSegments(path, baselineY) {
+    const toCanvas = (x, y) => [x, baselineY * 2 - y];
     const segments = [];
     let current = [];
     let cx = 0;
@@ -97,12 +91,13 @@ function pathToSegments(path) {
     let sy = 0;
 
     const pushPt = (x, y) => {
-        const p = normPoint(x, y, bb);
-        if (current.length === 0) current.push(p);
-        else {
-            const last = current[current.length - 1];
-            if (Math.hypot(last[0] - p[0], last[1] - p[1]) > 0.004) current.push(p);
+        const p = toCanvas(x, y);
+        if (current.length === 0) {
+            current.push(p);
+            return;
         }
+        const last = current[current.length - 1];
+        if (Math.hypot(last[0] - p[0], last[1] - p[1]) > 0.5) current.push(p);
     };
 
     const flush = () => {
@@ -155,17 +150,24 @@ function pathToSegments(path) {
 export function buildCharPattern(char, level = 'Kolay') {
     const font = fontForChar(char);
     if (!font) throw new Error('Font hazır değil');
-    const glyph = font.charToGlyph(char);
-    if (glyph.index === 0) {
-        console.warn('[trace-font] Glyph bulunamadı:', char);
-    }
-    const path = font.getPath(char, 0, 0, FONT_SIZE);
-    const segments = pathToSegments(path);
+
+    const probe = font.getPath(char, 0, 0, FONT_SIZE);
+    const bb = probe.getBoundingBox();
+    const glyphW = bb.x2 - bb.x1;
+    const glyphH = bb.y2 - bb.y1;
+
+    const startX = (CANVAS_W - glyphW) / 2 - bb.x1;
+    const baselineY = CANVAS_H - CANVAS_PAD;
+
+    const path = font.getPath(char, startX, baselineY, FONT_SIZE);
+    const segments = pathToCanvasSegments(path, baselineY);
+
     return {
         name: char,
         display: char,
         level,
         segments,
+        canvasSpace: true,
     };
 }
 

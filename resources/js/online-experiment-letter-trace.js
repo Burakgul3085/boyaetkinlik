@@ -7,6 +7,7 @@ const STUDIO_CONFIG = {
     resetPattern: 'A',
     downloadPrefix: 'harf-calismasi',
     useFontPreview: true,
+    patternsInCanvasSpace: true,
     fontFamily: '"Nunito Sans Trace", "Nunito Sans", system-ui, sans-serif',
     bgFrom: '#fffefb',
     bgTo: '#eef2ff',

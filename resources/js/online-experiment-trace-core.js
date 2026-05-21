@@ -100,10 +100,15 @@ export function initTraceStudio(config) {
     }
 
     function initPatterns() {
+        const inCanvasSpace = config.patternsInCanvasSpace === true;
         Object.keys(RAW_PATTERNS).forEach((key) => {
             const segs = patternSegments(key);
-            const pad = variant === 'shape' ? 36 : 40;
-            patternsNormalized[key] = normalizeSegmentGroups(segs, LOGICAL_W, LOGICAL_H, pad);
+            if (inCanvasSpace || RAW_PATTERNS[key]?.canvasSpace) {
+                patternsNormalized[key] = segs;
+            } else {
+                const pad = variant === 'shape' ? 36 : 40;
+                patternsNormalized[key] = normalizeSegmentGroups(segs, LOGICAL_W, LOGICAL_H, pad);
+            }
         });
     }
 

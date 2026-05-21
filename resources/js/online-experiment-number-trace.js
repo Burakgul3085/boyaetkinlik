@@ -7,6 +7,7 @@ const STUDIO_CONFIG = {
     resetPattern: '1',
     downloadPrefix: 'sayi-calismasi',
     useFontPreview: true,
+    patternsInCanvasSpace: true,
     fontFamily: '"Nunito Sans Trace", "Nunito Sans", system-ui, sans-serif',
     bgFrom: '#fffefb',
     bgTo: '#ecfdf5',
