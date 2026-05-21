@@ -9,6 +9,7 @@ export function initTraceStudio(config) {
     const TARGET_PCT = 0.88;
     const LOGICAL_W = 560;
     const LOGICAL_H = 360;
+    const SAMPLE_STEP_PX = 7;
     const RAW_PATTERNS = config.patterns || {};
     const steps = config.steps || [];
     const variant = config.variant || 'shape';
@@ -35,7 +36,14 @@ export function initTraceStudio(config) {
     let dpr = 1;
     let rafPending = false;
     let dashAnimActive = false;
-    let nextHintIndex = 0;
+    let dashAnimId = 0;
+    let scanFrom = 0;
+    let pendingMove = null;
+    let moveRaf = false;
+    let lastSparkle = 0;
+    let bgCache = null;
+    let bgCacheKey = '';
+    let progressGrad = null;
 
     const el = {
         progressBar: document.getElementById('exp-progress-bar'),
@@ -91,7 +99,8 @@ export function initTraceStudio(config) {
     function initPatterns() {
         Object.keys(RAW_PATTERNS).forEach((key) => {
             const segs = patternSegments(key);
-            patternsNormalized[key] = segs.map((seg) => normalizePoints(seg, LOGICAL_W, LOGICAL_H, 36));
+            const pad = variant === 'shape' ? 36 : 40;
+            patternsNormalized[key] = segs.map((seg) => normalizePoints(seg, LOGICAL_W, LOGICAL_H, pad));
         });
     }
 
@@ -174,20 +183,25 @@ export function initTraceStudio(config) {
         el.canvas.style.height = 'auto';
         ctx = el.canvas.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        progressGrad = null;
+        invalidateBgCache();
+    }
+
+    function invalidateBgCache() {
+        bgCacheKey = '';
     }
 
     function buildSamples(segments) {
         const out = [];
-        const step = 0.025;
         segments.forEach((seg) => {
             for (let i = 0; i < seg.length - 1; i++) {
                 const a = seg[i];
                 const b = seg[i + 1];
                 const dx = b[0] - a[0];
                 const dy = b[1] - a[1];
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 0.001) continue;
-                const steps = Math.max(2, Math.ceil(dist / step));
+                const dist = Math.hypot(dx, dy);
+                if (dist < 0.5) continue;
+                const steps = Math.max(2, Math.ceil(dist / SAMPLE_STEP_PX));
                 for (let s = 0; s <= steps; s++) {
                     const t = s / steps;
                     out.push({
@@ -202,7 +216,10 @@ export function initTraceStudio(config) {
     }
 
     function findNextUnhit() {
-        for (let i = 0; i < samples.length; i++) {
+        for (let i = scanFrom; i < samples.length; i++) {
+            if (!samples[i].hit) return i;
+        }
+        for (let i = 0; i < scanFrom; i++) {
             if (!samples[i].hit) return i;
         }
         return samples.length - 1;
@@ -213,7 +230,7 @@ export function initTraceStudio(config) {
         currentPattern = key;
         samples = buildSamples(patternsNormalized[key]);
         hitCount = 0;
-        nextHintIndex = 0;
+        scanFrom = 0;
         strokeTrail = [];
         completed = false;
         if (el.celebrate) el.celebrate.hidden = true;
@@ -221,6 +238,7 @@ export function initTraceStudio(config) {
         el.patterns.querySelectorAll('.online-exp-trace-card').forEach((b) => {
             b.classList.toggle('online-exp-trace-card--active', b.dataset.pattern === key);
         });
+        invalidateBgCache();
         scheduleRedraw();
         updateProgressUI();
     }
@@ -234,15 +252,68 @@ export function initTraceStudio(config) {
         });
     }
 
-    function strokeSegments(pts, styleFn) {
-        pts.forEach((seg) => {
+    function strokeSegments(segs, applyStyle) {
+        segs.forEach((seg) => {
             if (seg.length < 2) return;
-            styleFn();
+            applyStyle();
             ctx.beginPath();
             ctx.moveTo(seg[0][0], seg[0][1]);
             for (let i = 1; i < seg.length; i++) ctx.lineTo(seg[i][0], seg[i][1]);
             ctx.stroke();
         });
+    }
+
+    function rebuildBgCache() {
+        const key = currentPattern + ':' + stepIndex;
+        if (bgCacheKey === key && bgCache) return;
+
+        if (!bgCache) {
+            bgCache = document.createElement('canvas');
+        }
+        bgCache.width = LOGICAL_W * dpr;
+        bgCache.height = LOGICAL_H * dpr;
+        const bctx = bgCache.getContext('2d');
+        bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const w = LOGICAL_W;
+        const h = LOGICAL_H;
+        const segs = patternsNormalized[currentPattern];
+
+        const bg = bctx.createLinearGradient(0, 0, w, h);
+        bg.addColorStop(0, config.bgFrom || '#fffefb');
+        bg.addColorStop(1, config.bgTo || '#f5f3ff');
+        bctx.fillStyle = bg;
+        bctx.fillRect(0, 0, w, h);
+
+        bctx.strokeStyle = config.gridColor || 'rgba(167, 139, 250, 0.12)';
+        bctx.lineWidth = 1;
+        for (let x = 24; x < w; x += 28) {
+            bctx.beginPath();
+            bctx.moveTo(x, 0);
+            bctx.lineTo(x, h);
+            bctx.stroke();
+        }
+        for (let y = 24; y < h; y += 28) {
+            bctx.beginPath();
+            bctx.moveTo(0, y);
+            bctx.lineTo(w, y);
+            bctx.stroke();
+        }
+
+        bctx.strokeStyle = 'rgba(148, 163, 184, 0.32)';
+        bctx.lineWidth = 14;
+        bctx.lineCap = 'round';
+        bctx.lineJoin = 'round';
+        bctx.setLineDash([]);
+        segs.forEach((seg) => {
+            if (seg.length < 2) return;
+            bctx.beginPath();
+            bctx.moveTo(seg[0][0], seg[0][1]);
+            for (let i = 1; i < seg.length; i++) bctx.lineTo(seg[i][0], seg[i][1]);
+            bctx.stroke();
+        });
+
+        bgCacheKey = key;
     }
 
     function redraw() {
@@ -252,59 +323,31 @@ export function initTraceStudio(config) {
         const segs = patternsNormalized[currentPattern];
         const flat = segs.flat();
 
+        rebuildBgCache();
         ctx.clearRect(0, 0, w, h);
-
-        const bg = ctx.createLinearGradient(0, 0, w, h);
-        bg.addColorStop(0, config.bgFrom || '#fffefb');
-        bg.addColorStop(1, config.bgTo || '#f5f3ff');
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, w, h);
-
-        ctx.save();
-        ctx.strokeStyle = config.gridColor || 'rgba(167, 139, 250, 0.12)';
-        ctx.lineWidth = 1;
-        for (let x = 24; x < w; x += 28) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, h);
-            ctx.stroke();
-        }
-        for (let y = 24; y < h; y += 28) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(w, y);
-            ctx.stroke();
-        }
-        ctx.restore();
-
-        ctx.save();
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
-        ctx.lineWidth = 20;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.setLineDash([]);
-        strokeSegments(segs, () => {});
-        ctx.restore();
+        ctx.drawImage(bgCache, 0, 0, w, h);
 
         ctx.save();
         ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.setLineDash([10, 12]);
-        ctx.lineDashOffset = -Date.now() / 40;
+        ctx.lineDashOffset = -Date.now() / 45;
         strokeSegments(segs, () => {});
         ctx.restore();
 
         if (stepIndex >= 3 && !completed) {
-            nextHintIndex = findNextUnhit();
-            const hint = samples[nextHintIndex];
+            const hintIdx = findNextUnhit();
+            const hint = samples[hintIdx];
             if (hint && !hint.hit) {
-                const pulse = 0.6 + Math.sin(Date.now() / 200) * 0.25;
+                const pulse = 0.65 + Math.sin(Date.now() / 220) * 0.2;
                 ctx.beginPath();
-                ctx.arc(hint.x, hint.y, 10 * pulse, 0, Math.PI * 2);
-                ctx.fillStyle = config.hintGlow || 'rgba(124, 58, 237, 0.25)';
+                ctx.arc(hint.x, hint.y, 9 * pulse, 0, Math.PI * 2);
+                ctx.fillStyle = config.hintGlow || 'rgba(124, 58, 237, 0.22)';
                 ctx.fill();
                 ctx.beginPath();
-                ctx.arc(hint.x, hint.y, 5, 0, Math.PI * 2);
+                ctx.arc(hint.x, hint.y, 4.5, 0, Math.PI * 2);
                 ctx.fillStyle = config.hintColor || '#7c3aed';
                 ctx.fill();
             }
@@ -319,8 +362,8 @@ export function initTraceStudio(config) {
 
         if (strokeTrail.length > 1) {
             ctx.save();
-            ctx.strokeStyle = 'rgba(34, 197, 94, 0.35)';
-            ctx.lineWidth = brushSize * 0.9;
+            ctx.strokeStyle = 'rgba(34, 197, 94, 0.32)';
+            ctx.lineWidth = brushSize * 0.85;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.beginPath();
@@ -330,31 +373,35 @@ export function initTraceStudio(config) {
             ctx.restore();
         }
 
-        const grad = ctx.createLinearGradient(0, 0, w, 0);
-        grad.addColorStop(0, config.strokeFrom || '#10b981');
-        grad.addColorStop(0.5, config.strokeMid || '#14b8a6');
-        grad.addColorStop(1, config.strokeTo || '#8b5cf6');
-        ctx.strokeStyle = grad;
+        if (!progressGrad) {
+            progressGrad = ctx.createLinearGradient(0, 0, w, 0);
+            progressGrad.addColorStop(0, config.strokeFrom || '#10b981');
+            progressGrad.addColorStop(0.5, config.strokeMid || '#14b8a6');
+            progressGrad.addColorStop(1, config.strokeTo || '#8b5cf6');
+        }
+        ctx.strokeStyle = progressGrad;
         ctx.lineWidth = brushSize;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.beginPath();
         let started = false;
-        samples.forEach((s) => {
-            if (s.hit) {
-                if (!started) {
-                    ctx.moveTo(s.x, s.y);
-                    started = true;
-                } else ctx.lineTo(s.x, s.y);
+        for (let i = 0; i < samples.length; i++) {
+            const s = samples[i];
+            if (!s.hit) continue;
+            if (!started) {
+                ctx.moveTo(s.x, s.y);
+                started = true;
+            } else {
+                ctx.lineTo(s.x, s.y);
             }
-        });
+        }
         if (started) ctx.stroke();
 
         if (stepIndex >= 3 && drawing && strokeTrail.length) {
             const last = strokeTrail[strokeTrail.length - 1];
             ctx.beginPath();
-            ctx.arc(last.x, last.y, brushSize / 2 + 2, 0, Math.PI * 2);
-            ctx.fillStyle = config.hintGlow || 'rgba(124, 58, 237, 0.2)';
+            ctx.arc(last.x, last.y, brushSize / 2 + 1, 0, Math.PI * 2);
+            ctx.fillStyle = config.hintGlow || 'rgba(124, 58, 237, 0.18)';
             ctx.fill();
             ctx.beginPath();
             ctx.arc(last.x, last.y, brushSize / 2 - 2, 0, Math.PI * 2);
@@ -366,44 +413,50 @@ export function initTraceStudio(config) {
     function startDashAnimation() {
         if (dashAnimActive) return;
         dashAnimActive = true;
-        function loop() {
-            if (stepIndex !== 3 || completed) {
+        let last = 0;
+        const tick = (ts) => {
+            if (!dashAnimActive || stepIndex !== 3 || completed) {
                 dashAnimActive = false;
                 return;
             }
-            redraw();
-            requestAnimationFrame(loop);
-        }
-        loop();
+            if (ts - last >= 40) {
+                last = ts;
+                redraw();
+            }
+            dashAnimId = requestAnimationFrame(tick);
+        };
+        dashAnimId = requestAnimationFrame(tick);
     }
 
     function stopDashAnimation() {
         dashAnimActive = false;
+        if (dashAnimId) cancelAnimationFrame(dashAnimId);
+        dashAnimId = 0;
     }
 
     function drawMarker(x, y, color, label) {
         ctx.beginPath();
-        ctx.arc(x, y, 11, 0, Math.PI * 2);
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2;
         ctx.stroke();
         ctx.font = 'bold 9px system-ui, sans-serif';
         ctx.fillStyle = '#475569';
         ctx.textAlign = 'center';
-        ctx.fillText(label, x, y - 18);
+        ctx.fillText(label, x, y - 17);
     }
 
     function drawPreview(canvas, key) {
         const pctx = canvas.getContext('2d');
         const pw = canvas.width;
         const ph = canvas.height;
-        const segs = patternSegments(key).map((seg) => normalizePoints(seg, pw, ph, 6));
+        const segs = patternSegments(key).map((seg) => normalizePoints(seg, pw, ph, 8));
         pctx.fillStyle = config.previewBg || '#faf5ff';
         pctx.fillRect(0, 0, pw, ph);
         pctx.strokeStyle = config.previewStroke || '#a78bfa';
-        pctx.lineWidth = 2;
+        pctx.lineWidth = 2.5;
         pctx.lineCap = 'round';
         pctx.lineJoin = 'round';
         segs.forEach((seg) => {
@@ -433,42 +486,69 @@ export function initTraceStudio(config) {
         };
     }
 
-    function onPointerDown(e) {
-        if (stepIndex !== 3 || completed) return;
-        drawing = true;
-        strokeTrail = [];
-        onPointerMove(e);
-    }
-
-    function onPointerMove(e) {
-        if (!drawing || stepIndex !== 3 || completed) return;
-        e.preventDefault();
-        const p = pointerPos(e);
-        strokeTrail.push(p);
-        if (strokeTrail.length > 40) strokeTrail.shift();
-
-        const thresh = brushRadius;
-        const threshSq = thresh * thresh;
+    function hitTestNear(p) {
+        const threshSq = brushRadius * brushRadius;
         let any = false;
+        const start = Math.max(0, scanFrom - 20);
+        const end = Math.min(samples.length, scanFrom + 100);
 
-        samples.forEach((s) => {
-            if (s.hit) return;
+        for (let i = start; i < end; i++) {
+            const s = samples[i];
+            if (s.hit) continue;
             const dx = s.x - p.x;
             const dy = s.y - p.y;
             if (dx * dx + dy * dy < threshSq) {
                 s.hit = true;
                 hitCount++;
                 any = true;
-                spawnSparkle(s.x, s.y);
+                scanFrom = Math.min(i + 1, samples.length - 1);
+                const now = Date.now();
+                if (now - lastSparkle > 80) {
+                    lastSparkle = now;
+                    spawnSparkle(s.x, s.y);
+                }
             }
-        });
+        }
+        return any;
+    }
+
+    function processPointerMove() {
+        moveRaf = false;
+        if (!pendingMove || !drawing || stepIndex !== 3 || completed) return;
+        const e = pendingMove;
+        pendingMove = null;
+
+        const p = pointerPos(e);
+        strokeTrail.push(p);
+        if (strokeTrail.length > 24) strokeTrail.shift();
+
+        const any = hitTestNear(p);
+        scheduleRedraw();
 
         if (any) {
-            scheduleRedraw();
             updateProgressUI();
-            if (hitCount / samples.length >= TARGET_PCT && !completed) completeTrace();
-        } else {
-            scheduleRedraw();
+            if (hitCount / samples.length >= TARGET_PCT) completeTrace();
+        }
+    }
+
+    function onPointerDown(e) {
+        if (stepIndex !== 3 || completed) return;
+        drawing = true;
+        strokeTrail = [];
+        pendingMove = e;
+        if (!moveRaf) {
+            moveRaf = true;
+            requestAnimationFrame(processPointerMove);
+        }
+    }
+
+    function onPointerMove(e) {
+        if (!drawing || stepIndex !== 3 || completed) return;
+        if (e.cancelable) e.preventDefault();
+        pendingMove = e;
+        if (!moveRaf) {
+            moveRaf = true;
+            requestAnimationFrame(processPointerMove);
         }
     }
 
@@ -481,12 +561,14 @@ export function initTraceStudio(config) {
         dot.style.left = rect.left - wrap.left + (x / LOGICAL_W) * rect.width + 'px';
         dot.style.top = rect.top - wrap.top + (y / LOGICAL_H) * rect.height + 'px';
         el.canvasWrap.appendChild(dot);
-        setTimeout(() => dot.remove(), 600);
+        setTimeout(() => dot.remove(), 500);
     }
 
     function completeTrace() {
         completed = true;
         drawing = false;
+        pendingMove = null;
+        stopDashAnimation();
         if (el.celebrate) {
             el.celebrate.hidden = false;
             el.celebrate.setAttribute('aria-hidden', 'false');
@@ -511,8 +593,8 @@ export function initTraceStudio(config) {
         }
         if (el.ringFill) {
             const circ = 2 * Math.PI * 18;
-            el.ringFill.style.strokeDasharray = circ;
-            el.ringFill.style.strokeDashoffset = circ - (circ * pct) / 100;
+            el.ringFill.style.strokeDasharray = String(circ);
+            el.ringFill.style.strokeDashoffset = String(circ - (circ * pct) / 100);
         }
         if (el.ringPct) el.ringPct.textContent = pct + '%';
     }
@@ -522,6 +604,7 @@ export function initTraceStudio(config) {
             if (stepIndex > 0 && !completed) {
                 stepIndex--;
                 if (el.celebrate) el.celebrate.hidden = true;
+                invalidateBgCache();
                 renderStep();
             }
         });
@@ -532,6 +615,7 @@ export function initTraceStudio(config) {
             }
             if (stepIndex < TOTAL_STEPS - 1) {
                 stepIndex++;
+                invalidateBgCache();
                 renderStep();
             }
         });
@@ -559,6 +643,7 @@ export function initTraceStudio(config) {
             el.startBtn.addEventListener('click', () => {
                 if (stepIndex === 2) {
                     stepIndex = 3;
+                    invalidateBgCache();
                     renderStep();
                     flashHint('Yeşil BAŞLA noktasından başla!');
                 }
@@ -568,14 +653,17 @@ export function initTraceStudio(config) {
             el.canvas.addEventListener('mousedown', onPointerDown);
             el.canvas.addEventListener('mouseup', () => {
                 drawing = false;
+                pendingMove = null;
             });
             el.canvas.addEventListener('mouseleave', () => {
                 drawing = false;
+                pendingMove = null;
             });
             el.canvas.addEventListener('mousemove', onPointerMove);
             el.canvas.addEventListener('touchstart', onPointerDown, { passive: false });
             el.canvas.addEventListener('touchend', () => {
                 drawing = false;
+                pendingMove = null;
             });
             el.canvas.addEventListener('touchmove', onPointerMove, { passive: false });
         }
@@ -593,6 +681,7 @@ export function initTraceStudio(config) {
             s.hit = false;
         });
         hitCount = 0;
+        scanFrom = 0;
         strokeTrail = [];
         completed = false;
         if (el.celebrate) el.celebrate.hidden = true;
@@ -659,6 +748,7 @@ export function initTraceStudio(config) {
         completed = false;
         drawing = false;
         if (el.celebrate) el.celebrate.hidden = true;
+        invalidateBgCache();
         selectPattern(resetPattern);
         renderStep();
     }
