@@ -1125,9 +1125,26 @@
         display: none !important;
     }
 
+    @font-face {
+        font-family: 'Nunito Sans Trace';
+        src: url('/fonts/nunito-sans-bold.woff') format('woff');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+    }
+
     /* Çizgi tamamlama stüdyosu */
     .online-exp-stage--trace {
         @apply overflow-hidden;
+    }
+
+    .online-exp-trace-loading {
+        @apply pointer-events-none opacity-60;
+    }
+
+    .online-exp-trace-loading::after {
+        content: 'Yükleniyor…';
+        @apply absolute inset-0 z-10 flex items-center justify-center text-sm font-semibold text-slate-500;
     }
 
     .online-exp-stage__inner--trace {
@@ -1352,8 +1369,8 @@
     }
 
     .online-exp-trace-card__glyph {
-        @apply pointer-events-none absolute inset-0 flex items-center justify-center text-xl font-bold text-slate-100/70;
-        font-family: 'Inter', system-ui, sans-serif;
+        @apply pointer-events-none absolute inset-0 flex items-center justify-center text-xl font-bold text-transparent;
+        font-family: 'Nunito Sans Trace', 'Nunito Sans', system-ui, sans-serif;
     }
 
     .online-exp-trace-card--glyph .online-exp-trace-card__preview {

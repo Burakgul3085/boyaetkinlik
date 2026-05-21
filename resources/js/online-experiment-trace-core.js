@@ -9,7 +9,10 @@ export function initTraceStudio(config) {
     const TARGET_PCT = 0.88;
     const LOGICAL_W = 560;
     const LOGICAL_H = 360;
-    const SAMPLE_STEP_PX = 7;
+    const SAMPLE_STEP_PX = 9;
+    const MAX_SAMPLES = 750;
+    const useFontPreview = config.useFontPreview === true;
+    const fontFamily = config.fontFamily || 'system-ui, sans-serif';
     const RAW_PATTERNS = config.patterns || {};
     const steps = config.steps || [];
     const variant = config.variant || 'shape';
@@ -212,6 +215,10 @@ export function initTraceStudio(config) {
                 }
             }
         });
+        if (out.length > MAX_SAMPLES) {
+            const step = Math.ceil(out.length / MAX_SAMPLES);
+            return out.filter((_, i) => i % step === 0);
+        }
         return out;
     }
 
@@ -300,8 +307,8 @@ export function initTraceStudio(config) {
             bctx.stroke();
         }
 
-        bctx.strokeStyle = 'rgba(148, 163, 184, 0.32)';
-        bctx.lineWidth = 14;
+        bctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
+        bctx.lineWidth = 12;
         bctx.lineCap = 'round';
         bctx.lineJoin = 'round';
         bctx.setLineDash([]);
@@ -419,7 +426,7 @@ export function initTraceStudio(config) {
                 dashAnimActive = false;
                 return;
             }
-            if (ts - last >= 40) {
+            if (!drawing && ts - last >= 50) {
                 last = ts;
                 redraw();
             }
@@ -452,9 +459,24 @@ export function initTraceStudio(config) {
         const pctx = canvas.getContext('2d');
         const pw = canvas.width;
         const ph = canvas.height;
-        const segs = patternSegments(key).map((seg) => normalizePoints(seg, pw, ph, 8));
+        const label = RAW_PATTERNS[key]?.display || RAW_PATTERNS[key]?.name || key;
         pctx.fillStyle = config.previewBg || '#faf5ff';
         pctx.fillRect(0, 0, pw, ph);
+
+        if (useFontPreview) {
+            const size = Math.round(ph * 0.72);
+            pctx.font = `700 ${size}px ${fontFamily}`;
+            pctx.textAlign = 'center';
+            pctx.textBaseline = 'middle';
+            pctx.fillStyle = 'rgba(148, 163, 184, 0.35)';
+            pctx.fillText(label, pw / 2, ph / 2 + 1);
+            pctx.strokeStyle = config.previewStroke || '#6366f1';
+            pctx.lineWidth = 1.8;
+            pctx.strokeText(label, pw / 2, ph / 2 + 1);
+            return;
+        }
+
+        const segs = patternSegments(key).map((seg) => normalizePoints(seg, pw, ph, 8));
         pctx.strokeStyle = config.previewStroke || '#a78bfa';
         pctx.lineWidth = 2.5;
         pctx.lineCap = 'round';
@@ -523,7 +545,7 @@ export function initTraceStudio(config) {
         if (strokeTrail.length > 24) strokeTrail.shift();
 
         const any = hitTestNear(p);
-        scheduleRedraw();
+        if (any || strokeTrail.length % 3 === 0) scheduleRedraw();
 
         if (any) {
             updateProgressUI();

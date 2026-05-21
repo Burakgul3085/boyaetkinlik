@@ -10,7 +10,7 @@
 @endphp
 <main class="online-exp-stage online-exp-stage--trace online-exp-stage--trace-{{ $traceVariant }}" aria-label="{{ $labels['label'] }}">
     <p class="online-exp-stage-label">{{ $labels['label'] }}</p>
-    <div class="online-exp-stage__inner online-exp-stage__inner--trace" id="exp-stage-inner">
+    <div class="online-exp-stage__inner online-exp-stage__inner--trace relative" id="exp-stage-inner">
         <div class="online-exp-trace-studio" id="exp-trace-studio">
             <div
                 class="online-exp-trace-patterns online-exp-trace-patterns--{{ $traceVariant }}"
