@@ -116,7 +116,6 @@
             cupsRow: document.getElementById('exp-cups-row'),
             arena: document.getElementById('exp-3d-arena'),
             world: document.getElementById('exp-3d-world'),
-            flowLayer: document.getElementById('exp-flow-layer'),
             hint: document.getElementById('exp-stage-hint'),
             btnStart: document.getElementById('exp-btn-start'),
             sideBody: document.getElementById('exp-side-body'),
@@ -520,7 +519,6 @@
             mixFillColors.fill(null);
             lastMixSummary = [];
             el.btnStart.disabled = false;
-            el.flowLayer.innerHTML = '';
             el.cupsRow.querySelectorAll('.online-exp-cup').forEach((c) => {
                 c.classList.remove('online-exp-cup--glow');
                 const w = c.querySelector('.online-exp-cup__water');

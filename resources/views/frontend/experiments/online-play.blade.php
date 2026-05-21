@@ -50,11 +50,10 @@
 
                     <div class="online-exp-3d-arena" id="exp-3d-arena">
                         <div class="online-exp-3d-arena__glow" aria-hidden="true"></div>
+                        <div class="online-exp-3d-arena__shadow" aria-hidden="true"></div>
                         <div class="online-exp-3d-world" id="exp-3d-world">
-                            <div class="online-exp-3d-floor" aria-hidden="true"></div>
                             <div class="online-exp-3d-row" id="exp-cups-row"></div>
                         </div>
-                        <div class="online-exp-flow-layer" id="exp-flow-layer" aria-hidden="true"></div>
                     </div>
 
                     <p class="online-exp-stage-hint" id="exp-stage-hint"></p>

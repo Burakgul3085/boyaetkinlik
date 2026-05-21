@@ -670,21 +670,29 @@
         @apply scale-110 ring-4 ring-violet-400 ring-offset-2;
     }
 
-    /* 3D arena */
+    /* 3D arena — zemin 3D rotateX kullanılmaz (taşma yapıyordu); gölge 2D */
     .online-exp-3d-arena {
-        @apply relative isolate w-full max-w-3xl overflow-hidden px-2 py-6;
-        perspective: 1100px;
+        @apply relative isolate mx-auto w-full max-w-3xl overflow-hidden px-2 py-6;
+        contain: layout paint;
+        perspective: 900px;
+        min-height: 13rem;
     }
 
     .online-exp-3d-arena__glow {
-        @apply pointer-events-none absolute inset-0 rounded-3xl opacity-50;
-        background: radial-gradient(ellipse 55% 40% at 50% 85%, rgb(167 139 250 / 0.3), transparent 65%);
+        @apply pointer-events-none absolute inset-x-2 bottom-4 top-8 rounded-3xl opacity-40;
+        background: radial-gradient(ellipse 50% 45% at 50% 75%, rgb(167 139 250 / 0.28), transparent 68%);
+    }
+
+    .online-exp-3d-arena__shadow {
+        @apply pointer-events-none absolute bottom-[18%] left-1/2 z-[1] h-4 w-[min(100%,20rem)] -translate-x-1/2 rounded-[50%];
+        background: radial-gradient(ellipse 100% 100% at 50% 50%, rgb(167 139 250 / 0.35), transparent 72%);
     }
 
     .online-exp-3d-world {
-        @apply relative mx-auto max-w-full overflow-hidden;
+        @apply relative z-[2] mx-auto w-full max-w-full;
         transform-style: preserve-3d;
-        transform: rotateX(14deg);
+        transform: perspective(900px) rotateX(12deg);
+        transform-origin: 50% 100%;
         transition: transform 0.6s ease;
     }
 
@@ -693,23 +701,12 @@
     }
 
     @keyframes online-exp-world-tilt {
-        0%, 100% { transform: rotateX(14deg) rotateZ(0deg); }
-        50% { transform: rotateX(10deg) rotateZ(-1deg); }
-    }
-
-    .online-exp-3d-floor {
-        @apply absolute left-1/2 top-[58%] h-12 w-[min(100%,22rem)] max-w-full -translate-x-1/2 rounded-[50%];
-        background: linear-gradient(180deg, rgb(196 181 253 / 0.45), rgb(139 92 246 / 0.1));
-        transform: rotateX(78deg) translateZ(-20px);
-        filter: blur(1px);
-    }
-
-    .online-exp-3d-arena:not(.online-exp-3d-arena--intro) .online-exp-3d-floor {
-        opacity: 0.35;
+        0%, 100% { transform: perspective(900px) rotateX(12deg); }
+        50% { transform: perspective(900px) rotateX(9deg); }
     }
 
     .online-exp-3d-row {
-        @apply relative z-10 flex max-w-full flex-nowrap items-end justify-center gap-0.5 overflow-hidden sm:gap-1;
+        @apply relative z-10 flex w-full max-w-full flex-nowrap items-end justify-center gap-0.5 sm:gap-1;
         transform-style: preserve-3d;
     }
 
@@ -885,10 +882,6 @@
         @apply mt-4 grid gap-2;
     }
 
-    .online-exp-flow-layer {
-        @apply pointer-events-none absolute inset-0;
-    }
-
     @media (max-width: 1023px) {
         .online-exp-workspace {
             @apply grid-cols-1;
@@ -899,7 +892,7 @@
         }
 
         .online-exp-3d-world {
-            transform: rotateX(8deg);
+            transform: perspective(900px) rotateX(8deg);
         }
 
         .online-exp-cup__body {
