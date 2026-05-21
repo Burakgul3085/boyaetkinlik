@@ -27,7 +27,7 @@
 
     <section class="mt-6 space-y-4">
         @include('admin.experiments._categories-panel')
-        @include('admin.experiments._admin-create')
+        @include('admin.experiments._admin-create', ['onlineLabTypes' => $onlineLabTypes])
 
         <div class="card p-5">
             <h2 class="text-lg font-bold text-slate-900">Filtrele</h2>
@@ -106,7 +106,7 @@
                                     <button type="submit" onclick="return confirm('Deney silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                                 </form>
                             </div>
-                            @include('admin.experiments._edit-form', ['experiment' => $experiment])
+                            @include('admin.experiments._edit-form', ['experiment' => $experiment, 'onlineLabTypes' => $onlineLabTypes])
                         </div>
                     </details>
                 @empty
@@ -144,7 +144,7 @@
                                     <button type="submit" onclick="return confirm('Deney silinsin mi?')" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
                                 </form>
                             </div>
-                            @include('admin.experiments._edit-form', ['experiment' => $experiment])
+                            @include('admin.experiments._edit-form', ['experiment' => $experiment, 'onlineLabTypes' => $onlineLabTypes])
                         </div>
                     </details>
                 @empty

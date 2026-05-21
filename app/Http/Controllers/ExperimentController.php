@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Experiment;
 use App\Models\ExperimentCategory;
+use App\Support\OnlineExperimentLab;
 use Illuminate\Http\Request;
 
 class ExperimentController extends Controller
@@ -38,6 +39,7 @@ class ExperimentController extends Controller
             'categoryFilterTree' => ExperimentCategory::buildActiveFilterTree($allCategories),
             'activePathIds' => ExperimentCategory::activePathIds($activeCategory),
             'totalExperimentCount' => Experiment::query()->published()->count(),
+            'onlineLabCount' => static::countPlayableOnlineLabs(),
         ]);
     }
 
@@ -62,6 +64,7 @@ class ExperimentController extends Controller
             'categoryFilterTree' => ExperimentCategory::buildActiveFilterTree($allCategories),
             'activePathIds' => ExperimentCategory::activePathIds($experimentCategory),
             'totalExperimentCount' => Experiment::query()->published()->count(),
+            'onlineLabCount' => static::countPlayableOnlineLabs(),
         ]);
     }
 
@@ -82,5 +85,15 @@ class ExperimentController extends Controller
                 ->limit(4)
                 ->get(),
         ]);
+    }
+
+    protected static function countPlayableOnlineLabs(): int
+    {
+        return Experiment::query()
+            ->published()
+            ->onlineLabEnabled()
+            ->get()
+            ->filter(fn (Experiment $exp) => $exp->hasPlayableOnlineLab())
+            ->count();
     }
 }

@@ -56,6 +56,10 @@
                     Mevcut görseli kaldır
                 </label>
             @endif
+            @include('partials.experiment-online-lab-fields', [
+                'experiment' => $experiment,
+                'onlineLabTypes' => $onlineLabTypes ?? \App\Support\OnlineExperimentLab::types(),
+            ])
         </div>
         <button class="btn-primary px-3 py-1.5 text-xs">Güncellemeyi Kaydet</button>
     </form>

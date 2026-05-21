@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\VisitorFeedbackController as AdminVisitorFeedback
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ExperimentController;
+use App\Http\Controllers\OnlineExperimentController;
 use App\Http\Controllers\Admin\ExperimentController as AdminExperimentController;
 use App\Http\Controllers\Admin\ExperimentCategoryController as AdminExperimentCategoryController;
 use App\Http\Controllers\ContactController;
@@ -63,6 +64,8 @@ Route::post('/blog/yaz', [BlogController::class, 'store'])
 Route::get('/blog/{blog:slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/deneyler', [ExperimentController::class, 'index'])->name('experiments.index');
 Route::get('/deneyler/kategori/{experimentCategory:slug}', [ExperimentController::class, 'category'])->name('experiments.category');
+Route::get('/deneyler/online-dene', [OnlineExperimentController::class, 'hub'])->name('experiments.online.hub');
+Route::get('/deneyler/online-dene/{experiment:slug}', [OnlineExperimentController::class, 'play'])->name('experiments.online.play');
 Route::get('/deneyler/{experiment:slug}', [ExperimentController::class, 'show'])->name('experiments.show');
 Route::post('/iletisim', [ContactController::class, 'send'])->name('contact.send');
 Route::post('/iletisim/whatsapp', [ContactController::class, 'sendWhatsApp'])->name('contact.whatsapp');

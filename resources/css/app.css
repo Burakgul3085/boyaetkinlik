@@ -526,6 +526,170 @@
         }
     }
 
+    /* Online Deney Laboratuvarı */
+    .online-exp-page {
+        @apply -mx-2 min-h-[calc(100vh-12rem)] sm:-mx-0;
+    }
+
+    .online-exp-topbar {
+        @apply mb-4 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-violet-100 bg-white px-4 py-4 shadow-sm md:px-5;
+    }
+
+    .online-exp-back {
+        @apply text-sm font-semibold text-violet-600 transition hover:text-violet-800;
+    }
+
+    .online-exp-title {
+        @apply mt-1 text-xl font-bold text-slate-900 md:text-2xl;
+    }
+
+    .online-exp-sub {
+        @apply mt-1 text-sm text-slate-500;
+    }
+
+    .online-exp-link-article {
+        @apply shrink-0 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-100;
+    }
+
+    .online-exp-workspace {
+        @apply grid gap-4 lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,14rem)] lg:items-stretch;
+    }
+
+    .online-exp-guide,
+    .online-exp-side {
+        @apply rounded-2xl border border-violet-100 bg-white p-4 shadow-sm;
+    }
+
+    .online-exp-panel-title {
+        @apply text-xs font-bold uppercase tracking-wide text-violet-600;
+    }
+
+    .online-exp-step-badge {
+        @apply mt-2 inline-flex rounded-full bg-violet-100 px-2.5 py-0.5 text-[10px] font-bold text-violet-800;
+    }
+
+    .online-exp-step-title {
+        @apply mt-3 text-base font-bold text-slate-900;
+    }
+
+    .online-exp-step-text {
+        @apply mt-2 text-sm leading-relaxed text-slate-600;
+    }
+
+    .online-exp-guide-actions {
+        @apply mt-4 grid gap-2;
+    }
+
+    .online-exp-stage {
+        @apply min-h-[22rem] rounded-2xl border border-violet-100 bg-gradient-to-b from-white to-violet-50/80 p-4 shadow-md;
+    }
+
+    .online-exp-stage__inner {
+        @apply flex min-h-[18rem] flex-col items-center justify-center;
+    }
+
+    .online-exp-palette {
+        @apply mb-4 w-full max-w-md text-center;
+    }
+
+    .online-exp-palette-label {
+        @apply text-xs font-medium text-slate-600;
+    }
+
+    .online-exp-palette-colors {
+        @apply mt-2 flex justify-center gap-2;
+    }
+
+    .online-exp-color-btn {
+        @apply h-10 w-10 rounded-full border-2 border-white shadow-md transition hover:scale-110;
+    }
+
+    .online-exp-color-btn--active {
+        @apply ring-2 ring-violet-500 ring-offset-2;
+    }
+
+    .online-exp-cups-row {
+        @apply flex flex-wrap items-end justify-center gap-2 sm:gap-3;
+    }
+
+    .online-exp-cup {
+        @apply relative flex w-12 flex-col items-center sm:w-14;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        padding: 0;
+    }
+
+    .online-exp-cup__num {
+        @apply mb-1 text-[10px] font-bold text-slate-500;
+    }
+
+    .online-exp-cup__glass {
+        @apply block h-28 w-full rounded-b-xl border-2 border-violet-200 bg-white/80 sm:h-32;
+        box-shadow: inset 0 -8px 16px rgb(139 92 246 / 0.08);
+    }
+
+    .online-exp-cup__water {
+        @apply absolute bottom-0 left-1/2 w-[calc(100%-8px)] -translate-x-1/2 rounded-b-lg transition-all duration-700 ease-out;
+        max-height: 72%;
+    }
+
+    .online-exp-cup--glow .online-exp-cup__glass {
+        box-shadow: 0 0 20px rgb(167 139 250 / 0.55);
+    }
+
+    .online-exp-bridges {
+        @apply mt-4 flex flex-wrap justify-center gap-1 sm:gap-2;
+    }
+
+    .online-exp-bridge {
+        @apply h-8 w-10 rounded-lg border border-dashed border-violet-200 bg-violet-50/50 transition hover:border-violet-400;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .online-exp-bridge--on {
+        @apply border-solid border-amber-300 bg-amber-50;
+    }
+
+    .online-exp-bridge__towel {
+        @apply block h-full w-full rounded-md bg-gradient-to-b from-amber-100 to-amber-200 opacity-40;
+    }
+
+    .online-exp-bridge--on .online-exp-bridge__towel {
+        @apply opacity-100;
+    }
+
+    .online-exp-stage-hint {
+        @apply mt-4 max-w-md text-center text-sm text-slate-600;
+    }
+
+    .online-exp-hint--flash {
+        @apply font-semibold text-violet-700;
+    }
+
+    .online-exp-start-btn {
+        @apply mt-3;
+    }
+
+    .online-exp-side-body {
+        @apply mt-3 text-sm;
+    }
+
+    .online-exp-side-actions {
+        @apply mt-4 grid gap-2;
+    }
+
+    @media (max-width: 1023px) {
+        .online-exp-workspace {
+            @apply grid-cols-1;
+        }
+
+        .online-exp-stage {
+            order: -1;
+        }
+    }
+
     /* Online Boya stüdyosu */
     .online-paint-page {
         @apply -mx-2 min-h-[calc(100vh-12rem)] sm:-mx-0;

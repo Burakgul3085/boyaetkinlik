@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/online-paint.js',
+                'resources/js/online-experiment.js',
             ],
             refresh: true,
         }),

@@ -29,6 +29,7 @@
             Görsel (opsiyonel)
             <input type="file" name="image_file" accept=".png,.jpg,.jpeg,.webp" class="mt-1 w-full text-sm">
         </label>
+        @include('partials.experiment-online-lab-fields', ['experiment' => null, 'onlineLabTypes' => $onlineLabTypes ?? []])
         <div class="flex flex-wrap gap-2 md:col-span-2">
             <button type="submit" name="publish_now" value="1" class="btn-primary">Yayınla</button>
             <button type="submit" name="publish_now" value="0" class="btn-secondary">Taslak kaydet</button>

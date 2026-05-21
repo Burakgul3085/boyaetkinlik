@@ -20,6 +20,11 @@ class Experiment extends Model
         'content',
         'image_path',
         'youtube_url',
+        'online_lab_enabled',
+        'online_lab_type',
+        'online_lab_age_label',
+        'online_lab_duration_label',
+        'online_lab_sort_order',
         'author_first_name',
         'author_last_name',
         'status',
@@ -31,6 +36,8 @@ class Experiment extends Model
     {
         return [
             'published_at' => 'datetime',
+            'online_lab_enabled' => 'boolean',
+            'online_lab_sort_order' => 'integer',
         ];
     }
 
@@ -61,6 +68,17 @@ class Experiment extends Model
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    public function scopeOnlineLabEnabled($query)
+    {
+        return $query->where('online_lab_enabled', true)->whereNotNull('online_lab_type');
+    }
+
+    public function hasPlayableOnlineLab(): bool
+    {
+        return $this->online_lab_enabled
+            && \App\Support\OnlineExperimentLab::isPlayable($this->online_lab_type);
     }
 
     public function isPublished(): bool
