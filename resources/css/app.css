@@ -526,7 +526,7 @@
         }
     }
 
-    /* Online Deney Laboratuvarı */
+    /* Online Deney Laboratuvarı — 3D sahne */
     .online-exp-page {
         @apply -mx-2 min-h-[calc(100vh-12rem)] sm:-mx-0;
     }
@@ -552,7 +552,7 @@
     }
 
     .online-exp-workspace {
-        @apply grid gap-4 lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,14rem)] lg:items-stretch;
+        @apply grid gap-4 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)_minmax(0,15rem)] lg:items-stretch;
     }
 
     .online-exp-guide,
@@ -562,6 +562,15 @@
 
     .online-exp-panel-title {
         @apply text-xs font-bold uppercase tracking-wide text-violet-600;
+    }
+
+    .online-exp-progress {
+        @apply mt-2 h-1.5 overflow-hidden rounded-full bg-violet-100;
+    }
+
+    .online-exp-progress__bar {
+        @apply h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all duration-500 ease-out;
+        width: 0%;
     }
 
     .online-exp-step-badge {
@@ -576,100 +585,278 @@
         @apply mt-2 text-sm leading-relaxed text-slate-600;
     }
 
+    .online-exp-checklist {
+        @apply mt-3 space-y-1.5 text-xs text-slate-600;
+        list-style: none;
+        padding: 0;
+    }
+
+    .online-exp-checklist li {
+        @apply flex gap-2 rounded-lg bg-violet-50/80 px-2.5 py-1.5;
+    }
+
+    .online-exp-checklist li::before {
+        content: '✓';
+        @apply font-bold text-violet-600;
+    }
+
     .online-exp-guide-actions {
         @apply mt-4 grid gap-2;
     }
 
+    .online-exp-info-box {
+        @apply rounded-xl border border-violet-100 bg-violet-50/60 p-3;
+    }
+
+    .online-exp-info-box__title {
+        @apply text-xs font-bold text-violet-800;
+    }
+
+    .online-exp-info-list {
+        @apply mt-2 list-disc space-y-1 pl-4 text-xs text-slate-600;
+    }
+
+    .online-exp-info-box__note {
+        @apply mt-2 text-[11px] leading-relaxed text-slate-500;
+    }
+
+    .online-exp-science {
+        @apply rounded-lg bg-indigo-50 px-2.5 py-2 text-xs leading-relaxed text-indigo-900;
+    }
+
     .online-exp-stage {
-        @apply min-h-[22rem] rounded-2xl border border-violet-100 bg-gradient-to-b from-white to-violet-50/80 p-4 shadow-md;
+        @apply min-h-[26rem] rounded-2xl border border-violet-200 bg-gradient-to-b from-slate-50 via-white to-violet-50/90 p-4 shadow-lg;
+    }
+
+    .online-exp-stage-label {
+        @apply mb-2 text-center text-[10px] font-bold uppercase tracking-wider text-violet-500;
     }
 
     .online-exp-stage__inner {
-        @apply flex min-h-[18rem] flex-col items-center justify-center;
+        @apply flex min-h-[20rem] flex-col items-center justify-center;
     }
 
     .online-exp-palette {
-        @apply mb-4 w-full max-w-md text-center;
+        @apply relative z-20 mb-3 w-full max-w-lg rounded-xl border border-violet-100 bg-white/95 p-3 text-center shadow-md;
     }
 
     .online-exp-palette-label {
-        @apply text-xs font-medium text-slate-600;
+        @apply text-xs font-semibold text-slate-700;
     }
 
     .online-exp-palette-colors {
-        @apply mt-2 flex justify-center gap-2;
+        @apply mt-3 flex flex-wrap justify-center gap-3;
     }
 
     .online-exp-color-btn {
-        @apply h-10 w-10 rounded-full border-2 border-white shadow-md transition hover:scale-110;
+        @apply flex h-12 w-12 flex-col items-center justify-center rounded-full border-2 border-white shadow-lg transition hover:scale-110;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .online-exp-color-btn__name {
+        @apply sr-only;
     }
 
     .online-exp-color-btn--active {
-        @apply ring-2 ring-violet-500 ring-offset-2;
+        @apply scale-110 ring-4 ring-violet-400 ring-offset-2;
     }
 
-    .online-exp-cups-row {
-        @apply flex flex-wrap items-end justify-center gap-2 sm:gap-3;
+    /* 3D arena */
+    .online-exp-3d-arena {
+        @apply relative w-full max-w-4xl px-2 py-6;
+        perspective: 1100px;
     }
 
-    .online-exp-cup {
-        @apply relative flex w-12 flex-col items-center sm:w-14;
+    .online-exp-3d-arena__glow {
+        @apply pointer-events-none absolute inset-0 rounded-3xl opacity-60;
+        background: radial-gradient(ellipse 70% 50% at 50% 80%, rgb(167 139 250 / 0.35), transparent 70%);
+    }
+
+    .online-exp-3d-world {
+        @apply relative mx-auto;
+        transform-style: preserve-3d;
+        transform: rotateX(14deg);
+        transition: transform 0.6s ease;
+    }
+
+    .online-exp-3d-world--animating {
+        animation: online-exp-world-tilt 4s ease-in-out;
+    }
+
+    @keyframes online-exp-world-tilt {
+        0%, 100% { transform: rotateX(14deg) rotateZ(0deg); }
+        50% { transform: rotateX(10deg) rotateZ(-1deg); }
+    }
+
+    .online-exp-3d-floor {
+        @apply absolute left-1/2 top-[55%] h-24 w-[92%] -translate-x-1/2 rounded-[50%];
+        background: linear-gradient(180deg, rgb(196 181 253 / 0.5), rgb(139 92 246 / 0.15));
+        transform: rotateX(75deg) translateZ(-30px);
+        filter: blur(2px);
+    }
+
+    .online-exp-3d-row {
+        @apply relative z-10 flex flex-wrap items-end justify-center gap-0.5 sm:gap-1;
+        transform-style: preserve-3d;
+    }
+
+    .online-exp-cup--3d {
+        @apply relative flex w-11 flex-col items-center sm:w-[3.25rem];
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        padding: 0 2px;
+        transform-style: preserve-3d;
+        transition: transform 0.25s ease;
+    }
+
+    .online-exp-cup--3d:hover {
+        transform: translateY(-4px) translateZ(8px);
+    }
+
+    .online-exp-cup__num {
+        @apply mb-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-violet-600 text-[9px] font-bold text-white shadow;
+    }
+
+    .online-exp-cup__body {
+        @apply relative h-28 w-full sm:h-32;
+        transform: translateZ(12px);
+        transform-style: preserve-3d;
+    }
+
+    .online-exp-cup__glass {
+        @apply absolute inset-0 rounded-b-2xl border-2 border-violet-300/80 bg-gradient-to-b from-white/90 to-violet-50/40;
+        box-shadow:
+            inset 0 -12px 20px rgb(139 92 246 / 0.12),
+            0 8px 16px rgb(91 33 182 / 0.15),
+            0 2px 0 rgb(255 255 255 / 0.8);
+    }
+
+    .online-exp-cup__water {
+        @apply absolute bottom-1 left-1/2 w-[calc(100%-10px)] -translate-x-1/2 rounded-b-xl transition-all duration-700 ease-out;
+        max-height: 78%;
+        box-shadow: inset 0 4px 8px rgb(0 0 0 / 0.08);
+    }
+
+    .online-exp-cup__shine {
+        @apply pointer-events-none absolute right-1 top-2 h-[40%] w-1 rounded-full bg-white/50;
+    }
+
+    .online-exp-cup__role {
+        @apply mt-1 text-[8px] font-semibold uppercase tracking-wide text-slate-400;
+    }
+
+    .online-exp-cup--filled .online-exp-cup__role {
+        @apply text-violet-600;
+    }
+
+    .online-exp-cup--target .online-exp-cup__num {
+        animation: online-exp-cup-pulse 1.2s ease-in-out infinite;
+        @apply bg-fuchsia-500;
+    }
+
+    .online-exp-cup--dim {
+        opacity: 0.55;
+    }
+
+    .online-exp-cup--glow .online-exp-cup__glass {
+        box-shadow:
+            0 0 24px rgb(167 139 250 / 0.7),
+            inset 0 -8px 16px rgb(139 92 246 / 0.2);
+    }
+
+    .online-exp-cup--pulse-ok {
+        animation: online-exp-cup-bounce 0.5s ease;
+    }
+
+    @keyframes online-exp-cup-pulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(217 70 239 / 0.5); }
+        50% { transform: scale(1.08); box-shadow: 0 0 0 6px rgb(217 70 239 / 0); }
+    }
+
+    @keyframes online-exp-cup-bounce {
+        0%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-8px) translateZ(16px); }
+    }
+
+    .online-exp-ripple {
+        @apply pointer-events-none absolute inset-0 rounded-b-2xl border-2 border-white/60;
+        animation: online-exp-ripple 0.7s ease-out forwards;
+    }
+
+    @keyframes online-exp-ripple {
+        from { transform: scale(0.8); opacity: 0.8; }
+        to { transform: scale(1.15); opacity: 0; }
+    }
+
+    /* Köprüler (bardaklar arası) */
+    .online-exp-bridge--3d {
+        @apply relative mb-6 flex h-14 w-7 flex-col items-center justify-end sm:w-8;
         cursor: pointer;
         border: none;
         background: transparent;
         padding: 0;
+        transform: translateZ(6px);
     }
 
-    .online-exp-cup__num {
-        @apply mb-1 text-[10px] font-bold text-slate-500;
+    .online-exp-bridge__strip {
+        @apply block h-10 w-2 rounded-full border border-dashed border-violet-300 bg-violet-100/50 transition-all duration-300;
     }
 
-    .online-exp-cup__glass {
-        @apply block h-28 w-full rounded-b-xl border-2 border-violet-200 bg-white/80 sm:h-32;
-        box-shadow: inset 0 -8px 16px rgb(139 92 246 / 0.08);
+    .online-exp-bridge__flow {
+        @apply pointer-events-none absolute bottom-4 left-1/2 h-10 w-2 -translate-x-1/2 origin-bottom scale-y-0 rounded-full opacity-0;
+        background: linear-gradient(to top, var(--flow-color, #a78bfa), transparent);
     }
 
-    .online-exp-cup__water {
-        @apply absolute bottom-0 left-1/2 w-[calc(100%-8px)] -translate-x-1/2 rounded-b-lg transition-all duration-700 ease-out;
-        max-height: 72%;
+    .online-exp-bridge__label {
+        @apply mt-0.5 text-[7px] font-medium uppercase text-slate-400;
     }
 
-    .online-exp-cup--glow .online-exp-cup__glass {
-        box-shadow: 0 0 20px rgb(167 139 250 / 0.55);
+    .online-exp-bridge--on .online-exp-bridge__strip {
+        @apply border-solid border-amber-400 bg-gradient-to-t from-amber-200 to-amber-50;
+        box-shadow: 0 2px 8px rgb(251 191 36 / 0.4);
     }
 
-    .online-exp-bridges {
-        @apply mt-4 flex flex-wrap justify-center gap-1 sm:gap-2;
+    .online-exp-bridge--target .online-exp-bridge__strip {
+        animation: online-exp-bridge-wiggle 0.8s ease-in-out infinite;
+        @apply border-fuchsia-400 bg-fuchsia-100;
     }
 
-    .online-exp-bridge {
-        @apply h-8 w-10 rounded-lg border border-dashed border-violet-200 bg-violet-50/50 transition hover:border-violet-400;
-        cursor: pointer;
-        padding: 0;
+    @keyframes online-exp-bridge-wiggle {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
     }
 
-    .online-exp-bridge--on {
-        @apply border-solid border-amber-300 bg-amber-50;
+    .online-exp-bridge--flowing .online-exp-bridge__flow {
+        animation: online-exp-capillary 1s ease-out forwards;
     }
 
-    .online-exp-bridge__towel {
-        @apply block h-full w-full rounded-md bg-gradient-to-b from-amber-100 to-amber-200 opacity-40;
+    @keyframes online-exp-capillary {
+        0% { transform: translateX(-50%) scaleY(0); opacity: 0; }
+        40% { opacity: 1; }
+        100% { transform: translateX(-50%) scaleY(1); opacity: 0.9; }
     }
 
-    .online-exp-bridge--on .online-exp-bridge__towel {
-        @apply opacity-100;
+    .online-exp-3d-arena--intro .online-exp-3d-world {
+        animation: online-exp-float 4s ease-in-out infinite;
+    }
+
+    @keyframes online-exp-float {
+        0%, 100% { transform: rotateX(14deg) translateY(0); }
+        50% { transform: rotateX(12deg) translateY(-6px); }
     }
 
     .online-exp-stage-hint {
-        @apply mt-4 max-w-md text-center text-sm text-slate-600;
+        @apply relative z-20 mt-4 max-w-lg rounded-xl bg-white/90 px-4 py-2 text-center text-sm text-slate-600 shadow-sm;
     }
 
     .online-exp-hint--flash {
-        @apply font-semibold text-violet-700;
+        @apply font-semibold text-violet-800 ring-2 ring-violet-200;
     }
 
     .online-exp-start-btn {
-        @apply mt-3;
+        @apply relative z-20 mt-3 px-6 py-3 text-base shadow-lg;
     }
 
     .online-exp-side-body {
@@ -680,6 +867,10 @@
         @apply mt-4 grid gap-2;
     }
 
+    .online-exp-flow-layer {
+        @apply pointer-events-none absolute inset-0;
+    }
+
     @media (max-width: 1023px) {
         .online-exp-workspace {
             @apply grid-cols-1;
@@ -687,6 +878,14 @@
 
         .online-exp-stage {
             order: -1;
+        }
+
+        .online-exp-3d-world {
+            transform: rotateX(8deg);
+        }
+
+        .online-exp-cup__body {
+            @apply h-24;
         }
     }
 
