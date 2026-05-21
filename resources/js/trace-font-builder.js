@@ -1,6 +1,6 @@
 /**
  * Gerçek font konturundan harf/rakam çizgi yolları (Nunito Sans)
- * Koordinatlar doğrudan tuval (canvas) uzayında — y ekseni aşağı
+ * Koordinatlar tuval uzayında; opentype getPath Y ekseni zaten aşağı doğru
  */
 import { parse as parseFont } from 'opentype.js';
 
@@ -80,9 +80,9 @@ function sampleQuad(x0, y0, x1, y1, x2, y2, steps = 12) {
     return pts;
 }
 
-/** Font yukarı → tuval y aşağı: canvasY = 2*baseline - fontY */
-function pathToCanvasSegments(path, baselineY) {
-    const toCanvas = (x, y) => [x, baselineY * 2 - y];
+/** opentype getPath zaten tuval uzayında (Y aşağı) — ek çevirme yapma */
+function pathToSegments(path) {
+    const toCanvas = (x, y) => [x, y];
     const segments = [];
     let current = [];
     let cx = 0;
@@ -147,6 +147,31 @@ function pathToCanvasSegments(path, baselineY) {
     return segments;
 }
 
+/** Tüm segmentleri tuval içinde ortala ve ölçekle */
+function fitSegmentsToCanvas(segments, w, h, pad) {
+    const flat = segments.flat();
+    if (!flat.length) return segments;
+
+    let minX = Infinity,
+        maxX = -Infinity,
+        minY = Infinity,
+        maxY = -Infinity;
+    flat.forEach((p) => {
+        minX = Math.min(minX, p[0]);
+        maxX = Math.max(maxX, p[0]);
+        minY = Math.min(minY, p[1]);
+        maxY = Math.max(maxY, p[1]);
+    });
+    const rw = maxX - minX || 1;
+    const rh = maxY - minY || 1;
+    const scale = Math.min((w - pad * 2) / rw, (h - pad * 2) / rh);
+    const ox = (w - rw * scale) / 2;
+    const oy = (h - rh * scale) / 2;
+    const mapPt = (p) => [ox + (p[0] - minX) * scale, oy + (p[1] - minY) * scale];
+
+    return segments.map((seg) => seg.map(mapPt));
+}
+
 export function buildCharPattern(char, level = 'Kolay') {
     const font = fontForChar(char);
     if (!font) throw new Error('Font hazır değil');
@@ -160,7 +185,8 @@ export function buildCharPattern(char, level = 'Kolay') {
     const baselineY = CANVAS_H - CANVAS_PAD;
 
     const path = font.getPath(char, startX, baselineY, FONT_SIZE);
-    const segments = pathToCanvasSegments(path, baselineY);
+    const raw = pathToSegments(path);
+    const segments = fitSegmentsToCanvas(raw, CANVAS_W, CANVAS_H, CANVAS_PAD);
 
     return {
         name: char,
