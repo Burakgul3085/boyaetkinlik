@@ -1,7 +1,19 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+    resolve: {
+        alias: {
+            'opentype.js': path.resolve(__dirname, 'node_modules/opentype.js/dist/opentype.mjs'),
+        },
+    },
+    optimizeDeps: {
+        include: ['opentype.js'],
+    },
     plugins: [
         laravel({
             input: [
