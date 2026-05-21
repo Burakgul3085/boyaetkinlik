@@ -11,7 +11,15 @@ class YoutubeEmbed
             return null;
         }
 
-        if (preg_match('~(?:youtube\.com/watch\?.*v=|youtu\.be/|youtube\.com/embed/|youtube\.com/shorts/)([a-zA-Z0-9_-]{11})~', $url, $m)) {
+        if (preg_match('/^[a-zA-Z0-9_-]{11}$/', $url)) {
+            return $url;
+        }
+
+        if (preg_match('~(?:youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/|live/)|youtu\.be/|m\.youtube\.com/watch\?(?:.*&)?v=)([a-zA-Z0-9_-]{11})~', $url, $m)) {
+            return $m[1];
+        }
+
+        if (preg_match('~[?&]v=([a-zA-Z0-9_-]{11})~', $url, $m)) {
             return $m[1];
         }
 
@@ -23,7 +31,7 @@ class YoutubeEmbed
         $id = static::extractId($url);
 
         return $id !== null
-            ? 'https://www.youtube-nocookie.com/embed/'.$id.'?rel=0&modestbranding=1'
+            ? 'https://www.youtube.com/embed/'.$id.'?rel=0&modestbranding=1&playsinline=1'
             : null;
     }
 

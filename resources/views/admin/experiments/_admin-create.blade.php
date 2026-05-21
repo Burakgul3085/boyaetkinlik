@@ -23,7 +23,7 @@
         <label class="block text-sm font-medium text-slate-700 md:col-span-2">
             YouTube linki (opsiyonel)
             <input type="url" name="youtube_url" value="{{ old('youtube_url') }}" placeholder="https://www.youtube.com/watch?v=..." class="input-ui mt-2 w-full">
-            <span class="mt-1 block text-[11px] text-slate-500">Detay sayfasında gömülü video önizlemesi gösterilir.</span>
+            <span class="mt-1 block text-[11px] text-slate-500">Detay sayfasında gömülü video önizlemesi gösterilir. Silinmiş veya özel videolarda «Video kullanılamıyor» çıkar; geçerli herkese açık bir link kullanın.</span>
         </label>
         <label class="input-ui md:col-span-2">
             Görsel (opsiyonel)

@@ -21,6 +21,10 @@
         </article>
 
         @if($experiment->youtubeEmbedUrl())
+            @php
+                $ytId = \App\Support\YoutubeEmbed::extractId($experiment->youtube_url);
+                $ytWatchUrl = $ytId ? 'https://www.youtube.com/watch?v='.$ytId : $experiment->youtube_url;
+            @endphp
             <section class="exp-3d-video mx-auto max-w-4xl">
                 <div class="exp-3d-video__frame">
                     <div class="relative aspect-video w-full overflow-hidden rounded-2xl bg-slate-900 shadow-[0_28px_60px_-20px_rgba(15,23,42,0.55)]">
@@ -35,6 +39,10 @@
                         ></iframe>
                     </div>
                 </div>
+                <p class="mt-3 text-center text-xs text-slate-500">
+                    Video oynatılmıyorsa
+                    <a href="{{ $ytWatchUrl }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-violet-700 hover:text-violet-900">YouTube’da aç</a>
+                </p>
             </section>
         @endif
 
