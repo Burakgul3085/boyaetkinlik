@@ -10,11 +10,14 @@
     $labAgeDefault = $expModel !== null ? (string) ($expModel->online_lab_age_label ?? '5–9 yaş') : '5–9 yaş';
     $labDurationDefault = $expModel !== null ? (string) ($expModel->online_lab_duration_label ?? '5–10 dk') : '5–10 dk';
     $labSortDefault = $expModel !== null ? (int) $expModel->online_lab_sort_order : 0;
+    $embedded = $embedded ?? false;
 @endphp
-<div class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3 md:col-span-2">
-    <p class="text-xs font-bold uppercase tracking-wide text-indigo-800">Online deney laboratuvarı</p>
-    <p class="mt-1 text-[11px] text-slate-600">Açık olan deneyler <strong>/deneyler/online-dene</strong> salonunda listelenir. Dış site kullanılmaz.</p>
-    <label class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+<div class="{{ $embedded ? '' : 'mt-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3 md:col-span-2' }}">
+    @unless($embedded)
+        <p class="text-xs font-bold uppercase tracking-wide text-indigo-800">Online deney laboratuvarı</p>
+        <p class="mt-1 text-[11px] text-slate-600">Açık olan deneyler <strong>/deneyler/online-dene</strong> salonunda listelenir. Dış site kullanılmaz.</p>
+    @endunless
+    <label class="{{ $embedded ? 'mt-0' : 'mt-3' }} inline-flex items-center gap-2 text-sm font-medium text-slate-700">
         <input type="hidden" name="online_lab_enabled" value="0">
         <input type="checkbox" name="online_lab_enabled" value="1" @checked(old('online_lab_enabled', $labEnabledDefault))>
         Online laboratuvarda göster
