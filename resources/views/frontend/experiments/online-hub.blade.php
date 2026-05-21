@@ -7,10 +7,10 @@
         <p class="relative z-10 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-violet-700 shadow-md">Online Deney Laboratuvarı</p>
         <h1 class="relative z-10 mt-4 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Deneyleri bilgisayarda dene</h1>
         <p class="relative z-10 mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 md:text-base">
-            Hepsi Boya Etkinlik’te — dış site yok. Bir deney seç, adımları takip et, sonucu ekranda gör.
-            Evde gerçek deney için deney yazısındaki malzeme listesine de bakabilirsin.
+            Aşağıdan bir deney seç, adımları takip et, sonucu ekranda gör. Evde gerçek uygulama için
+            <a href="{{ route('experiments.index') }}" class="font-semibold text-violet-700 hover:text-violet-900">deney yazılarına</a> da göz atabilirsin.
         </p>
-        <a href="{{ route('experiments.index') }}" class="relative z-10 mt-4 inline-flex text-sm font-semibold text-violet-700 hover:text-violet-900">← Deneyler listesine dön</a>
+        <a href="{{ route('experiments.index') }}" class="relative z-10 mt-4 inline-flex text-sm font-semibold text-violet-700 hover:text-violet-900">← Deney yazıları listesi</a>
     </section>
 
     @if($labCount === 0)
@@ -22,22 +22,17 @@
             @foreach($labs as $lab)
                 <article class="exp-3d-card group h-full">
                     <div class="exp-3d-card__inner flex h-full flex-col overflow-hidden rounded-2xl border border-violet-100 bg-white">
-                        @if($lab->image_path)
-                            @include('partials.experiment-media', ['experiment' => $lab, 'variant' => 'card'])
-                        @else
-                            <div class="flex min-h-[10rem] items-center justify-center bg-gradient-to-br from-violet-100 to-fuchsia-100 p-6">
-                                <span class="text-5xl" aria-hidden="true">🧪</span>
-                            </div>
-                        @endif
+                        <div class="flex min-h-[10rem] items-center justify-center bg-gradient-to-br from-violet-100 to-fuchsia-100 p-6">
+                            <span class="text-5xl" aria-hidden="true">{{ $lab['icon'] ?? '🧪' }}</span>
+                        </div>
                         <div class="flex flex-1 flex-col p-4">
                             <div class="flex flex-wrap gap-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                                <span class="rounded-full bg-violet-100 px-2 py-0.5 text-violet-700">{{ $lab->online_lab_age_label ?? '5–9 yaş' }}</span>
-                                <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-indigo-700">{{ $lab->online_lab_duration_label ?? '5–10 dk' }}</span>
+                                <span class="rounded-full bg-violet-100 px-2 py-0.5 text-violet-700">{{ $lab['age_label'] }}</span>
+                                <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-indigo-700">{{ $lab['duration_label'] }}</span>
                             </div>
-                            <h2 class="mt-2 text-lg font-bold text-slate-900">{{ $lab->title }}</h2>
-                            <p class="mt-2 line-clamp-2 flex-1 text-sm text-slate-600">{{ $lab->excerpt }}</p>
-                            <a href="{{ route('experiments.online.play', $lab) }}" class="btn-primary mt-4 w-full text-center">Başla →</a>
-                            <a href="{{ route('experiments.show', $lab) }}" class="mt-2 text-center text-xs font-semibold text-violet-600 hover:text-violet-800">Deney yazısını oku</a>
+                            <h2 class="mt-2 text-lg font-bold text-slate-900">{{ $lab['title'] }}</h2>
+                            <p class="mt-2 line-clamp-3 flex-1 text-sm text-slate-600">{{ $lab['excerpt'] }}</p>
+                            <a href="{{ route('experiments.online.play', $lab['slug']) }}" class="btn-primary mt-4 w-full text-center">Deneyi başlat →</a>
                         </div>
                     </div>
                 </article>

@@ -18,16 +18,6 @@
             <p class="relative z-10 mt-4 rounded-2xl border border-violet-100 bg-white/90 p-4 text-sm leading-relaxed text-slate-700 shadow-sm">
                 {{ $experiment->excerpt }}
             </p>
-            @if($experiment->hasPlayableOnlineLab())
-                <div class="relative z-10 mt-4 flex flex-wrap gap-2">
-                    <a href="{{ route('experiments.online.play', $experiment) }}" class="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-violet-700">
-                        Online deney yap →
-                    </a>
-                    <a href="{{ route('experiments.online.hub') }}" class="inline-flex items-center rounded-xl border border-violet-200 bg-white/90 px-4 py-2.5 text-sm font-semibold text-violet-800 transition hover:bg-white">
-                        Tüm laboratuvar
-                    </a>
-                </div>
-            @endif
         </article>
 
         @if($experiment->image_path)

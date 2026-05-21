@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Experiment;
 use App\Models\ExperimentCategory;
-use App\Support\OnlineExperimentLab;
 use App\Support\YoutubeEmbed;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,7 +45,6 @@ class ExperimentController extends Controller
         $filtered = (clone $baseQuery)->get();
 
         return view('admin.experiments.index', [
-            'onlineLabTypes' => OnlineExperimentLab::types(),
             'experimentCategories' => $allExperimentCategories,
             'parentBreadcrumbLabels' => ExperimentCategory::parentBreadcrumbLabelsFor($allExperimentCategories),
             'parentSelectOptionsCreate' => ExperimentCategory::orderedFlatForParentSelect(null, $allExperimentCategories),
@@ -82,8 +80,6 @@ class ExperimentController extends Controller
         if ($request->hasFile('image_file')) {
             $payload['image_path'] = $request->file('image_file')->store('experiment-images', 'public');
         }
-
-        $payload = array_merge($payload, $this->onlineLabFieldsFromRequest($request));
 
         Experiment::query()->create($payload);
 
@@ -123,7 +119,7 @@ class ExperimentController extends Controller
             $payload['image_path'] = $request->file('image_file')->store('experiment-images', 'public');
         }
 
-        $experiment->update(array_merge($payload, $this->onlineLabFieldsFromRequest($request)));
+        $experiment->update($payload);
 
         return back()
             ->withInput(['_edit_experiment_id' => $experiment->id])
@@ -185,11 +181,6 @@ class ExperimentController extends Controller
             'image_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:8192'],
             'remove_image' => ['nullable', 'boolean'],
             'publish_now' => ['nullable', 'boolean'],
-            'online_lab_enabled' => ['nullable', 'boolean'],
-            'online_lab_type' => ['nullable', 'string', 'max:40'],
-            'online_lab_age_label' => ['nullable', 'string', 'max:40'],
-            'online_lab_duration_label' => ['nullable', 'string', 'max:40'],
-            'online_lab_sort_order' => ['nullable', 'integer', 'min:0'],
         ];
 
         $data = $request->validate($rules);
@@ -205,37 +196,5 @@ class ExperimentController extends Controller
         $data['publish_now'] = (bool) ($data['publish_now'] ?? false);
 
         return $data;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function onlineLabFieldsFromRequest(Request $request): array
-    {
-        $enabled = $request->boolean('online_lab_enabled');
-        $type = $request->string('online_lab_type')->toString() ?: null;
-
-        if ($enabled) {
-            if (! OnlineExperimentLab::isValidType($type)) {
-                throw ValidationException::withMessages([
-                    'online_lab_type' => 'Online laboratuvar için geçerli bir deney tipi seçin.',
-                ]);
-            }
-            if (! OnlineExperimentLab::isPlayable($type)) {
-                throw ValidationException::withMessages([
-                    'online_lab_type' => 'Seçilen deney tipi henüz yayında değil.',
-                ]);
-            }
-        } else {
-            $type = null;
-        }
-
-        return [
-            'online_lab_enabled' => $enabled,
-            'online_lab_type' => $type,
-            'online_lab_age_label' => trim((string) $request->input('online_lab_age_label', '')) ?: null,
-            'online_lab_duration_label' => trim((string) $request->input('online_lab_duration_label', '')) ?: null,
-            'online_lab_sort_order' => (int) $request->input('online_lab_sort_order', 0),
-        ];
     }
 }

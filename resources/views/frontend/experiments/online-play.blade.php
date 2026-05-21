@@ -1,23 +1,25 @@
 @extends('layouts.app')
 
-@section('title', 'Online Deney — '.$experiment->title)
+@section('title', 'Online Deney — '.$lab['title'])
 
 @section('content')
     <div class="online-exp-page mx-auto max-w-[1400px]">
         <header class="online-exp-topbar">
             <div class="min-w-0">
                 <a href="{{ route('experiments.online.hub') }}" class="online-exp-back">← Laboratuvar</a>
-                <h1 class="online-exp-title">{{ $experiment->title }}</h1>
+                <h1 class="online-exp-title">{{ $lab['title'] }}</h1>
                 <p class="online-exp-sub">{{ $labTypeLabel }} — adımları tamamla, deneyi başlat</p>
             </div>
-            <a href="{{ route('experiments.show', $experiment) }}" class="online-exp-link-article">Deney yazısı</a>
+            @if($articleUrl)
+                <a href="{{ $articleUrl }}" class="online-exp-link-article">Deney yazısı</a>
+            @endif
         </header>
 
         <div
             id="online-exp-app"
             class="online-exp-workspace"
             data-lab-type="{{ $labType }}"
-            data-article-url="{{ route('experiments.show', $experiment) }}"
+            data-article-url="{{ $articleUrl ?? $lab['slug'] }}"
         >
             <aside class="online-exp-guide" aria-label="Deney rehberi">
                 <p class="online-exp-panel-title">Rehber</p>
@@ -47,12 +49,16 @@
             <aside class="online-exp-side" aria-label="İpucu ve sonuç">
                 <p class="online-exp-panel-title">İpucu & sonuç</p>
                 <div class="online-exp-side-body" id="exp-side-body">
-                    <p class="text-sm text-slate-600">Adımları soldan takip et. Gerçek deney için yazıdaki malzemeleri kullan.</p>
+                    <p class="text-sm text-slate-600">Adımları soldan takip et. Gerçek deney için malzemeleri hazırla.</p>
                 </div>
                 <div class="online-exp-side-actions" id="exp-side-actions" hidden>
                     <button type="button" class="btn-secondary w-full text-sm" id="exp-btn-retry">Yeniden dene</button>
                     <button type="button" class="btn-primary w-full text-sm" id="exp-btn-screenshot">Sonucu indir (PNG)</button>
-                    <a href="{{ route('experiments.show', $experiment) }}" class="btn-secondary w-full text-center text-sm">Deney yazısına git</a>
+                    @if($articleUrl)
+                        <a href="{{ $articleUrl }}" class="btn-secondary w-full text-center text-sm">Deney yazısına git</a>
+                    @else
+                        <a href="{{ route('experiments.index') }}" class="btn-secondary w-full text-center text-sm">Deney yazılarına git</a>
+                    @endif
                 </div>
             </aside>
         </div>

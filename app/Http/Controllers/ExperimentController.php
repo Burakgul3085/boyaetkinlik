@@ -39,7 +39,7 @@ class ExperimentController extends Controller
             'categoryFilterTree' => ExperimentCategory::buildActiveFilterTree($allCategories),
             'activePathIds' => ExperimentCategory::activePathIds($activeCategory),
             'totalExperimentCount' => Experiment::query()->published()->count(),
-            'onlineLabCount' => static::countPlayableOnlineLabs(),
+            'onlineLabCount' => OnlineExperimentLab::playableCount(),
         ]);
     }
 
@@ -64,7 +64,7 @@ class ExperimentController extends Controller
             'categoryFilterTree' => ExperimentCategory::buildActiveFilterTree($allCategories),
             'activePathIds' => ExperimentCategory::activePathIds($experimentCategory),
             'totalExperimentCount' => Experiment::query()->published()->count(),
-            'onlineLabCount' => static::countPlayableOnlineLabs(),
+            'onlineLabCount' => OnlineExperimentLab::playableCount(),
         ]);
     }
 
@@ -85,15 +85,5 @@ class ExperimentController extends Controller
                 ->limit(4)
                 ->get(),
         ]);
-    }
-
-    protected static function countPlayableOnlineLabs(): int
-    {
-        return Experiment::query()
-            ->published()
-            ->onlineLabEnabled()
-            ->get()
-            ->filter(fn (Experiment $exp) => $exp->hasPlayableOnlineLab())
-            ->count();
     }
 }

@@ -65,7 +65,9 @@ Route::get('/blog/{blog:slug}', [BlogController::class, 'show'])->name('blog.sho
 Route::get('/deneyler', [ExperimentController::class, 'index'])->name('experiments.index');
 Route::get('/deneyler/kategori/{experimentCategory:slug}', [ExperimentController::class, 'category'])->name('experiments.category');
 Route::get('/deneyler/online-dene', [OnlineExperimentController::class, 'hub'])->name('experiments.online.hub');
-Route::get('/deneyler/online-dene/{experiment:slug}', [OnlineExperimentController::class, 'play'])->name('experiments.online.play');
+Route::get('/deneyler/online-dene/{labSlug}', [OnlineExperimentController::class, 'play'])
+    ->where('labSlug', '[a-z0-9\-]+')
+    ->name('experiments.online.play');
 Route::get('/deneyler/{experiment:slug}', [ExperimentController::class, 'show'])->name('experiments.show');
 Route::post('/iletisim', [ContactController::class, 'send'])->name('contact.send');
 Route::post('/iletisim/whatsapp', [ContactController::class, 'sendWhatsApp'])->name('contact.whatsapp');

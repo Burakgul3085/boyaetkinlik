@@ -26,25 +26,17 @@
                 @if($activeCategory)
                     {{ $experiments->total() }} deney bu filtrede
                 @else
-                    {{ $totalExperimentCount }} yayınlanmış deney
+                    {{ $totalExperimentCount }} yayınlanmış deney yazısı
                 @endif
             </span>
+            @php $onlineLabCount = $onlineLabCount ?? 0; @endphp
+            @if($onlineLabCount > 0)
+                <a href="{{ route('experiments.online.hub') }}" class="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white shadow-md transition hover:bg-violet-700">
+                    Online Deney Laboratuvarı →
+                </a>
+            @endif
         </div>
     </section>
-
-    @php $onlineLabCount = $onlineLabCount ?? 0; @endphp
-    @if($onlineLabCount > 0)
-        <section class="mt-5 overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-indigo-600 p-5 text-white shadow-lg md:flex md:items-center md:justify-between md:gap-6 md:p-6">
-            <div class="min-w-0">
-                <p class="text-xs font-semibold uppercase tracking-wide text-white/80">Boya Etkinlik Laboratuvarı</p>
-                <h2 class="mt-1 text-xl font-bold md:text-2xl">Online Deney Yap</h2>
-                <p class="mt-2 max-w-xl text-sm text-white/90">Bilgisayarında güvenle dene; renklerin birleşmesini izle. {{ $onlineLabCount }} interaktif deney hazır.</p>
-            </div>
-            <a href="{{ route('experiments.online.hub') }}" class="mt-4 inline-flex shrink-0 items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-bold text-violet-700 shadow-md transition hover:bg-violet-50 md:mt-0">
-                Laboratuvara gir →
-            </a>
-        </section>
-    @endif
 
     <div class="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,17.5rem)_minmax(0,1fr)] lg:items-start">
         @include('partials.experiment-category-filter-panel')
@@ -75,9 +67,6 @@
                                         <span>{{ $experiment->authorFullName() }} · {{ $experiment->published_at?->format('d.m.Y') ?? $experiment->created_at?->format('d.m.Y') }}</span>
                                         @if($experiment->category)
                                             <a href="{{ route('experiments.category', $experiment->category) }}" class="rounded-full bg-violet-100 px-2 py-0.5 font-semibold text-violet-700 hover:bg-violet-200">{{ $experiment->category->name }}</a>
-                                        @endif
-                                        @if($experiment->hasPlayableOnlineLab())
-                                            <span class="rounded-full bg-indigo-100 px-2 py-0.5 font-semibold text-indigo-800">Online dene</span>
                                         @endif
                                         @if($experiment->youtubeEmbedUrl())
                                             <span class="rounded-full bg-red-50 px-2 py-0.5 font-semibold text-red-700">Video</span>
