@@ -849,8 +849,101 @@
     }
 
     .online-exp-start-btn[hidden],
-    .online-exp-side-actions[hidden] {
+    .online-exp-side-actions[hidden],
+    .online-exp-mix-stir-btn[hidden] {
         display: none !important;
+    }
+
+    /* İki renk karışım stüdyosu (boya paleti) */
+    .online-exp-mix-palette-bar {
+        @apply relative z-20 mb-4 w-full max-w-xl rounded-xl border border-violet-100 bg-white/95 p-3 shadow-md;
+    }
+
+    .online-exp-mix-lab {
+        @apply relative z-10 flex w-full max-w-2xl flex-col items-center justify-center gap-6 overflow-hidden py-4 sm:flex-row sm:gap-4 md:gap-8;
+    }
+
+    .online-exp-mix-slot {
+        @apply flex flex-col items-center;
+    }
+
+    .online-exp-mix-slot__label {
+        @apply mb-2 text-xs font-bold uppercase tracking-wide text-violet-600;
+    }
+
+    .online-exp-mix-slot__btn {
+        @apply flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-white p-4 shadow-sm transition hover:border-violet-400 hover:shadow-md;
+        cursor: pointer;
+    }
+
+    .online-exp-mix-slot--target .online-exp-mix-slot__btn {
+        @apply border-fuchsia-400 bg-fuchsia-50/80;
+        animation: online-exp-mix-pulse 1.2s ease-in-out infinite;
+    }
+
+    .online-exp-mix-slot--active .online-exp-mix-slot__btn {
+        @apply border-violet-500 ring-2 ring-violet-300;
+    }
+
+    @keyframes online-exp-mix-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgb(217 70 239 / 0.35); }
+        50% { box-shadow: 0 0 0 8px rgb(217 70 239 / 0); }
+    }
+
+    .online-exp-mix-slot__circle {
+        @apply block h-16 w-16 rounded-full border-4 border-white bg-violet-100 shadow-inner sm:h-20 sm:w-20;
+    }
+
+    .online-exp-mix-slot__circle--filled {
+        @apply shadow-lg;
+    }
+
+    .online-exp-mix-slot__name {
+        @apply text-xs font-semibold text-slate-600;
+    }
+
+    .online-exp-mix-bowl-wrap {
+        @apply flex flex-col items-center;
+    }
+
+    .online-exp-mix-bowl {
+        @apply relative flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 border-violet-200 bg-white shadow-[0_12px_40px_-8px_rgba(91,33,182,0.35)] sm:h-40 sm:w-40;
+    }
+
+    .online-exp-mix-bowl--stirring {
+        animation: online-exp-mix-shake 0.35s ease-in-out infinite;
+    }
+
+    @keyframes online-exp-mix-shake {
+        0%, 100% { transform: rotate(-4deg); }
+        50% { transform: rotate(4deg); }
+    }
+
+    .online-exp-mix-bowl__inner {
+        @apply h-[88%] w-[88%] rounded-full transition-all duration-700 ease-out;
+        background: linear-gradient(180deg, #f5f3ff, #ede9fe);
+    }
+
+    .online-exp-mix-bowl__inner--done {
+        box-shadow: inset 0 0 24px rgb(0 0 0 / 0.08);
+    }
+
+    .online-exp-mix-bowl__swirl {
+        @apply pointer-events-none absolute inset-2 rounded-full opacity-80;
+        background: conic-gradient(from 0deg, transparent, rgb(255 255 255 / 0.6), transparent, rgb(255 255 255 / 0.4), transparent);
+        animation: online-exp-mix-spin 0.8s linear infinite;
+    }
+
+    @keyframes online-exp-mix-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .online-exp-mix-result-label {
+        @apply mt-3 max-w-[12rem] text-center text-xs font-semibold text-slate-600;
+    }
+
+    .online-exp-mix-stir-btn {
+        @apply mt-3 px-6 py-2.5 text-sm shadow-lg;
     }
 
     .online-exp-3d-arena--intro .online-exp-3d-world {
@@ -898,6 +991,164 @@
         .online-exp-cup__body {
             @apply h-24;
         }
+    }
+
+    /* Renk çarkı */
+    .online-exp-stage__inner--wheel {
+        @apply overflow-hidden;
+    }
+
+    .online-exp-wheel-wrap {
+        @apply mx-auto max-w-[min(100%,20rem)];
+    }
+
+    .online-exp-wheel-svg {
+        @apply h-auto w-full drop-shadow-md;
+    }
+
+    .online-exp-wheel-center-text {
+        @apply fill-violet-800 text-[11px] font-bold;
+        font-family: system-ui, sans-serif;
+    }
+
+    .online-exp-wheel-seg {
+        cursor: pointer;
+        transition: opacity 0.3s, filter 0.3s;
+    }
+
+    .online-exp-wheel-seg--muted {
+        opacity: 0.45;
+    }
+
+    .online-exp-wheel-seg--lit {
+        filter: brightness(1.15) drop-shadow(0 0 8px rgb(167 139 250 / 0.8));
+    }
+
+    .online-exp-wheel-seg--secondary {
+        animation: online-exp-wheel-pop 0.5s ease;
+    }
+
+    @keyframes online-exp-wheel-pop {
+        from { transform: scale(0.92); opacity: 0.5; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .online-exp-wheel-controls {
+        @apply mt-4 flex flex-wrap justify-center gap-2;
+    }
+
+    .online-exp-wheel-btn {
+        @apply rounded-xl border-2 border-white px-4 py-2 text-sm font-bold text-white shadow-md transition hover:scale-105;
+        background-color: var(--c, #7c3aed);
+    }
+
+    .online-exp-wheel-btn--done {
+        @apply ring-2 ring-violet-400 ring-offset-2;
+    }
+
+    .online-exp-wheel-reveal {
+        @apply mt-3;
+    }
+
+    .online-exp-wheel-reveal[hidden] {
+        display: none !important;
+    }
+
+    /* Sıcak / soğuk */
+    .online-exp-warmcool-board {
+        @apply grid w-full max-w-3xl gap-3 md:grid-cols-[1fr_auto_1fr];
+        opacity: 0.55;
+        pointer-events: none;
+        transition: opacity 0.3s;
+    }
+
+    .online-exp-warmcool-board--active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .online-exp-warmcool-zone {
+        @apply min-h-[10rem] cursor-pointer rounded-2xl border-2 border-dashed p-3 transition hover:shadow-md;
+    }
+
+    .online-exp-warmcool-zone--warm {
+        @apply border-orange-200 bg-gradient-to-b from-orange-50 to-amber-50/80;
+    }
+
+    .online-exp-warmcool-zone--cool {
+        @apply border-sky-200 bg-gradient-to-b from-sky-50 to-indigo-50/80;
+    }
+
+    .online-exp-warmcool-zone__title {
+        @apply text-sm font-bold text-slate-800;
+    }
+
+    .online-exp-warmcool-zone__sub {
+        @apply text-[10px] text-slate-500;
+    }
+
+    .online-exp-warmcool-drop {
+        @apply mt-2 flex min-h-[5rem] flex-wrap gap-2 content-start;
+    }
+
+    .online-exp-warmcool-pool {
+        @apply flex max-w-[8rem] flex-wrap justify-center gap-2 self-center md:max-w-[6rem];
+    }
+
+    .online-exp-warmcool-chip {
+        @apply h-11 w-11 rounded-xl border-2 border-white shadow-md transition hover:scale-110;
+        cursor: pointer;
+    }
+
+    .online-exp-warmcool-chip--selected {
+        @apply scale-110 ring-4 ring-violet-400 ring-offset-2;
+    }
+
+    .online-exp-warmcool-chip--placed {
+        opacity: 0.3;
+    }
+
+    .online-exp-warmcool-chip[hidden] {
+        display: none !important;
+    }
+
+    .online-exp-warmcool-placed {
+        @apply h-10 w-10 rounded-lg border-2 border-white shadow;
+        cursor: pointer;
+    }
+
+    .online-exp-warmcool-check {
+        @apply mt-3;
+    }
+
+    .online-exp-warmcool-check[hidden] {
+        display: none !important;
+    }
+
+    /* Çizgi tamamlama */
+    .online-exp-trace-patterns {
+        @apply mb-3 flex flex-wrap justify-center gap-2;
+    }
+
+    .online-exp-trace-pattern-btn {
+        @apply rounded-xl border border-violet-200 bg-white px-3 py-2 text-sm font-semibold text-violet-800 shadow-sm transition hover:bg-violet-50;
+    }
+
+    .online-exp-trace-pattern-btn--active {
+        @apply border-violet-500 bg-violet-100 ring-2 ring-violet-300;
+    }
+
+    .online-exp-trace-canvas-wrap {
+        @apply w-full max-w-xl overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-inner;
+    }
+
+    .online-exp-trace-canvas {
+        @apply block h-auto w-full touch-none;
+        max-height: 300px;
+    }
+
+    .online-exp-trace-progress {
+        @apply border-t border-violet-50 bg-violet-50/50 py-2 text-center text-xs font-semibold text-violet-800;
     }
 
     /* Online Boya stüdyosu */

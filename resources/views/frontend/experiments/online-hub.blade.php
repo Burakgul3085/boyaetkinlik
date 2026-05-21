@@ -7,8 +7,9 @@
         <p class="relative z-10 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-violet-700 shadow-md">Online Deney Laboratuvarı</p>
         <h1 class="relative z-10 mt-4 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Deneyleri bilgisayarda dene</h1>
         <p class="relative z-10 mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 md:text-base">
-            Aşağıdan bir deney seç, adımları takip et, sonucu ekranda gör. Evde gerçek uygulama için
-            <a href="{{ route('experiments.index') }}" class="font-semibold text-violet-700 hover:text-violet-900">deney yazılarına</a> da göz atabilirsin.
+            Boyama ve çizgi çalışmalarına uygun interaktif deneyler. Okul öncesi, ilkokul ve ortaokul için —
+            aşağıdan bir deney seç, adımları takip et. İstersen
+            <a href="{{ route('experiments.index') }}" class="font-semibold text-violet-700 hover:text-violet-900">deney yazılarına</a> da bak.
         </p>
         <a href="{{ route('experiments.index') }}" class="relative z-10 mt-4 inline-flex text-sm font-semibold text-violet-700 hover:text-violet-900">← Deney yazıları listesi</a>
     </section>
@@ -18,7 +19,7 @@
             Şu an açık online deney yok. Yakında yeni deneyler eklenecek.
         </div>
     @else
-        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
             @foreach($labs as $lab)
                 <article class="exp-3d-card group h-full">
                     <div class="exp-3d-card__inner flex h-full flex-col overflow-hidden rounded-2xl border border-violet-100 bg-white">

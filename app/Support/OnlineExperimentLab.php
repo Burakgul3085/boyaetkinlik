@@ -4,13 +4,18 @@ namespace App\Support;
 
 /**
  * Online deney laboratuvarı kataloğu — admin panelden bağımsız.
- * Yeni interaktif deney eklemek için buraya kayıt ekleyin ve JS modülünü yazın.
  */
 class OnlineExperimentLab
 {
     public const TYPE_WALK_WATER = 'yuruyen_renkler';
 
     public const TYPE_COLOR_MIX = 'renk_karistirma';
+
+    public const TYPE_COLOR_WHEEL = 'renk_carki';
+
+    public const TYPE_WARM_COOL = 'sicak_soguk';
+
+    public const TYPE_LINE_TRACE = 'cizgi_tamamlama';
 
     /**
      * @return array<string, array{label: string, description: string, ready: bool}>
@@ -24,16 +29,29 @@ class OnlineExperimentLab
                 'ready' => true,
             ],
             self::TYPE_COLOR_MIX => [
-                'label' => 'Renk karışımı',
-                'description' => 'İki rengi karıştır, sonucu gör',
-                'ready' => false,
+                'label' => 'Boya paleti karışımı',
+                'description' => 'İki rengi seç, boyama paletinde karışımını gör',
+                'ready' => true,
+            ],
+            self::TYPE_COLOR_WHEEL => [
+                'label' => 'Renk çarkı',
+                'description' => 'Ana ve ara renkleri keşfet',
+                'ready' => true,
+            ],
+            self::TYPE_WARM_COOL => [
+                'label' => 'Sıcak & soğuk renkler',
+                'description' => 'Renkleri grupla, kompozisyon öğren',
+                'ready' => true,
+            ],
+            self::TYPE_LINE_TRACE => [
+                'label' => 'Çizgi tamamlama',
+                'description' => 'Çizgiyi takip et, çizimi tamamla',
+                'ready' => true,
             ],
         ];
     }
 
     /**
-     * Salon kartları ve oyun sayfası — tek kaynak.
-     *
      * @return array<string, array{
      *     slug: string,
      *     type: string,
@@ -54,12 +72,60 @@ class OnlineExperimentLab
                 'slug' => 'renk-karisim',
                 'type' => self::TYPE_WALK_WATER,
                 'title' => 'Renk Karışım Deneyi',
-                'excerpt' => 'Yedi bardakta kapiler etki ile renklerin birleşmesini modelle; istediğin renkleri seç, karışımları gözlemle.',
-                'age_label' => '5–9 yaş',
+                'excerpt' => 'Yedi bardakta kapiler etki ile renklerin birleşmesini modelle.',
+                'age_label' => '5–12 yaş',
                 'duration_label' => '5–10 dk',
                 'sort_order' => 0,
                 'ready' => true,
                 'icon' => '🧪',
+                'article_slug' => null,
+            ],
+            'boya-paleti' => [
+                'slug' => 'boya-paleti',
+                'type' => self::TYPE_COLOR_MIX,
+                'title' => 'İki Renk Karışım Stüdyosu',
+                'excerpt' => 'İki rengi seç, paletinde nasıl birleştiğini keşfet.',
+                'age_label' => '4–12 yaş',
+                'duration_label' => '3–5 dk',
+                'sort_order' => 1,
+                'ready' => true,
+                'icon' => '🎨',
+                'article_slug' => null,
+            ],
+            'renk-carki' => [
+                'slug' => 'renk-carki',
+                'type' => self::TYPE_COLOR_WHEEL,
+                'title' => 'Renk Çarkı',
+                'excerpt' => 'Ana renkleri (kırmızı, sarı, mavi) seç; ara renklerin (turuncu, yeşil, mor) nasıl oluştuğunu gör.',
+                'age_label' => '3–8 yaş',
+                'duration_label' => '3–5 dk',
+                'sort_order' => 2,
+                'ready' => true,
+                'icon' => '🎯',
+                'article_slug' => null,
+            ],
+            'sicak-soguk-renkler' => [
+                'slug' => 'sicak-soguk-renkler',
+                'type' => self::TYPE_WARM_COOL,
+                'title' => 'Sıcak & Soğuk Renkler',
+                'excerpt' => 'Renkleri güneş ve buz taraflarına yerleştir; boyama sayfalarında kompozisyon için sıcak-soğuk dengesini öğren.',
+                'age_label' => '6–12 yaş',
+                'duration_label' => '4–6 dk',
+                'sort_order' => 3,
+                'ready' => true,
+                'icon' => '☀️',
+                'article_slug' => null,
+            ],
+            'cizgi-tamamlama' => [
+                'slug' => 'cizgi-tamamlama',
+                'type' => self::TYPE_LINE_TRACE,
+                'title' => 'Çizgi Tamamlama',
+                'excerpt' => 'Çizgi çalışması gibi desenin üzerinden geç; el-göz koordinasyonunu güçlendir. Ev, kelebek veya dalga seç.',
+                'age_label' => '4–10 yaş',
+                'duration_label' => '3–8 dk',
+                'sort_order' => 4,
+                'ready' => true,
+                'icon' => '✏️',
                 'article_slug' => null,
             ],
         ];
@@ -78,9 +144,7 @@ class OnlineExperimentLab
         return static::catalog()[$slug] ?? null;
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
+    /** @return list<array<string, mixed>> */
     public static function playable(): array
     {
         $items = array_values(array_filter(
@@ -115,5 +179,38 @@ class OnlineExperimentLab
     public static function typeLabel(?string $type): string
     {
         return static::types()[$type]['label'] ?? 'Deney';
+    }
+
+    public static function viteScriptForType(string $type): string
+    {
+        return match ($type) {
+            self::TYPE_COLOR_MIX => 'resources/js/online-experiment-color-mix.js',
+            self::TYPE_COLOR_WHEEL => 'resources/js/online-experiment-color-wheel.js',
+            self::TYPE_WARM_COOL => 'resources/js/online-experiment-warm-cool.js',
+            self::TYPE_LINE_TRACE => 'resources/js/online-experiment-line-trace.js',
+            default => 'resources/js/online-experiment.js',
+        };
+    }
+
+    public static function stagePartialForType(string $type): string
+    {
+        return match ($type) {
+            self::TYPE_COLOR_MIX => 'frontend.experiments._online-play-palette-mix',
+            self::TYPE_COLOR_WHEEL => 'frontend.experiments._online-play-color-wheel',
+            self::TYPE_WARM_COOL => 'frontend.experiments._online-play-warm-cool',
+            self::TYPE_LINE_TRACE => 'frontend.experiments._online-play-line-trace',
+            default => 'frontend.experiments._online-play-walk-water',
+        };
+    }
+
+    public static function modeLabelForType(string $type): string
+    {
+        return match ($type) {
+            self::TYPE_COLOR_MIX => 'Boya paleti modeli',
+            self::TYPE_COLOR_WHEEL => 'Renk çarkı',
+            self::TYPE_WARM_COOL => 'Sıcak-soğuk renkler',
+            self::TYPE_LINE_TRACE => 'Çizgi çalışması',
+            default => '3D laboratuvar modeli',
+        };
     }
 }
