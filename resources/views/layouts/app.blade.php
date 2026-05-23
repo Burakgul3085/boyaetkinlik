@@ -208,23 +208,23 @@
 <header
     class="sticky top-0 z-40 border-b border-violet-100 bg-white/90 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
 >
-    <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 lg:gap-4 lg:py-4">
-        <a href="{{ route('home') }}" class="group flex min-w-0 max-w-[55%] items-center gap-2 text-slate-800 sm:max-w-none sm:gap-3">
+    <nav class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 lg:flex-nowrap lg:gap-3 lg:py-3 xl:gap-4 xl:py-4">
+        <a href="{{ route('home') }}" class="group flex min-w-0 max-w-[55%] shrink-0 items-center gap-2 text-slate-800 sm:max-w-none sm:gap-3 lg:max-w-[14rem] xl:max-w-none">
             <span class="logo-anim-wrap inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-violet-100 bg-white shadow-md shadow-indigo-200/50 transition group-hover:scale-105 sm:h-12 sm:w-12">
                 <img src="{{ $siteLogoUrl }}" alt="{{ $headerSiteName }} Logo" class="logo-anim-img h-full w-full object-contain">
             </span>
-            <span class="truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg lg:text-xl">{{ $headerSiteName }}</span>
+            <span class="truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg lg:text-base xl:text-xl">{{ $headerSiteName }}</span>
         </a>
 
         {{-- Masaüstü: tam menü --}}
-        <div class="hidden min-w-0 flex-1 items-center justify-end gap-2 lg:flex">
-            <div class="flex max-w-full flex-wrap items-center justify-end gap-1.5 rounded-2xl border border-violet-100 bg-violet-50/70 p-1 text-sm font-medium">
+        <div class="hidden shrink-0 items-center justify-end gap-1.5 lg:flex xl:gap-2">
+            <div class="flex shrink-0 flex-nowrap items-center gap-1 rounded-2xl border border-violet-100 bg-violet-50/70 p-1 text-[13px] font-medium xl:gap-1.5 xl:text-sm">
             @foreach($menuItems as $item)
                 @if(! empty($item['children']))
-                    <div class="group relative">
+                    <div class="group relative shrink-0">
                         <a
                             href="{{ $item['url'] }}"
-                            class="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-slate-700 transition hover:bg-white hover:text-violet-700 hover:shadow-sm"
+                            class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-xl px-2.5 py-1.5 text-slate-700 transition hover:bg-white hover:text-violet-700 hover:shadow-sm xl:px-3 xl:py-2"
                         >
                             {{ $item['label'] }}
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition group-hover:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -238,11 +238,11 @@
                         </div>
                     </div>
                 @else
-                    <a class="rounded-xl px-3 py-2 text-slate-700 transition hover:bg-white hover:text-violet-700 hover:shadow-sm" href="{{ $item['url'] }}">{{ $item['label'] }}</a>
+                    <a class="shrink-0 whitespace-nowrap rounded-xl px-2.5 py-1.5 text-slate-700 transition hover:bg-white hover:text-violet-700 hover:shadow-sm xl:px-3 xl:py-2" href="{{ $item['url'] }}">{{ $item['label'] }}</a>
                 @endif
             @endforeach
             </div>
-            <div class="flex items-center gap-1.5 rounded-2xl border border-violet-100 bg-white/90 p-1 text-sm font-medium">
+            <div class="flex shrink-0 items-center gap-1 rounded-2xl border border-violet-100 bg-white/90 p-1 text-[13px] font-medium xl:gap-1.5 xl:text-sm">
                 @auth
                     @if(auth()->user()->is_admin)
                         <a id="admin-nav-link" class="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700" href="{{ route('admin.dashboard') }}">Panel</a>
@@ -287,8 +287,8 @@
                         </div>
                     @endif
                 @else
-                    <a class="inline-flex items-center justify-center rounded-xl border border-violet-200 bg-white px-3.5 py-2 text-sm font-semibold text-violet-700 transition hover:border-violet-300 hover:text-violet-800 hover:shadow-sm" href="{{ route('member.login') }}">Giriş Yap</a>
-                    <a class="inline-flex items-center justify-center rounded-xl bg-violet-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700" href="{{ route('member.register') }}">Üye Ol</a>
+                    <a class="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-xl border border-violet-200 bg-white px-3 py-1.5 text-sm font-semibold text-violet-700 transition hover:border-violet-300 hover:text-violet-800 hover:shadow-sm xl:px-3.5 xl:py-2" href="{{ route('member.login') }}">Giriş Yap</a>
+                    <a class="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-xl bg-violet-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 xl:px-3.5 xl:py-2" href="{{ route('member.register') }}">Üye Ol</a>
                 @endauth
             </div>
             <button type="button" class="theme-switch-btn" data-theme-toggle aria-label="Temayı değiştir" title="Koyu / açık tema">
