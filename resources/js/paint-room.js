@@ -1,5 +1,5 @@
 /**
- * Görüntülü boyama odası — lobi + WebRTC P2P (ses/görüntü)
+ * Görüntülü boyama odası — lobi + WebRTC P2P (ses/görüntü) v3
  */
 (function () {
     const root = document.getElementById('paint-room-lobby');
@@ -11,6 +11,7 @@
     const leaveUrl = root.dataset.leaveUrl;
     const indexUrl = root.dataset.indexUrl;
     const role = root.dataset.role;
+    const guestToken = root.dataset.guestToken || '';
     const expiresAt = new Date(root.dataset.expiresAt);
     const csrf = root.dataset.csrf
         || document.querySelector('meta[name="csrf-token"]')?.content
@@ -29,7 +30,15 @@
     const ICE_SERVERS = [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
+        {
+            urls: [
+                'turn:openrelay.metered.ca:80',
+                'turn:openrelay.metered.ca:443',
+                'turns:openrelay.metered.ca:443',
+            ],
+            username: 'openrelayproject',
+            credential: 'openrelayproject',
+        },
     ];
 
     let participantCount = parseInt(countEl?.textContent || '1', 10);
@@ -42,13 +51,24 @@
     let guestWaitTimer = null;
     let micEnabled = true;
     let camEnabled = true;
+    let signalsReceived = 0;
     const iceQueue = [];
+
+    function authHeaders() {
+        const headers = {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        };
+        if (guestToken) headers['X-Paint-Room-Guest-Token'] = guestToken;
+        return headers;
+    }
 
     function setWebrtcStatus(msg) {
         if (webrtcStatus) webrtcStatus.textContent = msg;
     }
 
     function sdpPayload(desc) {
+        if (!desc?.type || !desc?.sdp) throw new Error('Geçersiz SDP');
         return { type: desc.type, sdp: desc.sdp };
     }
 
@@ -80,59 +100,54 @@
     }
 
     async function postSignal(type, payload) {
-        if (!csrf) {
-            throw new Error('Güvenlik jetonu bulunamadı — sayfayı yenileyin.');
-        }
+        if (!csrf) throw new Error('Güvenlik jetonu yok — sayfayı yenileyin (Ctrl+F5).');
 
         const res = await fetch(signalSendUrl, {
             method: 'POST',
             headers: {
+                ...authHeaders(),
                 'Content-Type': 'application/json',
-                Accept: 'application/json',
                 'X-CSRF-TOKEN': csrf,
-                'X-Requested-With': 'XMLHttpRequest',
             },
             credentials: 'same-origin',
+            cache: 'no-store',
             body: JSON.stringify({ type, payload }),
         });
 
-        if (res.status === 419) {
-            throw new Error('Oturum süresi doldu — sayfayı yenileyip tekrar deneyin.');
-        }
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || `Sinyal gönderilemedi (${res.status})`);
-        }
-
-        return res.json();
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 419) throw new Error('Oturum süresi doldu — sayfayı yenileyin.');
+        if (!res.ok) throw new Error(data.message || `Sinyal gönderilemedi (${res.status})`);
+        return data;
     }
 
     async function flushIceQueue() {
-        while (iceQueue.length && pc && pc.remoteDescription) {
+        while (iceQueue.length && pc?.remoteDescription) {
             const cand = iceQueue.shift();
             try {
                 await pc.addIceCandidate(new RTCIceCandidate(cand));
-            } catch (_) {
-                /* sonraki aday */
-            }
+            } catch (_) { /* devam */ }
         }
     }
 
     function attachRemoteStream(stream) {
         if (!remoteVideo || !stream) return;
         remoteVideo.srcObject = stream;
+        remoteVideo.muted = false;
         remoteVideo.play?.().catch(() => {});
     }
 
     function createPeerConnection() {
         if (pc) {
+            pc.onicecandidate = null;
+            pc.ontrack = null;
+            pc.onconnectionstatechange = null;
+            pc.oniceconnectionstatechange = null;
             pc.close();
             pc = null;
         }
         iceQueue.length = 0;
 
-        pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceCandidatePoolSize: 4 });
+        pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceCandidatePoolSize: 8 });
 
         pc.onicecandidate = (ev) => {
             if (ev.candidate) {
@@ -143,7 +158,7 @@
         pc.ontrack = (ev) => {
             const stream = ev.streams?.[0] || new MediaStream([ev.track]);
             attachRemoteStream(stream);
-            setWebrtcStatus('Görüntülü bağlantı kuruldu');
+            setWebrtcStatus('Karşı taraf görüntüsü alındı');
         };
 
         pc.onconnectionstatechange = () => {
@@ -151,19 +166,21 @@
             const st = pc.connectionState;
             if (st === 'connected') {
                 setWebrtcStatus('Bağlandı — ses ve görüntü aktif');
-                if (reconnectTimer) {
-                    clearInterval(reconnectTimer);
-                    reconnectTimer = null;
-                }
-                if (guestWaitTimer) {
-                    clearTimeout(guestWaitTimer);
-                    guestWaitTimer = null;
-                }
+                clearInterval(reconnectTimer);
+                reconnectTimer = null;
+                clearTimeout(guestWaitTimer);
+                guestWaitTimer = null;
             } else if (st === 'failed') {
-                setWebrtcStatus('Bağlantı kurulamadı — yeniden deneniyor…');
+                setWebrtcStatus('Bağlantı başarısız — yeniden deneniyor…');
                 scheduleReconnect();
-            } else if (st === 'disconnected') {
-                setWebrtcStatus('Bağlantı zayıf — yeniden deneniyor…');
+            }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            if (!pc) return;
+            if (pc.iceConnectionState === 'failed') {
+                setWebrtcStatus('Ağ bağlantısı başarısız — TURN ile yeniden deneniyor…');
+                scheduleReconnect();
             }
         };
 
@@ -173,20 +190,18 @@
     }
 
     async function applyRemoteDescription(payload) {
+        if (!payload?.type || !payload?.sdp) throw new Error('Boş SDP alındı');
         await pc.setRemoteDescription(new RTCSessionDescription(payload));
         await flushIceQueue();
     }
 
     async function handleSignal(signal) {
-        if (!pc && signal.type !== 'offer') {
-            return false;
-        }
+        if (!pc && signal.type !== 'offer') return false;
 
         if (signal.type === 'offer') {
             if (!localStream) throw new Error('not_ready');
-            if (!pc || pc.connectionState !== 'connected') {
-                createPeerConnection();
-            }
+            if (!pc) createPeerConnection();
+            else if (pc.currentRemoteDescription) createPeerConnection();
             await applyRemoteDescription(signal.payload);
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
@@ -204,7 +219,7 @@
 
         if (signal.type === 'ice') {
             if (!signal.payload?.candidate) return true;
-            if (!pc || !pc.remoteDescription) {
+            if (!pc?.remoteDescription) {
                 iceQueue.push(signal.payload);
                 return false;
             }
@@ -216,26 +231,36 @@
     }
 
     async function pollSignals() {
-        const res = await fetch(`${signalPollUrl}?after=${lastSignalId}`, {
-            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        const res = await fetch(signalPollUrl, {
+            method: 'POST',
+            headers: {
+                ...authHeaders(),
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+            },
             credentials: 'same-origin',
+            cache: 'no-store',
+            body: JSON.stringify({ after: lastSignalId }),
         });
 
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-            if (res.status === 403) setWebrtcStatus('Oturum hatası — sayfayı yenileyin');
+            setWebrtcStatus(data.error === 'unauthorized'
+                ? 'Kimlik doğrulama hatası — sayfayı yenileyin'
+                : `Sinyal alınamadı (${res.status})`);
             return;
         }
 
-        const data = await res.json();
         for (const sig of data.signals || []) {
             try {
                 const done = await handleSignal({ type: sig.type, payload: sig.payload });
                 if (done) {
                     lastSignalId = Math.max(lastSignalId, sig.id);
+                    signalsReceived += 1;
                 }
             } catch (err) {
                 if (err?.message === 'not_ready') continue;
-                setWebrtcStatus(err?.message || 'Sinyal işlenemedi, tekrar deneniyor…');
+                setWebrtcStatus(err?.message || 'Sinyal işlenemedi…');
             }
         }
     }
@@ -243,26 +268,20 @@
     function startSignalPolling() {
         if (signalPollTimer) return;
         pollSignals();
-        signalPollTimer = setInterval(pollSignals, 500);
+        signalPollTimer = setInterval(pollSignals, 400);
     }
 
     function stopSignalPolling() {
-        if (signalPollTimer) {
-            clearInterval(signalPollTimer);
-            signalPollTimer = null;
-        }
+        clearInterval(signalPollTimer);
+        signalPollTimer = null;
     }
 
     function teardownMedia() {
         stopSignalPolling();
-        if (reconnectTimer) {
-            clearInterval(reconnectTimer);
-            reconnectTimer = null;
-        }
-        if (guestWaitTimer) {
-            clearTimeout(guestWaitTimer);
-            guestWaitTimer = null;
-        }
+        clearInterval(reconnectTimer);
+        reconnectTimer = null;
+        clearTimeout(guestWaitTimer);
+        guestWaitTimer = null;
         if (pc) {
             pc.close();
             pc = null;
@@ -275,6 +294,7 @@
         if (remoteVideo) remoteVideo.srcObject = null;
         mediaStarted = false;
         lastSignalId = 0;
+        signalsReceived = 0;
         iceQueue.length = 0;
         resetMediaUi();
         setWebrtcStatus('Görüntülü bağlantı sonlandı');
@@ -282,11 +302,10 @@
 
     async function sendOffer() {
         if (!pc) return;
-        const offer = await pc.createOffer();
+        const offer = await pc.createOffer({ iceRestart: !!pc.currentRemoteDescription });
         await pc.setLocalDescription(offer);
-        const result = await postSignal('offer', sdpPayload(pc.localDescription));
-        setWebrtcStatus('Karşı taraf bekleniyor…');
-        return result;
+        await postSignal('offer', sdpPayload(pc.localDescription));
+        setWebrtcStatus('Teklif gönderildi — karşı taraf bekleniyor…');
     }
 
     function scheduleReconnect() {
@@ -295,26 +314,22 @@
             if (!pc || pc.connectionState === 'connected') return;
             try {
                 lastSignalId = 0;
-                iceQueue.length = 0;
                 createPeerConnection();
-                startSignalPolling();
                 await sendOffer();
-            } catch (_) {
-                /* sonraki tur */
-            }
-        }, 8000);
+            } catch (_) { /* devam */ }
+        }, 6000);
     }
 
     function scheduleGuestResync() {
         if (guestWaitTimer || role !== 'guest') return;
         guestWaitTimer = setTimeout(() => {
             guestWaitTimer = null;
-            if (!pc || pc.connectionState === 'connected') return;
+            if (pc?.connectionState === 'connected') return;
             lastSignalId = 0;
             iceQueue.length = 0;
             pollSignals();
             scheduleGuestResync();
-        }, 10000);
+        }, 8000);
     }
 
     async function startVideoChat() {
@@ -330,7 +345,7 @@
             });
             if (localVideo) {
                 localVideo.srcObject = localStream;
-                localVideo.play?.().catch(() => {});
+                await localVideo.play?.().catch(() => {});
             }
             if (toggleMicBtn) toggleMicBtn.classList.remove('hidden');
             if (toggleCamBtn) toggleCamBtn.classList.remove('hidden');
@@ -339,12 +354,11 @@
             startSignalPolling();
 
             if (role === 'owner') {
-                setWebrtcStatus('Medya hazır — karşı tarafa bağlanılıyor…');
-                await new Promise((r) => setTimeout(r, 1200));
+                await new Promise((r) => setTimeout(r, 800));
                 await sendOffer();
                 scheduleReconnect();
             } else {
-                setWebrtcStatus('Oda sahibine bağlanılıyor…');
+                setWebrtcStatus('Oda sahibinden teklif bekleniyor…');
                 scheduleGuestResync();
             }
         } catch (err) {
@@ -352,16 +366,17 @@
             resetMediaUi();
             const denied = err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError';
             setWebrtcStatus(denied
-                ? 'Kamera/mikrofon izni reddedildi. Tarayıcı ayarlarından izin verin.'
-                : (err?.message || 'Bağlantı kurulamadı. Sayfayı yenileyip tekrar deneyin.'));
+                ? 'Kamera/mikrofon izni reddedildi.'
+                : (err?.message || 'Bağlantı kurulamadı — Ctrl+F5 ile yenileyin.'));
         }
     }
 
     async function pollStatus() {
         try {
             const res = await fetch(statusUrl, {
-                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                headers: authHeaders(),
                 credentials: 'same-origin',
+                cache: 'no-store',
             });
             const data = await res.json();
             if (!data.open) {
@@ -373,12 +388,9 @@
             participantCount = data.participants;
             if (countEl) countEl.textContent = String(participantCount);
             if (statusText) statusText.textContent = data.message;
-
             if (participantCount < 2 && prev >= 2) teardownMedia();
             if (participantCount >= 2 && !mediaStarted) startVideoChat();
-        } catch (_) {
-            /* sessiz */
-        }
+        } catch (_) { /* sessiz */ }
     }
 
     function sendLeaveBeacon() {
@@ -422,6 +434,5 @@
     setInterval(updateTimer, 1000);
     pollStatus();
     setInterval(pollStatus, 2000);
-
-    if (participantCount >= 2) setTimeout(startVideoChat, 600);
+    if (participantCount >= 2) setTimeout(startVideoChat, 400);
 })();

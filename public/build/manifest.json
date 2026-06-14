@@ -1,0 +1,86 @@
+{
+  "_online-experiment-trace-core-C-HW9qUY.js": {
+    "file": "assets/online-experiment-trace-core-C-HW9qUY.js",
+    "name": "online-experiment-trace-core"
+  },
+  "_trace-font-builder-DupW6srg.js": {
+    "file": "assets/trace-font-builder-DupW6srg.js",
+    "name": "trace-font-builder"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-DzbUuaNG.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-BdKX2mS3.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/online-experiment-color-mix.js": {
+    "file": "assets/online-experiment-color-mix-Tw0oWPNQ.js",
+    "name": "online-experiment-color-mix",
+    "src": "resources/js/online-experiment-color-mix.js",
+    "isEntry": true
+  },
+  "resources/js/online-experiment-color-wheel.js": {
+    "file": "assets/online-experiment-color-wheel-DHGKJjG8.js",
+    "name": "online-experiment-color-wheel",
+    "src": "resources/js/online-experiment-color-wheel.js",
+    "isEntry": true
+  },
+  "resources/js/online-experiment-letter-trace.js": {
+    "file": "assets/online-experiment-letter-trace-BZnY-PgI.js",
+    "name": "online-experiment-letter-trace",
+    "src": "resources/js/online-experiment-letter-trace.js",
+    "isEntry": true,
+    "imports": [
+      "_online-experiment-trace-core-C-HW9qUY.js",
+      "_trace-font-builder-DupW6srg.js"
+    ]
+  },
+  "resources/js/online-experiment-line-trace.js": {
+    "file": "assets/online-experiment-line-trace-C_4ZaAWW.js",
+    "name": "online-experiment-line-trace",
+    "src": "resources/js/online-experiment-line-trace.js",
+    "isEntry": true,
+    "imports": [
+      "_online-experiment-trace-core-C-HW9qUY.js"
+    ]
+  },
+  "resources/js/online-experiment-number-trace.js": {
+    "file": "assets/online-experiment-number-trace-C00r1Lm0.js",
+    "name": "online-experiment-number-trace",
+    "src": "resources/js/online-experiment-number-trace.js",
+    "isEntry": true,
+    "imports": [
+      "_online-experiment-trace-core-C-HW9qUY.js",
+      "_trace-font-builder-DupW6srg.js"
+    ]
+  },
+  "resources/js/online-experiment-warm-cool.js": {
+    "file": "assets/online-experiment-warm-cool-DbVSGcuB.js",
+    "name": "online-experiment-warm-cool",
+    "src": "resources/js/online-experiment-warm-cool.js",
+    "isEntry": true
+  },
+  "resources/js/online-experiment.js": {
+    "file": "assets/online-experiment-DNlnOR9o.js",
+    "name": "online-experiment",
+    "src": "resources/js/online-experiment.js",
+    "isEntry": true
+  },
+  "resources/js/online-paint.js": {
+    "file": "assets/online-paint-DWlhhzZy.js",
+    "name": "online-paint",
+    "src": "resources/js/online-paint.js",
+    "isEntry": true
+  },
+  "resources/js/paint-room.js": {
+    "file": "assets/paint-room-DYQDPcX6.js",
+    "name": "paint-room",
+    "src": "resources/js/paint-room.js",
+    "isEntry": true
+  }
+}

@@ -11,13 +11,14 @@
     class="mx-auto max-w-4xl"
     id="paint-room-lobby"
     data-status-url="{{ route('paint-room.status', $room) }}"
-    data-signal-poll-url="{{ route('paint-room.signals.poll', $room) }}"
+    data-signal-poll-url="{{ route('paint-room.signals.poll.post', $room) }}"
     data-signal-send-url="{{ route('paint-room.signals.send', $room) }}"
     data-leave-url="{{ route('paint-room.leave', $room) }}"
     data-index-url="{{ route('paint-room.index') }}"
     data-role="{{ $role }}"
     data-expires-at="{{ $expiresAtIso }}"
     data-csrf="{{ csrf_token() }}"
+    data-guest-token="{{ $guestAccessToken }}"
 >
     <div class="card overflow-hidden p-0">
         <div class="border-b border-violet-100 bg-gradient-to-r from-violet-50 to-teal-50 px-6 py-5 md:px-8">
