@@ -250,9 +250,10 @@
         <div class="paint-room-pip__head">
             <span class="paint-room-pip__title">Görüntülü</span>
             <p class="paint-room-pip__status" id="paint-room-webrtc-status">Bağlanıyor…</p>
+            <button type="button" id="paint-room-pip-expand" class="paint-room-pip__collapse" title="Büyüt/küçült">⤢</button>
             <button type="button" id="paint-room-pip-toggle" class="paint-room-pip__collapse" title="Gizle/göster">−</button>
         </div>
-        <p class="hidden px-2 font-mono text-[9px] text-slate-400" id="paint-room-debug"></p>
+        <p class="px-2 py-1 font-mono text-[9px] leading-relaxed text-slate-400" id="paint-room-debug"></p>
         <div class="paint-room-pip__videos">
             <div class="paint-room-pip__tile">
                 <video id="paint-room-local" class="paint-room-pip__video" autoplay playsinline muted></video>

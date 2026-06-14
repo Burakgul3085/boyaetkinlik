@@ -59,8 +59,25 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     let canvasSaveTimer = null;
     let micEnabled = true;
     let camEnabled = true;
+    let reconnectAttempts = 0;
     const iceQueue = [];
     const processedSignals = new Set();
+
+    function isConnected() {
+        return pc?.connectionState === 'connected'
+            || pc?.iceConnectionState === 'connected'
+            || pc?.iceConnectionState === 'completed';
+    }
+
+    function canAcceptAnswer() {
+        return pc?.signalingState === 'have-local-offer';
+    }
+
+    function canAcceptOffer() {
+        if (!pc) return true;
+        if (isConnected()) return false;
+        return pc.signalingState === 'stable';
+    }
 
     function authHeaders() {
         const headers = {
@@ -173,8 +190,11 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     function attachRemoteVideoTrack(track) {
         if (!remoteVideo || !track) return;
         if (!remoteStream) remoteStream = new MediaStream();
-        remoteStream.getVideoTracks().forEach((t) => remoteStream.removeTrack(t));
-        remoteStream.addTrack(track);
+        const existing = remoteStream.getVideoTracks().find((t) => t.id === track.id);
+        if (!existing) {
+            remoteStream.getVideoTracks().forEach((t) => remoteStream.removeTrack(t));
+            remoteStream.addTrack(track);
+        }
         track.enabled = true;
         remoteVideo.srcObject = remoteStream;
         remoteVideo.muted = true;
@@ -185,8 +205,11 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     function attachRemoteAudioTrack(track) {
         if (!remoteAudio || !track) return;
         if (!remoteAudioStream) remoteAudioStream = new MediaStream();
-        remoteAudioStream.getAudioTracks().forEach((t) => remoteAudioStream.removeTrack(t));
-        remoteAudioStream.addTrack(track);
+        const existing = remoteAudioStream.getAudioTracks().find((t) => t.id === track.id);
+        if (!existing) {
+            remoteAudioStream.getAudioTracks().forEach((t) => remoteAudioStream.removeTrack(t));
+            remoteAudioStream.addTrack(track);
+        }
         track.enabled = true;
         remoteAudio.srcObject = remoteAudioStream;
         playRemoteAudio();
@@ -199,18 +222,33 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         stream.getAudioTracks().forEach((t) => attachRemoteAudioTrack(t));
     }
 
+    let canvasSyncTimer = null;
+
+    function startCanvasSyncFallback() {
+        if (canvasSyncTimer) return;
+        canvasSyncTimer = setInterval(() => {
+            if (participantCount >= 2 && paintDc?.readyState !== 'open' && canvasApi?.isReady()) {
+                loadCanvasFromServer();
+            }
+        }, 2500);
+    }
+
     function sendPaint(msg) {
         if (paintDc?.readyState === 'open') {
             paintDc.send(JSON.stringify(msg));
         }
     }
 
+    function requestPaintSync() {
+        if (paintDc?.readyState === 'open' && role === 'guest') {
+            paintDc.send(JSON.stringify({ t: 'sync-req' }));
+        }
+    }
+
     function wirePaintDc(dc) {
         dc.onopen = () => {
             setDebug('boyama kanalı açık');
-            if (role === 'guest') {
-                dc.send(JSON.stringify({ t: 'sync-req' }));
-            }
+            requestPaintSync();
             if (canvasApi?.isReady()) {
                 loadCanvasFromServer();
             }
@@ -314,38 +352,46 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         };
 
         pc.ontrack = (ev) => {
-            const track = ev.track;
-            if (!track) return;
-            track.enabled = true;
-
-            if (track.kind === 'audio') {
-                attachRemoteAudioTrack(track);
-            } else if (track.kind === 'video') {
-                attachRemoteVideoTrack(track);
+            const stream = ev.streams?.[0];
+            if (stream) {
+                attachRemoteStream(stream);
+            } else if (ev.track) {
+                if (ev.track.kind === 'audio') {
+                    attachRemoteAudioTrack(ev.track);
+                } else if (ev.track.kind === 'video') {
+                    attachRemoteVideoTrack(ev.track);
+                }
             }
 
             setWebrtcStatus('Karşı taraf bağlandı');
-            setDebug(`track: ${track.kind}`);
+            setDebug(`track: ${ev.track?.kind || 'stream'}`);
         };
 
         pc.onconnectionstatechange = () => {
             if (!pc) return;
             setDebug();
             if (pc.connectionState === 'connected') {
+                reconnectAttempts = 0;
                 setWebrtcStatus('Bağlandı — ses ve görüntü aktif');
                 playRemoteAudio();
                 clearInterval(reconnectTimer);
                 reconnectTimer = null;
-            } else if (pc.connectionState === 'failed') {
-                setWebrtcStatus('Bağlantı başarısız — yeniden deneniyor…');
+                requestPaintSync();
+            } else if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+                setWebrtcStatus('Bağlantı koptu — yeniden deneniyor…');
                 scheduleReconnect();
             }
         };
 
         pc.oniceconnectionstatechange = () => {
             if (!pc) return;
-            setDebug(`ice durumu: ${pc.iceConnectionState}`);
-            if (pc.iceConnectionState === 'failed') scheduleReconnect();
+            setDebug(`ice: ${pc.iceConnectionState}`);
+            if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+                playRemoteAudio();
+                requestPaintSync();
+            } else if (pc.iceConnectionState === 'failed') {
+                scheduleReconnect();
+            }
         };
 
         if (localStream) {
@@ -355,32 +401,46 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
     async function applyRemoteDescription(payload) {
         if (!payload?.type || !payload?.sdp) throw new Error('Boş SDP');
-        if (pc.signalingState === 'stable' && pc.currentRemoteDescription) {
-            createPeerConnection();
-        }
-        await pc.setRemoteDescription(new RTCSessionDescription(payload));
-        await flushIceQueue();
-    }
+        const desc = new RTCSessionDescription(payload);
 
-    async function ensureCallReady() {
-        if (!localMediaReady || participantCount < 2) return false;
-        if (!callActive) {
-            callActive = true;
-            createPeerConnection();
-            startSignalPolling();
-        } else if (!pc) {
-            createPeerConnection();
+        if (desc.type === 'answer') {
+            if (!canAcceptAnswer()) {
+                setDebug(`answer atlandı: ${pc?.signalingState}`);
+                return;
+            }
         }
-        return true;
+
+        if (desc.type === 'offer') {
+            if (!canAcceptOffer()) {
+                setDebug(`offer atlandı: ${pc?.signalingState}/${pc?.connectionState}`);
+                return;
+            }
+            if (pc.signalingState === 'have-local-offer') {
+                createPeerConnection();
+            }
+        }
+
+        await pc.setRemoteDescription(desc);
+        await flushIceQueue();
     }
 
     async function handleSignal(signal, signalId) {
         if (processedSignals.has(signalId)) return true;
-        if (!pc && signal.type !== 'offer') return false;
 
         if (signal.type === 'offer') {
+            if (role !== 'guest') {
+                processedSignals.add(signalId);
+                return true;
+            }
             if (!localStream) throw new Error('not_ready');
             await ensureCallReady();
+            if (!canAcceptOffer()) {
+                if (isConnected()) {
+                    processedSignals.add(signalId);
+                    return true;
+                }
+                createPeerConnection();
+            }
             if (!pc) createPeerConnection();
             await applyRemoteDescription(signal.payload);
             const answer = await pc.createAnswer();
@@ -392,8 +452,17 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         }
 
         if (signal.type === 'answer') {
+            if (role !== 'owner') {
+                processedSignals.add(signalId);
+                return true;
+            }
             if (!pc) await ensureCallReady();
             if (!pc) throw new Error('no_pc');
+            if (!canAcceptAnswer()) {
+                processedSignals.add(signalId);
+                setDebug(`eski answer atlandı: ${pc.signalingState}`);
+                return true;
+            }
             await applyRemoteDescription(signal.payload);
             processedSignals.add(signalId);
             setWebrtcStatus('Karşı taraf yanıt verdi — bağlanılıyor…');
@@ -401,19 +470,35 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         }
 
         if (signal.type === 'ice') {
+            if (!pc) return false;
             if (!signal.payload?.candidate) {
                 processedSignals.add(signalId);
                 return true;
             }
-            if (!pc?.remoteDescription) {
+            if (!pc.remoteDescription) {
                 iceQueue.push(signal.payload);
                 return false;
             }
-            await pc.addIceCandidate(new RTCIceCandidate(signal.payload));
+            try {
+                await pc.addIceCandidate(new RTCIceCandidate(signal.payload));
+            } catch (_) { /* eski aday */ }
             processedSignals.add(signalId);
             return true;
         }
 
+        processedSignals.add(signalId);
+        return true;
+    }
+
+    async function ensureCallReady() {
+        if (!localMediaReady || participantCount < 2) return false;
+        if (!callActive) {
+            callActive = true;
+            createPeerConnection();
+            startSignalPolling();
+        } else if (!pc) {
+            createPeerConnection();
+        }
         return true;
     }
 
@@ -474,7 +559,7 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
     function teardownCall() {
         stopSignalPolling();
-        clearInterval(reconnectTimer);
+        clearTimeout(reconnectTimer);
         reconnectTimer = null;
         if (pc) {
             pc.close();
@@ -490,6 +575,7 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         lastSignalId = 0;
         iceQueue.length = 0;
         processedSignals.clear();
+        reconnectAttempts = 0;
     }
 
     function teardownAll() {
@@ -506,26 +592,41 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     }
 
     async function sendOffer() {
-        if (!pc) return;
-        const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+        if (!pc || role !== 'owner') return;
+        if (pc.localDescription?.type === 'offer') return;
+        if (pc.signalingState !== 'stable') return;
+
+        const offer = await pc.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true,
+            iceRestart: reconnectAttempts > 0,
+        });
         await pc.setLocalDescription(offer);
         await postSignal('offer', sdpPayload(pc.localDescription));
         setWebrtcStatus('Teklif gönderildi — karşı taraf bekleniyor…');
     }
 
     function scheduleReconnect() {
-        if (reconnectTimer || role !== 'owner' || !callActive) return;
-        reconnectTimer = setInterval(async () => {
-            if (pc?.connectionState === 'connected') return;
+        if (reconnectTimer || role !== 'owner' || !callActive || isConnected()) return;
+        if (reconnectAttempts >= 6) {
+            setWebrtcStatus('Bağlantı kurulamadı — sayfayı yenileyin');
+            return;
+        }
+
+        reconnectTimer = setTimeout(async () => {
+            reconnectTimer = null;
+            if (isConnected()) return;
+
+            reconnectAttempts += 1;
             try {
-                lastSignalId = 0;
                 processedSignals.clear();
                 createPeerConnection();
                 await sendOffer();
             } catch (e) {
                 setDebug(`yeniden: ${e.message}`);
+                scheduleReconnect();
             }
-        }, 5000);
+        }, 3000 + reconnectAttempts * 1000);
     }
 
     async function startCall() {
@@ -535,10 +636,9 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         startSignalPolling();
 
         if (role === 'owner') {
-            await new Promise((r) => setTimeout(r, 500));
+            await new Promise((r) => setTimeout(r, 800));
             try {
                 await sendOffer();
-                scheduleReconnect();
             } catch (err) {
                 setWebrtcStatus(err?.message || 'Bağlantı başlatılamadı');
                 callActive = false;
@@ -663,9 +763,13 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
     const pipEl = document.getElementById('paint-room-pip');
     const pipToggle = document.getElementById('paint-room-pip-toggle');
+    const pipExpand = document.getElementById('paint-room-pip-expand');
     pipToggle?.addEventListener('click', () => {
         pipEl?.classList.toggle('paint-room-pip--collapsed');
         pipToggle.textContent = pipEl?.classList.contains('paint-room-pip--collapsed') ? '+' : '−';
+    });
+    pipExpand?.addEventListener('click', () => {
+        pipEl?.classList.toggle('paint-room-pip--expanded');
     });
 
     const infoPanel = document.getElementById('paint-room-info-panel');
@@ -708,5 +812,6 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
             scheduleCanvasSave();
         },
     });
+    startCanvasSyncFallback();
     initLocalMedia();
 })();
