@@ -42,4 +42,10 @@ return [
         'endpoint' => env('SHOPIER_ENDPOINT', 'https://www.shopier.com/ShowProduct/api_pay4.php'),
     ],
 
+    'webrtc' => [
+        'turn_urls' => array_values(array_filter(array_map('trim', explode(',', (string) env('WEBRTC_TURN_URLS', 'turn:openrelay.metered.ca:80,turn:openrelay.metered.ca:443,turns:openrelay.metered.ca:443'))))),
+        'turn_username' => env('WEBRTC_TURN_USERNAME', 'openrelayproject'),
+        'turn_credential' => env('WEBRTC_TURN_CREDENTIAL', 'openrelayproject'),
+    ],
+
 ];

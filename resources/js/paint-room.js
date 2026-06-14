@@ -1,5 +1,5 @@
 /**
- * Görüntülü boyama odası — WebRTC P2P (ses + görüntü)
+ * Görüntülü boyama odası — WebRTC P2P v4
  */
 (function () {
     const root = document.getElementById('paint-room-lobby');
@@ -8,6 +8,7 @@
     const statusUrl = root.dataset.statusUrl;
     const signalPollUrl = root.dataset.signalPollUrl;
     const signalSendUrl = root.dataset.signalSendUrl;
+    const healthUrl = root.dataset.healthUrl;
     const leaveUrl = root.dataset.leaveUrl;
     const indexUrl = root.dataset.indexUrl;
     const role = root.dataset.role;
@@ -17,49 +18,44 @@
         || document.querySelector('meta[name="csrf-token"]')?.content
         || '';
 
+    let ICE_SERVERS = [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+    ];
+    try {
+        const parsed = JSON.parse(root.dataset.iceServers || '[]');
+        if (Array.isArray(parsed) && parsed.length) ICE_SERVERS = parsed;
+    } catch (_) { /* varsayılan */ }
+
     const countEl = document.getElementById('paint-room-count');
     const statusText = document.getElementById('paint-room-status-text');
     const timerEl = document.getElementById('paint-room-timer');
     const webrtcStatus = document.getElementById('paint-room-webrtc-status');
+    const debugEl = document.getElementById('paint-room-debug');
     const localVideo = document.getElementById('paint-room-local');
     const remoteVideo = document.getElementById('paint-room-remote');
     const toggleMicBtn = document.getElementById('paint-room-toggle-mic');
     const toggleCamBtn = document.getElementById('paint-room-toggle-cam');
 
-    const ICE_SERVERS = [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        {
-            urls: [
-                'turn:openrelay.metered.ca:80',
-                'turn:openrelay.metered.ca:443',
-                'turns:openrelay.metered.ca:443',
-            ],
-            username: 'openrelayproject',
-            credential: 'openrelayproject',
-        },
-    ];
-
     let participantCount = parseInt(countEl?.textContent || '1', 10);
     let pc = null;
     let localStream = null;
+    let remoteStream = null;
     let lastSignalId = 0;
     let localMediaReady = false;
     let callActive = false;
     let signalPollTimer = null;
     let reconnectTimer = null;
-    let guestWaitTimer = null;
     let micEnabled = true;
     let camEnabled = true;
     const iceQueue = [];
+    const processedSignals = new Set();
 
-    function authHeaders(json = false) {
+    function authHeaders() {
         const headers = {
             Accept: 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
         };
-        if (json) headers['Content-Type'] = 'application/json';
-        if (csrf) headers['X-CSRF-TOKEN'] = csrf;
         if (guestToken) headers['X-Paint-Room-Guest-Token'] = guestToken;
         return headers;
     }
@@ -68,14 +64,23 @@
         if (webrtcStatus) webrtcStatus.textContent = msg;
     }
 
+    function setDebug(extra) {
+        if (!debugEl) return;
+        debugEl.classList.remove('hidden');
+        const pcState = pc?.connectionState || '-';
+        const iceState = pc?.iceConnectionState || '-';
+        const base = `rol=${role} | kişi=${participantCount} | pc=${pcState} | ice=${iceState} | sinyal=${lastSignalId}`;
+        debugEl.textContent = extra ? `${base} | ${extra}` : base;
+    }
+
     function sdpPayload(desc) {
-        if (!desc?.type || !desc?.sdp) throw new Error('Geçersiz bağlantı verisi');
+        if (!desc?.type || !desc?.sdp) throw new Error('Geçersiz SDP');
         return { type: desc.type, sdp: desc.sdp };
     }
 
     function showMediaControls() {
-        if (toggleMicBtn) toggleMicBtn.classList.remove('hidden');
-        if (toggleCamBtn) toggleCamBtn.classList.remove('hidden');
+        toggleMicBtn?.classList.remove('hidden');
+        toggleCamBtn?.classList.remove('hidden');
     }
 
     document.querySelectorAll('[data-copy-target]').forEach((btn) => {
@@ -100,19 +105,25 @@
     }
 
     async function postSignal(type, payload) {
-        if (!csrf) throw new Error('Sayfayı yenileyin (Ctrl+F5).');
+        if (!csrf) throw new Error('Sayfayı Ctrl+F5 ile yenileyin.');
+
+        const body = new FormData();
+        body.append('_token', csrf);
+        body.append('type', type);
+        body.append('payload', JSON.stringify(payload));
 
         const res = await fetch(signalSendUrl, {
             method: 'POST',
-            headers: authHeaders(true),
+            headers: authHeaders(),
             credentials: 'same-origin',
             cache: 'no-store',
-            body: JSON.stringify({ type, payload }),
+            body,
         });
 
         const data = await res.json().catch(() => ({}));
         if (res.status === 419) throw new Error('Oturum süresi doldu — sayfayı yenileyin.');
-        if (!res.ok) throw new Error(data.message || `Sinyal hatası (${res.status})`);
+        if (!res.ok) throw new Error(data.message || `Gönderim hatası ${res.status}`);
+        setDebug(`gönderildi: ${type} #${data.id || '?'}`);
         return data;
     }
 
@@ -129,7 +140,16 @@
         if (!remoteVideo || !stream) return;
         remoteVideo.srcObject = stream;
         remoteVideo.muted = false;
-        remoteVideo.play?.().catch(() => {});
+        remoteVideo.volume = 1;
+        remoteVideo.play?.().catch(() => {
+            remoteVideo.muted = true;
+            remoteVideo.play?.().catch(() => {});
+        });
+    }
+
+    function ensureRemoteStream() {
+        if (!remoteStream) remoteStream = new MediaStream();
+        return remoteStream;
     }
 
     function createPeerConnection() {
@@ -137,38 +157,55 @@
             pc.onicecandidate = null;
             pc.ontrack = null;
             pc.onconnectionstatechange = null;
+            pc.oniceconnectionstatechange = null;
             pc.close();
             pc = null;
         }
         iceQueue.length = 0;
+        remoteStream = null;
 
-        pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceCandidatePoolSize: 8 });
+        pc = new RTCPeerConnection({
+            iceServers: ICE_SERVERS,
+            iceCandidatePoolSize: 10,
+            bundlePolicy: 'max-bundle',
+        });
 
         pc.onicecandidate = (ev) => {
             if (ev.candidate) {
-                postSignal('ice', ev.candidate.toJSON()).catch(() => {});
+                postSignal('ice', ev.candidate.toJSON()).catch((e) => setDebug(`ice hata: ${e.message}`));
             }
         };
 
         pc.ontrack = (ev) => {
-            const stream = ev.streams?.[0] || new MediaStream([ev.track]);
+            const stream = ensureRemoteStream();
+            ev.streams?.[0]?.getTracks().forEach((t) => {
+                if (!stream.getTracks().some((x) => x.id === t.id)) stream.addTrack(t);
+            });
+            if (!ev.streams?.[0] && ev.track) {
+                if (!stream.getTracks().some((x) => x.id === ev.track.id)) stream.addTrack(ev.track);
+            }
             attachRemoteStream(stream);
-            setWebrtcStatus('Karşı tarafın görüntüsü geldi');
+            setWebrtcStatus('Karşı taraf görüntüsü alındı');
+            setDebug('uzak track alındı');
         };
 
         pc.onconnectionstatechange = () => {
             if (!pc) return;
-            const st = pc.connectionState;
-            if (st === 'connected') {
+            setDebug();
+            if (pc.connectionState === 'connected') {
                 setWebrtcStatus('Bağlandı — ses ve görüntü aktif');
                 clearInterval(reconnectTimer);
                 reconnectTimer = null;
-                clearTimeout(guestWaitTimer);
-                guestWaitTimer = null;
-            } else if (st === 'failed') {
-                setWebrtcStatus('Bağlantı kurulamadı — yeniden deneniyor…');
+            } else if (pc.connectionState === 'failed') {
+                setWebrtcStatus('Bağlantı başarısız — yeniden deneniyor…');
                 scheduleReconnect();
             }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            if (!pc) return;
+            setDebug(`ice durumu: ${pc.iceConnectionState}`);
+            if (pc.iceConnectionState === 'failed') scheduleReconnect();
         };
 
         if (localStream) {
@@ -177,40 +214,63 @@
     }
 
     async function applyRemoteDescription(payload) {
-        if (!payload?.type || !payload?.sdp) throw new Error('Boş bağlantı verisi');
+        if (!payload?.type || !payload?.sdp) throw new Error('Boş SDP');
+        if (pc.signalingState === 'stable' && pc.currentRemoteDescription) {
+            createPeerConnection();
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(payload));
         await flushIceQueue();
     }
 
-    async function handleSignal(signal) {
+    async function ensureCallReady() {
+        if (!localMediaReady || participantCount < 2) return false;
+        if (!callActive) {
+            callActive = true;
+            createPeerConnection();
+            startSignalPolling();
+        } else if (!pc) {
+            createPeerConnection();
+        }
+        return true;
+    }
+
+    async function handleSignal(signal, signalId) {
+        if (processedSignals.has(signalId)) return true;
         if (!pc && signal.type !== 'offer') return false;
 
         if (signal.type === 'offer') {
             if (!localStream) throw new Error('not_ready');
+            await ensureCallReady();
             if (!pc) createPeerConnection();
-            else if (pc.currentRemoteDescription) createPeerConnection();
             await applyRemoteDescription(signal.payload);
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             await postSignal('answer', sdpPayload(pc.localDescription));
+            processedSignals.add(signalId);
             setWebrtcStatus('Yanıt gönderildi — bağlanılıyor…');
             return true;
         }
 
         if (signal.type === 'answer') {
+            if (!pc) await ensureCallReady();
             if (!pc) throw new Error('no_pc');
             await applyRemoteDescription(signal.payload);
+            processedSignals.add(signalId);
             setWebrtcStatus('Karşı taraf yanıt verdi — bağlanılıyor…');
             return true;
         }
 
         if (signal.type === 'ice') {
-            if (!signal.payload?.candidate) return true;
+            if (!signal.payload?.candidate) {
+                processedSignals.add(signalId);
+                return true;
+            }
             if (!pc?.remoteDescription) {
                 iceQueue.push(signal.payload);
                 return false;
             }
             await pc.addIceCandidate(new RTCIceCandidate(signal.payload));
+            processedSignals.add(signalId);
             return true;
         }
 
@@ -218,29 +278,45 @@
     }
 
     async function pollSignals() {
+        if (!csrf) return;
+
+        const body = new FormData();
+        body.append('_token', csrf);
+        body.append('after', String(lastSignalId));
+
         const res = await fetch(signalPollUrl, {
             method: 'POST',
-            headers: authHeaders(true),
+            headers: authHeaders(),
             credentials: 'same-origin',
             cache: 'no-store',
-            body: JSON.stringify({ after: lastSignalId }),
+            body,
         });
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-            setWebrtcStatus(res.status === 403
-                ? 'Kimlik doğrulama hatası — sayfayı yenileyin'
-                : `Sinyal alınamadı (${res.status})`);
+            const msg = res.status === 403
+                ? 'Kimlik hatası — sayfayı yenileyin'
+                : `Sinyal alınamadı (${res.status})`;
+            setWebrtcStatus(msg);
+            setDebug(msg);
             return;
+        }
+
+        if ((data.signals || []).length) {
+            setDebug(`gelen: ${data.signals.length} sinyal`);
         }
 
         for (const sig of data.signals || []) {
             try {
-                const done = await handleSignal({ type: sig.type, payload: sig.payload });
+                const done = await handleSignal(
+                    { type: sig.type, payload: sig.payload },
+                    sig.id,
+                );
                 if (done) lastSignalId = Math.max(lastSignalId, sig.id);
             } catch (err) {
                 if (err?.message === 'not_ready') continue;
-                setWebrtcStatus(err?.message || 'Sinyal işlenemedi…');
+                setWebrtcStatus(err?.message || 'Sinyal hatası');
+                setDebug(err?.message || 'sinyal hatası');
             }
         }
     }
@@ -248,7 +324,7 @@
     function startSignalPolling() {
         if (signalPollTimer) return;
         pollSignals();
-        signalPollTimer = setInterval(pollSignals, 400);
+        signalPollTimer = setInterval(pollSignals, 350);
     }
 
     function stopSignalPolling() {
@@ -260,16 +336,16 @@
         stopSignalPolling();
         clearInterval(reconnectTimer);
         reconnectTimer = null;
-        clearTimeout(guestWaitTimer);
-        guestWaitTimer = null;
         if (pc) {
             pc.close();
             pc = null;
         }
         if (remoteVideo) remoteVideo.srcObject = null;
+        remoteStream = null;
         callActive = false;
         lastSignalId = 0;
         iceQueue.length = 0;
+        processedSignals.clear();
     }
 
     function teardownAll() {
@@ -280,14 +356,14 @@
         }
         if (localVideo) localVideo.srcObject = null;
         localMediaReady = false;
-        if (toggleMicBtn) toggleMicBtn.classList.add('hidden');
-        if (toggleCamBtn) toggleCamBtn.classList.add('hidden');
-        setWebrtcStatus('Görüntülü bağlantı sonlandı');
+        toggleMicBtn?.classList.add('hidden');
+        toggleCamBtn?.classList.add('hidden');
+        setWebrtcStatus('Bağlantı sonlandı');
     }
 
     async function sendOffer() {
         if (!pc) return;
-        const offer = await pc.createOffer();
+        const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
         await pc.setLocalDescription(offer);
         await postSignal('offer', sdpPayload(pc.localDescription));
         setWebrtcStatus('Teklif gönderildi — karşı taraf bekleniyor…');
@@ -296,25 +372,36 @@
     function scheduleReconnect() {
         if (reconnectTimer || role !== 'owner' || !callActive) return;
         reconnectTimer = setInterval(async () => {
-            if (!pc || pc.connectionState === 'connected') return;
+            if (pc?.connectionState === 'connected') return;
             try {
                 lastSignalId = 0;
+                processedSignals.clear();
                 createPeerConnection();
                 await sendOffer();
-            } catch (_) { /* devam */ }
-        }, 6000);
+            } catch (e) {
+                setDebug(`yeniden: ${e.message}`);
+            }
+        }, 5000);
     }
 
-    function scheduleGuestResync() {
-        if (guestWaitTimer || role !== 'guest' || !callActive) return;
-        guestWaitTimer = setTimeout(() => {
-            guestWaitTimer = null;
-            if (pc?.connectionState === 'connected') return;
-            lastSignalId = 0;
-            iceQueue.length = 0;
-            pollSignals();
-            scheduleGuestResync();
-        }, 8000);
+    async function startCall() {
+        if (callActive || !localMediaReady || participantCount < 2) return;
+        callActive = true;
+        createPeerConnection();
+        startSignalPolling();
+
+        if (role === 'owner') {
+            await new Promise((r) => setTimeout(r, 500));
+            try {
+                await sendOffer();
+                scheduleReconnect();
+            } catch (err) {
+                setWebrtcStatus(err?.message || 'Bağlantı başlatılamadı');
+                callActive = false;
+            }
+        } else {
+            setWebrtcStatus('Oda sahibinden teklif bekleniyor…');
+        }
     }
 
     async function initLocalMedia() {
@@ -332,42 +419,44 @@
             }
             localMediaReady = true;
             showMediaControls();
+            setDebug('kamera hazır');
 
             if (participantCount >= 2) {
-                setWebrtcStatus('Kamera hazır — bağlantı kuruluyor…');
                 await startCall();
-            } else if (role === 'owner') {
-                setWebrtcStatus('Kamera hazır — misafir bekleniyor…');
             } else {
-                setWebrtcStatus('Kamera hazır — oda sahibine bağlanılıyor…');
+                setWebrtcStatus('Kamera hazır — misafir bekleniyor…');
             }
         } catch (err) {
             const denied = err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError';
             setWebrtcStatus(denied
-                ? 'Kamera/mikrofon izni reddedildi — tarayıcı ayarlarından izin verin.'
+                ? 'Kamera/mikrofon izni reddedildi.'
                 : (err?.message || 'Kamera açılamadı.'));
+            setDebug(err?.message || 'medya hatası');
         }
     }
 
-    async function startCall() {
-        if (callActive || !localMediaReady || participantCount < 2) return;
-        callActive = true;
-
-        createPeerConnection();
-        startSignalPolling();
-
-        if (role === 'owner') {
-            await new Promise((r) => setTimeout(r, 600));
-            try {
-                await sendOffer();
-                scheduleReconnect();
-            } catch (err) {
-                setWebrtcStatus(err?.message || 'Bağlantı başlatılamadı');
-                callActive = false;
+    async function checkHealth() {
+        if (!healthUrl) return;
+        try {
+            const res = await fetch(healthUrl, {
+                headers: authHeaders(),
+                credentials: 'same-origin',
+                cache: 'no-store',
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!data.table) {
+                setWebrtcStatus('Sunucu tablosu eksik — migrate çalıştırın');
+                setDebug('paint_room_signals tablosu YOK');
+                return;
             }
-        } else {
-            setWebrtcStatus('Oda sahibinden bağlantı bekleniyor…');
-            scheduleGuestResync();
+            if (!data.role) {
+                setWebrtcStatus('Oturum hatası — sayfayı yenileyin');
+                setDebug('rol tanınmadı');
+                return;
+            }
+            setDebug(`saglik OK, sinyal=${data.signalCount}`);
+        } catch (e) {
+            setDebug(`saglik hata: ${e.message}`);
         }
     }
 
@@ -392,9 +481,7 @@
 
             if (participantCount < 2 && prev >= 2) {
                 teardownCall();
-                if (localMediaReady && role === 'owner') {
-                    setWebrtcStatus('Kamera hazır — misafir bekleniyor…');
-                }
+                if (localMediaReady) setWebrtcStatus('Kamera hazır — misafir bekleniyor…');
             }
 
             if (participantCount >= 2 && localMediaReady && !callActive) {
@@ -405,27 +492,22 @@
 
     function sendLeaveBeacon() {
         if (role !== 'owner' || !leaveUrl || !csrf) return;
-        const body = new URLSearchParams({ _token: csrf });
-        if (navigator.sendBeacon) navigator.sendBeacon(leaveUrl, body);
+        navigator.sendBeacon?.(leaveUrl, new URLSearchParams({ _token: csrf }));
     }
 
-    if (toggleMicBtn) {
-        toggleMicBtn.addEventListener('click', () => {
-            if (!localStream) return;
-            micEnabled = !micEnabled;
-            localStream.getAudioTracks().forEach((t) => { t.enabled = micEnabled; });
-            toggleMicBtn.textContent = micEnabled ? 'Mikrofonu kapat' : 'Mikrofonu aç';
-        });
-    }
+    toggleMicBtn?.addEventListener('click', () => {
+        if (!localStream) return;
+        micEnabled = !micEnabled;
+        localStream.getAudioTracks().forEach((t) => { t.enabled = micEnabled; });
+        toggleMicBtn.textContent = micEnabled ? 'Mikrofonu kapat' : 'Mikrofonu aç';
+    });
 
-    if (toggleCamBtn) {
-        toggleCamBtn.addEventListener('click', () => {
-            if (!localStream) return;
-            camEnabled = !camEnabled;
-            localStream.getVideoTracks().forEach((t) => { t.enabled = camEnabled; });
-            toggleCamBtn.textContent = camEnabled ? 'Kamerayı kapat' : 'Kamerayı aç';
-        });
-    }
+    toggleCamBtn?.addEventListener('click', () => {
+        if (!localStream) return;
+        camEnabled = !camEnabled;
+        localStream.getVideoTracks().forEach((t) => { t.enabled = camEnabled; });
+        toggleCamBtn.textContent = camEnabled ? 'Kamerayı kapat' : 'Kamerayı aç';
+    });
 
     if (role === 'owner') {
         window.addEventListener('pagehide', () => { teardownAll(); sendLeaveBeacon(); });
@@ -435,9 +517,8 @@
 
     updateTimer();
     setInterval(updateTimer, 1000);
+    checkHealth();
     pollStatus();
     setInterval(pollStatus, 2000);
-
-    // Sayfa açılır açılmaz kamera/mikrofon izni iste
     initLocalMedia();
 })();

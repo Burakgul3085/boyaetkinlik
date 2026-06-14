@@ -19,6 +19,8 @@
     data-expires-at="{{ $expiresAtIso }}"
     data-csrf="{{ csrf_token() }}"
     data-guest-token="{{ $guestAccessToken }}"
+    data-ice-servers='@json($iceServers)'
+    data-health-url="{{ route('paint-room.signals.health', $room) }}"
 >
     <div class="card overflow-hidden p-0">
         <div class="border-b border-violet-100 bg-gradient-to-r from-violet-50 to-teal-50 px-6 py-5 md:px-8">
@@ -62,6 +64,7 @@
                     <p class="text-xs font-bold uppercase tracking-wide text-violet-200">Görüntülü oda</p>
                     <p class="text-xs text-slate-400" id="paint-room-webrtc-status">Kamera ve mikrofon izni bekleniyor…</p>
                 </div>
+                <p class="mb-2 hidden rounded-lg bg-slate-800/80 px-3 py-2 font-mono text-[10px] leading-relaxed text-slate-300" id="paint-room-debug"></p>
                 <div class="paint-room-video-grid">
                     <div class="paint-room-video-tile">
                         <video id="paint-room-local" class="paint-room-video" autoplay playsinline muted></video>

@@ -9,6 +9,7 @@ use App\Services\PaintRoomService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -53,6 +54,8 @@ class PaintRoomController extends Controller
                 ->withErrors(['room' => 'Bu odaya erişim yetkiniz yok. PIN veya davet linki ile katılın.']);
         }
 
+        $guestSession = session('paint_room_guest', []);
+
         return view('frontend.paint-room.lobby', [
             'room' => $room->fresh(),
             'role' => $role,
@@ -60,8 +63,9 @@ class PaintRoomController extends Controller
             'pin' => $room->pin,
             'expiresAtIso' => $room->expires_at->toIso8601String(),
             'guestAccessToken' => $role === 'guest'
-                ? (string) (session('paint_room_guest.token') ?? '')
+                ? (string) ($guestSession['token'] ?? '')
                 : '',
+            'iceServers' => $this->iceServers(),
         ]);
     }
 
@@ -126,6 +130,22 @@ class PaintRoomController extends Controller
         ]);
     }
 
+    public function signalHealth(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        $tableExists = Schema::hasTable('paint_room_signals');
+
+        return $this->signalJson([
+            'ok' => $role !== null && $tableExists,
+            'role' => $role,
+            'table' => $tableExists,
+            'signalCount' => $tableExists
+                ? PaintRoomSignal::query()->where('paint_room_id', $room->id)->count()
+                : 0,
+            'participants' => $room->participantCount(),
+        ], ($role === null || ! $tableExists) ? 503 : 200);
+    }
+
     public function sendSignal(Request $request, PaintRoom $room): JsonResponse
     {
         $role = $this->resolveParticipantRole($request, $room);
@@ -133,12 +153,17 @@ class PaintRoomController extends Controller
             return $this->signalJson(['ok' => false, 'message' => 'Yetkisiz'], 403);
         }
 
-        $data = $request->validate([
-            'type' => ['required', 'in:offer,answer,ice'],
-            'payload' => ['required', 'array'],
-        ]);
+        $type = (string) $request->input('type', '');
+        if (! in_array($type, ['offer', 'answer', 'ice'], true)) {
+            return $this->signalJson(['ok' => false, 'message' => 'Geçersiz sinyal türü'], 422);
+        }
 
-        $encoded = json_encode($data['payload'], JSON_UNESCAPED_SLASHES);
+        $payload = $this->decodeSignalPayload($request->input('payload'));
+        if ($payload === null) {
+            return $this->signalJson(['ok' => false, 'message' => 'Geçersiz sinyal verisi'], 422);
+        }
+
+        $encoded = json_encode($payload, JSON_UNESCAPED_SLASHES);
         if ($encoded === false || strlen($encoded) > 65536) {
             return $this->signalJson(['ok' => false, 'message' => 'Geçersiz sinyal'], 422);
         }
@@ -147,7 +172,7 @@ class PaintRoomController extends Controller
             $signal = PaintRoomSignal::query()->create([
                 'paint_room_id' => $room->id,
                 'from_role' => $role,
-                'signal_type' => $data['type'],
+                'signal_type' => $type,
                 'payload' => $encoded,
                 'created_at' => now(),
             ]);
@@ -160,14 +185,15 @@ class PaintRoomController extends Controller
             ], 500);
         }
 
-        if ($data['type'] === 'offer') {
+        if ($type === 'offer') {
             PaintRoomSignal::query()
                 ->where('paint_room_id', $room->id)
                 ->where('id', '<', $signal->id)
+                ->whereIn('signal_type', ['offer', 'ice'])
                 ->delete();
         }
 
-        return $this->signalJson(['ok' => true, 'id' => $signal->id]);
+        return $this->signalJson(['ok' => true, 'id' => $signal->id, 'role' => $role]);
     }
 
     public function leave(Request $request, PaintRoom $room): JsonResponse|RedirectResponse
@@ -354,6 +380,45 @@ class PaintRoomController extends Controller
                 'token' => $guestToken,
             ],
         ]);
+        session()->save();
+    }
+
+    private function decodeSignalPayload(mixed $payload): ?array
+    {
+        if (is_array($payload)) {
+            return $payload;
+        }
+
+        if (is_string($payload)) {
+            $decoded = json_decode($payload, true);
+
+            return is_array($decoded) ? $decoded : null;
+        }
+
+        return null;
+    }
+
+    private function iceServers(): array
+    {
+        $servers = [
+            ['urls' => 'stun:stun.l.google.com:19302'],
+            ['urls' => 'stun:stun1.l.google.com:19302'],
+            ['urls' => 'stun:stun.cloudflare.com:3478'],
+        ];
+
+        $turnUrls = config('services.webrtc.turn_urls', []);
+        $username = (string) config('services.webrtc.turn_username', '');
+        $credential = (string) config('services.webrtc.turn_credential', '');
+
+        if ($turnUrls !== [] && $username !== '' && $credential !== '') {
+            $servers[] = [
+                'urls' => $turnUrls,
+                'username' => $username,
+                'credential' => $credential,
+            ];
+        }
+
+        return $servers;
     }
 
     private function clearGuestSession(PaintRoom $room): void
