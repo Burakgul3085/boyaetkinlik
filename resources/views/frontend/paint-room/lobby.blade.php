@@ -71,11 +71,13 @@
                         <span class="paint-room-video-label">Siz</span>
                     </div>
                     <div class="paint-room-video-tile">
-                        <video id="paint-room-remote" class="paint-room-video" autoplay playsinline></video>
+                        <video id="paint-room-remote" class="paint-room-video" autoplay playsinline muted></video>
+                        <audio id="paint-room-remote-audio" class="sr-only" autoplay playsinline></audio>
                         <span class="paint-room-video-label" id="paint-room-remote-label">Karşı taraf</span>
                     </div>
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2">
+                    <button type="button" id="paint-room-unlock-audio" class="btn-primary hidden text-xs">🔊 Sesi aç</button>
                     <button type="button" id="paint-room-toggle-mic" class="btn-secondary hidden text-xs">Mikrofonu kapat</button>
                     <button type="button" id="paint-room-toggle-cam" class="btn-secondary hidden text-xs">Kamerayı kapat</button>
                 </div>

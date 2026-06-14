@@ -34,6 +34,8 @@
     const debugEl = document.getElementById('paint-room-debug');
     const localVideo = document.getElementById('paint-room-local');
     const remoteVideo = document.getElementById('paint-room-remote');
+    const remoteAudio = document.getElementById('paint-room-remote-audio');
+    const unlockAudioBtn = document.getElementById('paint-room-unlock-audio');
     const toggleMicBtn = document.getElementById('paint-room-toggle-mic');
     const toggleCamBtn = document.getElementById('paint-room-toggle-cam');
 
@@ -41,6 +43,7 @@
     let pc = null;
     let localStream = null;
     let remoteStream = null;
+    let remoteAudioStream = null;
     let lastSignalId = 0;
     let localMediaReady = false;
     let callActive = false;
@@ -136,20 +139,56 @@
         }
     }
 
-    function attachRemoteStream(stream) {
-        if (!remoteVideo || !stream) return;
-        remoteVideo.srcObject = stream;
-        remoteVideo.muted = false;
-        remoteVideo.volume = 1;
-        remoteVideo.play?.().catch(() => {
-            remoteVideo.muted = true;
-            remoteVideo.play?.().catch(() => {});
-        });
+    function showAudioUnlock() {
+        unlockAudioBtn?.classList.remove('hidden');
+        setWebrtcStatus('Ses için "Sesi aç" butonuna tıklayın');
     }
 
-    function ensureRemoteStream() {
+    function hideAudioUnlock() {
+        unlockAudioBtn?.classList.add('hidden');
+    }
+
+    async function playRemoteAudio() {
+        if (!remoteAudio) return false;
+        remoteAudio.muted = false;
+        remoteAudio.volume = 1;
+        try {
+            await remoteAudio.play();
+            hideAudioUnlock();
+            return true;
+        } catch (_) {
+            showAudioUnlock();
+            return false;
+        }
+    }
+
+    function attachRemoteVideoTrack(track) {
+        if (!remoteVideo || !track) return;
         if (!remoteStream) remoteStream = new MediaStream();
-        return remoteStream;
+        remoteStream.getVideoTracks().forEach((t) => remoteStream.removeTrack(t));
+        remoteStream.addTrack(track);
+        track.enabled = true;
+        remoteVideo.srcObject = remoteStream;
+        remoteVideo.muted = true;
+        remoteVideo.playsInline = true;
+        remoteVideo.play?.().catch(() => {});
+    }
+
+    function attachRemoteAudioTrack(track) {
+        if (!remoteAudio || !track) return;
+        if (!remoteAudioStream) remoteAudioStream = new MediaStream();
+        remoteAudioStream.getAudioTracks().forEach((t) => remoteAudioStream.removeTrack(t));
+        remoteAudioStream.addTrack(track);
+        track.enabled = true;
+        remoteAudio.srcObject = remoteAudioStream;
+        playRemoteAudio();
+        setDebug(`ses track: ${track.label || 'audio'}`);
+    }
+
+    function attachRemoteStream(stream) {
+        if (!stream) return;
+        stream.getVideoTracks().forEach((t) => attachRemoteVideoTrack(t));
+        stream.getAudioTracks().forEach((t) => attachRemoteAudioTrack(t));
     }
 
     function createPeerConnection() {
@@ -163,6 +202,9 @@
         }
         iceQueue.length = 0;
         remoteStream = null;
+        remoteAudioStream = null;
+        if (remoteAudio) remoteAudio.srcObject = null;
+        hideAudioUnlock();
 
         pc = new RTCPeerConnection({
             iceServers: ICE_SERVERS,
@@ -177,16 +219,18 @@
         };
 
         pc.ontrack = (ev) => {
-            const stream = ensureRemoteStream();
-            ev.streams?.[0]?.getTracks().forEach((t) => {
-                if (!stream.getTracks().some((x) => x.id === t.id)) stream.addTrack(t);
-            });
-            if (!ev.streams?.[0] && ev.track) {
-                if (!stream.getTracks().some((x) => x.id === ev.track.id)) stream.addTrack(ev.track);
+            const track = ev.track;
+            if (!track) return;
+            track.enabled = true;
+
+            if (track.kind === 'audio') {
+                attachRemoteAudioTrack(track);
+            } else if (track.kind === 'video') {
+                attachRemoteVideoTrack(track);
             }
-            attachRemoteStream(stream);
-            setWebrtcStatus('Karşı taraf görüntüsü alındı');
-            setDebug('uzak track alındı');
+
+            setWebrtcStatus('Karşı taraf bağlandı');
+            setDebug(`track: ${track.kind}`);
         };
 
         pc.onconnectionstatechange = () => {
@@ -194,6 +238,7 @@
             setDebug();
             if (pc.connectionState === 'connected') {
                 setWebrtcStatus('Bağlandı — ses ve görüntü aktif');
+                playRemoteAudio();
                 clearInterval(reconnectTimer);
                 reconnectTimer = null;
             } else if (pc.connectionState === 'failed') {
@@ -341,7 +386,10 @@
             pc = null;
         }
         if (remoteVideo) remoteVideo.srcObject = null;
+        if (remoteAudio) remoteAudio.srcObject = null;
         remoteStream = null;
+        remoteAudioStream = null;
+        hideAudioUnlock();
         callActive = false;
         lastSignalId = 0;
         iceQueue.length = 0;
@@ -419,7 +467,8 @@
             }
             localMediaReady = true;
             showMediaControls();
-            setDebug('kamera hazır');
+            hideAudioUnlock();
+            setDebug(`kamera+hazır, mic=${localStream.getAudioTracks().length}`);
 
             if (participantCount >= 2) {
                 await startCall();
@@ -494,6 +543,11 @@
         if (role !== 'owner' || !leaveUrl || !csrf) return;
         navigator.sendBeacon?.(leaveUrl, new URLSearchParams({ _token: csrf }));
     }
+
+    unlockAudioBtn?.addEventListener('click', async () => {
+        const ok = await playRemoteAudio();
+        if (ok) setWebrtcStatus('Ses açıldı');
+    });
 
     toggleMicBtn?.addEventListener('click', () => {
         if (!localStream) return;
