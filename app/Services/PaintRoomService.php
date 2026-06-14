@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\PaintRoom;
+use App\Models\PaintRoomSignal;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -66,6 +67,8 @@ class PaintRoomService
             'closed_at' => now(),
             'closed_reason' => $reason,
         ]);
+
+        PaintRoomSignal::query()->where('paint_room_id', $room->id)->delete();
     }
 
     public function findOpenRoomByPin(string $pin): ?PaintRoom

@@ -8,9 +8,11 @@
 
 @section('content')
 <section
-    class="mx-auto max-w-3xl"
+    class="mx-auto max-w-4xl"
     id="paint-room-lobby"
     data-status-url="{{ route('paint-room.status', $room) }}"
+    data-signal-poll-url="{{ route('paint-room.signals.poll', $room) }}"
+    data-signal-send-url="{{ route('paint-room.signals.send', $room) }}"
     data-leave-url="{{ route('paint-room.leave', $room) }}"
     data-index-url="{{ route('paint-room.index') }}"
     data-role="{{ $role }}"
@@ -38,18 +40,41 @@
                 <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('success') }}</div>
             @endif
 
-            <div class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4">
+            <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4">
                 <div class="paint-room-occupancy" id="paint-room-occupancy">
                     <span class="paint-room-occupancy__count" id="paint-room-count">{{ $room->participantCount() }}</span>
                     <span class="paint-room-occupancy__label">/ 2 kişi</span>
                 </div>
                 <p class="text-sm text-slate-600" id="paint-room-status-text">
                     @if($room->hasGuest())
-                        Misafir katıldı — boyama özelliği yakında.
+                        Görüntülü bağlantı hazırlanıyor…
                     @else
                         Misafir bekleniyor…
                     @endif
                 </p>
+            </div>
+
+            {{-- Görüntülü sohbet (WebRTC P2P) --}}
+            <div class="paint-room-video-panel rounded-2xl border border-violet-100 bg-slate-900/95 p-4">
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <p class="text-xs font-bold uppercase tracking-wide text-violet-200">Görüntülü oda</p>
+                    <p class="text-xs text-slate-400" id="paint-room-webrtc-status">Kamera ve mikrofon izni bekleniyor…</p>
+                </div>
+                <div class="paint-room-video-grid">
+                    <div class="paint-room-video-tile">
+                        <video id="paint-room-local" class="paint-room-video" autoplay playsinline muted></video>
+                        <span class="paint-room-video-label">Siz</span>
+                    </div>
+                    <div class="paint-room-video-tile">
+                        <video id="paint-room-remote" class="paint-room-video" autoplay playsinline></video>
+                        <span class="paint-room-video-label" id="paint-room-remote-label">Karşı taraf</span>
+                    </div>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <button type="button" id="paint-room-start-media" class="btn-primary text-xs">Kamera ve mikrofonu aç</button>
+                    <button type="button" id="paint-room-toggle-mic" class="btn-secondary text-xs" hidden>Mikrofonu kapat</button>
+                    <button type="button" id="paint-room-toggle-cam" class="btn-secondary text-xs" hidden>Kamerayı kapat</button>
+                </div>
             </div>
 
             @if($role === 'owner')
@@ -74,7 +99,7 @@
                 </form>
             @else
                 <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                    Oda sahibi ayrılırsa oda kapanır. Boyama ve görüntülü sohbet bir sonraki güncellemede eklenecek.
+                    Oda sahibi ayrılırsa oda kapanır. Beraber boyama özelliği yakında eklenecek.
                 </div>
                 <form method="post" action="{{ route('paint-room.leave', $room) }}">
                     @csrf

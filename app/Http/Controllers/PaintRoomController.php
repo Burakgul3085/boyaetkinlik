@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PaintRoom;
+use App\Models\PaintRoomSignal;
 use App\Models\Setting;
 use App\Services\PaintRoomService;
 use Illuminate\Http\JsonResponse;
@@ -85,9 +86,64 @@ class PaintRoomController extends Controller
             'expiresAt' => $room->expires_at->toIso8601String(),
             'role' => $role,
             'message' => $room->hasGuest()
-                ? 'Misafir odaya katıldı. Boyama özelliği yakında eklenecek.'
+                ? 'Görüntülü bağlantı kuruluyor…'
                 : 'Misafir bekleniyor…',
         ]);
+    }
+
+    public function pollSignals(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role === null || ! $room->isOpen()) {
+            return response()->json(['signals' => []], 403);
+        }
+
+        $after = max(0, (int) $request->query('after', 0));
+
+        $signals = PaintRoomSignal::query()
+            ->where('paint_room_id', $room->id)
+            ->where('id', '>', $after)
+            ->where('from_role', '!=', $role)
+            ->orderBy('id')
+            ->limit(50)
+            ->get(['id', 'from_role', 'signal_type', 'payload']);
+
+        return response()->json([
+            'signals' => $signals->map(fn ($s) => [
+                'id' => $s->id,
+                'from' => $s->from_role,
+                'type' => $s->signal_type,
+                'payload' => json_decode($s->payload, true),
+            ]),
+        ]);
+    }
+
+    public function sendSignal(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role === null || ! $room->isOpen()) {
+            return response()->json(['ok' => false], 403);
+        }
+
+        $data = $request->validate([
+            'type' => ['required', 'in:offer,answer,ice'],
+            'payload' => ['required', 'array'],
+        ]);
+
+        $encoded = json_encode($data['payload']);
+        if ($encoded === false || strlen($encoded) > 65536) {
+            return response()->json(['ok' => false, 'message' => 'Geçersiz sinyal'], 422);
+        }
+
+        $signal = PaintRoomSignal::query()->create([
+            'paint_room_id' => $room->id,
+            'from_role' => $role,
+            'signal_type' => $data['type'],
+            'payload' => $encoded,
+            'created_at' => now(),
+        ]);
+
+        return response()->json(['ok' => true, 'id' => $signal->id]);
     }
 
     public function leave(Request $request, PaintRoom $room): JsonResponse|RedirectResponse
@@ -106,6 +162,7 @@ class PaintRoomController extends Controller
         }
 
         if ($role === 'guest') {
+            PaintRoomSignal::query()->where('paint_room_id', $room->id)->delete();
             $room->update([
                 'guest_display_name' => null,
                 'guest_token' => null,
