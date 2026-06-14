@@ -211,19 +211,24 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
             if (role === 'guest') {
                 dc.send(JSON.stringify({ t: 'sync-req' }));
             }
-            loadCanvasFromServer();
+            if (canvasApi?.isReady()) {
+                loadCanvasFromServer();
+            }
         };
         dc.onmessage = (ev) => {
             let msg;
             try { msg = JSON.parse(ev.data); } catch { return; }
             if (!canvasApi) return;
             if (msg.t === 'stroke') canvasApi.drawRemoteStroke(msg);
+            if (msg.t === 'fill') canvasApi.applyRemoteFill(msg);
             if (msg.t === 'clear') canvasApi.clear(false);
             if (msg.t === 'sync-req' && role === 'owner') {
                 const snap = canvasApi.getSnapshot();
                 if (snap) dc.send(JSON.stringify({ t: 'sync', data: snap }));
             }
-            if (msg.t === 'sync') canvasApi.applySnapshot(msg.data);
+            if (msg.t === 'sync' && canvasApi.isReady()) {
+                canvasApi.applySnapshot(msg.data);
+            }
         };
     }
 
@@ -267,7 +272,7 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     }
 
     async function loadCanvasFromServer() {
-        if (!canvasLoadUrl || !canvasApi) return;
+        if (!canvasLoadUrl || !canvasApi?.isReady()) return;
         try {
             const res = await fetch(canvasLoadUrl, {
                 headers: authHeaders(),
@@ -644,14 +649,32 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         if (!localStream) return;
         micEnabled = !micEnabled;
         localStream.getAudioTracks().forEach((t) => { t.enabled = micEnabled; });
-        toggleMicBtn.textContent = micEnabled ? 'Mikrofonu kapat' : 'Mikrofonu aç';
+        toggleMicBtn.textContent = micEnabled ? '🎤' : '🔇';
+        toggleMicBtn.title = micEnabled ? 'Mikrofonu kapat' : 'Mikrofonu aç';
     });
 
     toggleCamBtn?.addEventListener('click', () => {
         if (!localStream) return;
         camEnabled = !camEnabled;
         localStream.getVideoTracks().forEach((t) => { t.enabled = camEnabled; });
-        toggleCamBtn.textContent = camEnabled ? 'Kamerayı kapat' : 'Kamerayı aç';
+        toggleCamBtn.textContent = camEnabled ? '📷' : '🚫';
+        toggleCamBtn.title = camEnabled ? 'Kamerayı kapat' : 'Kamerayı aç';
+    });
+
+    const pipEl = document.getElementById('paint-room-pip');
+    const pipToggle = document.getElementById('paint-room-pip-toggle');
+    pipToggle?.addEventListener('click', () => {
+        pipEl?.classList.toggle('paint-room-pip--collapsed');
+        pipToggle.textContent = pipEl?.classList.contains('paint-room-pip--collapsed') ? '+' : '−';
+    });
+
+    const infoPanel = document.getElementById('paint-room-info-panel');
+    const infoToggle = document.getElementById('paint-room-info-toggle');
+    const infoClose = document.getElementById('paint-room-info-close');
+    infoToggle?.addEventListener('click', () => infoPanel?.classList.remove('hidden'));
+    infoClose?.addEventListener('click', () => infoPanel?.classList.add('hidden'));
+    infoPanel?.addEventListener('click', (e) => {
+        if (e.target === infoPanel) infoPanel.classList.add('hidden');
     });
 
     if (role === 'owner') {
@@ -668,9 +691,16 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
     canvasApi = initPaintRoomCanvas({
         lineArtUrl,
-        enabled: () => participantCount >= 2,
+        onReady: () => {
+            loadCanvasFromServer();
+            canvasApi?.fitToView?.();
+        },
         onStroke: (stroke) => {
             sendPaint({ t: 'stroke', ...stroke });
+            scheduleCanvasSave();
+        },
+        onFill: (fill) => {
+            sendPaint({ t: 'fill', ...fill });
             scheduleCanvasSave();
         },
         onClear: () => {
@@ -678,6 +708,5 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
             scheduleCanvasSave();
         },
     });
-    loadCanvasFromServer();
     initLocalMedia();
 })();

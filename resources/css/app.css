@@ -2377,7 +2377,47 @@
     }
 }
 
-/* Görüntülü boyama odası (MVP) */
+/* Görüntülü boyama odası — tam ekran stüdyo */
+.paint-room-studio {
+    @apply -mx-4 -mt-2 flex min-h-[calc(100dvh-5rem)] flex-col bg-gradient-to-br from-violet-50/90 via-white to-fuchsia-50/60 md:-mx-0;
+}
+
+.paint-room-studio__topbar {
+    @apply flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-violet-100/80 bg-white/90 px-3 py-2.5 shadow-sm backdrop-blur-sm md:px-4;
+}
+
+.paint-room-studio__icon-btn {
+    @apply flex h-9 w-9 items-center justify-center rounded-xl border border-violet-100 bg-white text-sm shadow-sm transition hover:bg-violet-50;
+}
+
+.paint-room-studio__leave-btn {
+    @apply rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100;
+}
+
+.paint-room-studio__toast {
+    @apply mx-3 mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800;
+}
+
+.paint-room-workspace {
+    @apply mt-0 min-h-0 flex-1 gap-2 overflow-hidden px-2 pb-2 pt-2 md:gap-3 md:px-3 md:pb-3;
+}
+
+.paint-room-toolbar {
+    @apply max-h-none lg:max-h-[calc(100dvh-8rem)] lg:w-[14rem] xl:w-[15rem];
+}
+
+.paint-room-stage-wrap {
+    @apply min-h-0 min-w-0 flex-1;
+}
+
+.paint-room-canvas-wrap {
+    @apply h-full min-h-[50vh] rounded-2xl border border-violet-100 bg-[#e8e4f3] p-2 md:min-h-0;
+}
+
+.paint-room-canvas-stage {
+    @apply mx-auto bg-white shadow-md;
+}
+
 .paint-room-pill {
     @apply rounded-full border border-violet-200 bg-white px-4 py-2 font-mono text-sm font-bold text-violet-800 shadow-sm;
 }
@@ -2482,4 +2522,85 @@
     touch-action: none;
     cursor: crosshair;
     background: transparent;
+}
+
+/* Yüzen görüntülü sohbet */
+.paint-room-pip {
+    @apply fixed bottom-20 right-3 z-[60] w-[min(92vw,220px)] overflow-hidden rounded-2xl border border-violet-200/90 bg-slate-900/95 shadow-2xl shadow-violet-900/30 backdrop-blur-md transition-all duration-300 md:bottom-6 md:right-6;
+}
+
+.paint-room-pip--collapsed .paint-room-pip__videos,
+.paint-room-pip--collapsed .paint-room-pip__actions {
+    @apply hidden;
+}
+
+.paint-room-pip__head {
+    @apply flex items-center gap-2 border-b border-white/10 px-3 py-2;
+}
+
+.paint-room-pip__title {
+    @apply text-[10px] font-bold uppercase tracking-wide text-violet-200;
+}
+
+.paint-room-pip__status {
+    @apply min-w-0 flex-1 truncate text-[9px] text-slate-400;
+}
+
+.paint-room-pip__collapse {
+    @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/10 text-xs text-white transition hover:bg-white/20;
+}
+
+.paint-room-pip__videos {
+    @apply grid grid-cols-2 gap-1.5 p-2;
+}
+
+.paint-room-pip__tile {
+    @apply relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-800;
+}
+
+.paint-room-pip__video {
+    @apply h-full w-full object-cover;
+}
+
+.paint-room-pip__label {
+    @apply absolute bottom-1 left-1 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-semibold text-white;
+}
+
+.paint-room-pip__actions {
+    @apply flex flex-wrap gap-1 border-t border-white/10 p-2;
+}
+
+.paint-room-pip__btn {
+    @apply rounded-lg bg-white/10 px-2 py-1 text-[10px] font-medium text-white transition hover:bg-white/20;
+}
+
+/* Oda sahibi PIN/davet paneli */
+.paint-room-info-panel {
+    @apply fixed inset-0 z-[70] flex items-end justify-center bg-black/40 p-4 sm:items-center;
+}
+
+.paint-room-info-panel.hidden {
+    display: none;
+}
+
+.paint-room-info-panel__inner {
+    @apply relative w-full max-w-lg rounded-2xl border border-violet-100 bg-white p-5 shadow-2xl;
+}
+
+.paint-room-info-panel__close {
+    @apply absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-lg text-slate-600 transition hover:bg-slate-200;
+}
+
+@media (max-width: 1023px) {
+    .paint-room-workspace {
+        @apply flex-col;
+    }
+
+    .paint-room-toolbar {
+        @apply max-h-[38vh] w-full shrink-0;
+    }
+
+    .paint-room-canvas-wrap {
+        @apply min-h-[45vh] flex-1;
+    }
 }

@@ -6,12 +6,16 @@ use App\Models\PaintRoom;
 use App\Models\PaintRoomSignal;
 use App\Models\Setting;
 use App\Services\PaintRoomService;
+use App\Support\FileFormatDownloadService;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Throwable;
 
 class PaintRoomController extends Controller
 {
@@ -70,7 +74,7 @@ class PaintRoomController extends Controller
             'iceServers' => $this->iceServers(),
             'coloringPageTitle' => $coloringPage?->title,
             'lineArtUrl' => $coloringPage
-                ? route('products.online-paint.line-art', $coloringPage)
+                ? route('paint-room.line-art', $room)
                 : null,
             'canvasLoadUrl' => route('paint-room.canvas.load', $room),
             'canvasSaveUrl' => route('paint-room.canvas.save', $room),
@@ -136,6 +140,45 @@ class PaintRoomController extends Controller
             })->values(),
             'role' => $role,
         ]);
+    }
+
+    public function lineArt(Request $request, PaintRoom $room, FileFormatDownloadService $downloadService): BinaryFileResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role === null || ! $room->isOpen()) {
+            abort(403);
+        }
+
+        $room->load('coloringPage');
+        $coloringPage = $room->coloringPage;
+        if (! $coloringPage || ! $coloringPage->is_free) {
+            abort(404);
+        }
+
+        try {
+            $source = $coloringPage->lineArtFileSource();
+            /** @var FilesystemAdapter $disk */
+            $disk = $source['disk'];
+            $raster = $downloadService->lineArtRasterForPainting($disk, $source['path']);
+        } catch (Throwable $exception) {
+            report($exception);
+            abort(404);
+        }
+
+        $response = response()->file($raster['absolute_path'], [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=3600',
+            'Access-Control-Allow-Origin' => $request->getSchemeAndHttpHost(),
+        ]);
+
+        if ($raster['is_temporary']) {
+            $path = $raster['absolute_path'];
+            register_shutdown_function(static function () use ($path): void {
+                @unlink($path);
+            });
+        }
+
+        return $response;
     }
 
     public function loadCanvas(Request $request, PaintRoom $room): JsonResponse
