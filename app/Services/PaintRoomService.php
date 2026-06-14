@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ColoringPage;
 use App\Models\PaintRoom;
 use App\Models\PaintRoomSignal;
 use App\Models\User;
@@ -44,12 +45,14 @@ class PaintRoomService
 
         return DB::transaction(function () use ($owner) {
             $pin = $this->generateUniquePin();
+            $page = ColoringPage::query()->where('is_free', true)->inRandomOrder()->first();
 
             return PaintRoom::query()->create([
                 'room_code' => $this->generateUniqueRoomCode(),
                 'pin' => $pin,
                 'invite_token' => Str::random(48),
                 'owner_user_id' => $owner->id,
+                'coloring_page_id' => $page?->id,
                 'status' => PaintRoom::STATUS_WAITING,
                 'expires_at' => now()->addMinutes(self::ROOM_TTL_MINUTES),
             ]);

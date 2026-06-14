@@ -10,7 +10,7 @@
             <h1 class="mt-2 text-3xl font-bold tracking-tight">Görüntülü Boyama</h1>
             <p class="mt-3 max-w-xl text-sm text-white/90">
                 Üye olarak oda oluşturun; arkadaşınız PIN veya tek kullanımlık link ile katılsın.
-                Beraber boyama ve görüntülü sohbet yakında eklenecek.
+                Üye olarak oda oluşturun; arkadaşınız PIN veya tek kullanımlık link ile katılsın. Beraber boyama ve görüntülü sohbet.
             </p>
         </div>
 

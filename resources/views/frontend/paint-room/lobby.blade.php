@@ -8,7 +8,7 @@
 
 @section('content')
 <section
-    class="mx-auto max-w-4xl"
+    class="mx-auto max-w-6xl"
     id="paint-room-lobby"
     data-status-url="{{ route('paint-room.status', $room) }}"
     data-signal-poll-url="{{ route('paint-room.signals.poll.post', $room) }}"
@@ -21,6 +21,9 @@
     data-guest-token="{{ $guestAccessToken }}"
     data-ice-servers='@json($iceServers)'
     data-health-url="{{ route('paint-room.signals.health', $room) }}"
+    data-line-art-url="{{ $lineArtUrl }}"
+    data-canvas-load-url="{{ route('paint-room.canvas.load', $room) }}"
+    data-canvas-save-url="{{ route('paint-room.canvas.save', $room) }}"
 >
     <div class="card overflow-hidden p-0">
         <div class="border-b border-violet-100 bg-gradient-to-r from-violet-50 to-teal-50 px-6 py-5 md:px-8">
@@ -83,6 +86,48 @@
                 </div>
             </div>
 
+            {{-- Ortak boyama tuvali --}}
+            <div class="paint-room-canvas-panel rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wide text-violet-600">Beraber boyama</p>
+                        @if($coloringPageTitle)
+                            <p class="text-sm text-slate-600">{{ $coloringPageTitle }}</p>
+                        @endif
+                    </div>
+                    <p class="text-xs text-slate-500">İkiniz de aynı anda boyayabilirsiniz</p>
+                </div>
+
+                <div class="paint-room-canvas-toolbar mb-3 flex flex-wrap items-center gap-2">
+                    <button type="button" data-room-tool="brush" class="paint-room-tool paint-room-tool--active text-xs">Fırça</button>
+                    <button type="button" data-room-tool="eraser" class="paint-room-tool text-xs">Silgi</button>
+                    <label class="flex items-center gap-2 text-xs text-slate-600">
+                        Kalınlık
+                        <input type="range" id="room-paint-size" min="4" max="48" value="16" class="paint-room-range w-24">
+                        <span id="room-paint-size-label">16px</span>
+                    </label>
+                    <input type="color" id="room-paint-color" value="#ef4444" class="h-8 w-10 cursor-pointer rounded-lg border border-slate-200" title="Renk seç">
+                    <div class="flex flex-wrap gap-1">
+                        @foreach(['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#1e293b','#ffffff'] as $c)
+                            <button type="button" data-room-color="{{ $c }}" class="paint-room-swatch {{ $loop->first ? 'paint-room-swatch--active' : '' }}" style="background:{{ $c }}" title="{{ $c }}"></button>
+                        @endforeach
+                    </div>
+                    <button type="button" id="room-paint-clear" class="btn-secondary text-xs">Tuvali temizle</button>
+                </div>
+
+                <div class="paint-room-canvas-wrap relative overflow-hidden rounded-xl bg-[#e8e4f3]">
+                    <div id="room-paint-loader" class="paint-room-canvas-loader">
+                        <span class="online-paint-spinner"></span>
+                        <p class="text-sm text-slate-600">Boyama yükleniyor…</p>
+                    </div>
+                    <div id="room-paint-stage" class="paint-room-canvas-stage mx-auto max-w-full">
+                        <canvas id="room-paint-canvas" class="paint-room-canvas-layer paint-room-canvas-layer--paint"></canvas>
+                        <canvas id="room-line-canvas" class="paint-room-canvas-layer paint-room-canvas-layer--line"></canvas>
+                        <div id="room-paint-hit" class="paint-room-canvas-hit"></div>
+                    </div>
+                </div>
+            </div>
+
             @if($role === 'owner')
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="rounded-2xl border border-violet-100 bg-violet-50/50 p-4">
@@ -105,7 +150,7 @@
                 </form>
             @else
                 <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                    Oda sahibi ayrılırsa oda kapanır. Beraber boyama özelliği yakında eklenecek.
+                    Oda sahibi ayrılırsa oda kapanır. Beraber boyama tuvali yukarıda — ikiniz de aynı anda boyayabilirsiniz.
                 </div>
                 <form method="post" action="{{ route('paint-room.leave', $room) }}">
                     @csrf

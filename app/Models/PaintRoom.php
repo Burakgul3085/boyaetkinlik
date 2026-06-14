@@ -19,12 +19,14 @@ class PaintRoom extends Model
         'invite_token',
         'invite_token_used_at',
         'owner_user_id',
+        'coloring_page_id',
         'guest_display_name',
         'guest_token',
         'status',
         'expires_at',
         'closed_at',
         'closed_reason',
+        'canvas_snapshot',
     ];
 
     protected function casts(): array
@@ -44,6 +46,11 @@ class PaintRoom extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
+    public function coloringPage(): BelongsTo
+    {
+        return $this->belongsTo(ColoringPage::class, 'coloring_page_id');
     }
 
     public function isOpen(): bool

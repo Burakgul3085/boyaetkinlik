@@ -2414,3 +2414,72 @@
 .paint-room-video-label {
     @apply absolute bottom-2 left-2 rounded-lg bg-black/50 px-2 py-0.5 text-[10px] font-semibold text-white;
 }
+
+.paint-room-canvas-panel {
+    @apply bg-white;
+}
+
+.paint-room-canvas-toolbar {
+    @apply rounded-xl border border-slate-100 bg-slate-50/80 p-3;
+}
+
+.paint-room-tool {
+    @apply rounded-lg border border-violet-100 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-violet-50;
+}
+
+.paint-room-tool--active {
+    @apply border-violet-400 bg-violet-100 text-violet-900;
+}
+
+.paint-room-swatch {
+    @apply h-7 w-7 rounded-lg border-2 border-white shadow-sm ring-1 ring-slate-200 transition hover:scale-105;
+}
+
+.paint-room-swatch--active {
+    @apply ring-2 ring-violet-500 ring-offset-1;
+}
+
+.paint-room-range {
+    @apply accent-violet-600;
+}
+
+.paint-room-canvas-wrap {
+    @apply min-h-[320px] p-3 md:min-h-[420px];
+}
+
+.paint-room-canvas-loader {
+    @apply absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-white/80;
+}
+
+.paint-room-canvas-loader.hidden {
+    display: none;
+}
+
+.paint-room-canvas-stage {
+    @apply relative mx-auto w-full max-w-3xl bg-white shadow-md;
+    touch-action: none;
+    user-select: none;
+}
+
+.paint-room-canvas-layer {
+    @apply absolute left-0 top-0 block h-full w-full;
+}
+
+.paint-room-canvas-layer--paint {
+    z-index: 0;
+}
+
+.paint-room-canvas-layer--line {
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+}
+
+.paint-room-canvas-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    touch-action: none;
+    cursor: crosshair;
+    background: transparent;
+}

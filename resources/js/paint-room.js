@@ -1,6 +1,8 @@
 /**
- * Görüntülü boyama odası — WebRTC P2P v4
+ * Görüntülü boyama odası — WebRTC P2P + ortak tuval
  */
+import { initPaintRoomCanvas } from './paint-room-canvas.js';
+
 (function () {
     const root = document.getElementById('paint-room-lobby');
     if (!root) return;
@@ -9,6 +11,9 @@
     const signalPollUrl = root.dataset.signalPollUrl;
     const signalSendUrl = root.dataset.signalSendUrl;
     const healthUrl = root.dataset.healthUrl;
+    const canvasLoadUrl = root.dataset.canvasLoadUrl;
+    const canvasSaveUrl = root.dataset.canvasSaveUrl;
+    const lineArtUrl = root.dataset.lineArtUrl || null;
     const leaveUrl = root.dataset.leaveUrl;
     const indexUrl = root.dataset.indexUrl;
     const role = root.dataset.role;
@@ -49,6 +54,9 @@
     let callActive = false;
     let signalPollTimer = null;
     let reconnectTimer = null;
+    let paintDc = null;
+    let canvasApi = null;
+    let canvasSaveTimer = null;
     let micEnabled = true;
     let camEnabled = true;
     const iceQueue = [];
@@ -191,6 +199,86 @@
         stream.getAudioTracks().forEach((t) => attachRemoteAudioTrack(t));
     }
 
+    function sendPaint(msg) {
+        if (paintDc?.readyState === 'open') {
+            paintDc.send(JSON.stringify(msg));
+        }
+    }
+
+    function wirePaintDc(dc) {
+        dc.onopen = () => {
+            setDebug('boyama kanalı açık');
+            if (role === 'guest') {
+                dc.send(JSON.stringify({ t: 'sync-req' }));
+            }
+            loadCanvasFromServer();
+        };
+        dc.onmessage = (ev) => {
+            let msg;
+            try { msg = JSON.parse(ev.data); } catch { return; }
+            if (!canvasApi) return;
+            if (msg.t === 'stroke') canvasApi.drawRemoteStroke(msg);
+            if (msg.t === 'clear') canvasApi.clear(false);
+            if (msg.t === 'sync-req' && role === 'owner') {
+                const snap = canvasApi.getSnapshot();
+                if (snap) dc.send(JSON.stringify({ t: 'sync', data: snap }));
+            }
+            if (msg.t === 'sync') canvasApi.applySnapshot(msg.data);
+        };
+    }
+
+    function setupPaintChannel() {
+        paintDc = null;
+        if (role === 'owner') {
+            paintDc = pc.createDataChannel('paint', { ordered: true });
+            wirePaintDc(paintDc);
+        } else {
+            pc.ondatachannel = (ev) => {
+                if (ev.channel.label !== 'paint') return;
+                paintDc = ev.channel;
+                wirePaintDc(paintDc);
+            };
+        }
+    }
+
+    function scheduleCanvasSave() {
+        if (canvasSaveTimer) return;
+        canvasSaveTimer = setTimeout(async () => {
+            canvasSaveTimer = null;
+            await saveCanvasToServer();
+        }, 4000);
+    }
+
+    async function saveCanvasToServer() {
+        if (!canvasSaveUrl || !canvasApi || !csrf) return;
+        const image = canvasApi.getSnapshot();
+        if (!image) return;
+        const body = new FormData();
+        body.append('_token', csrf);
+        body.append('image', image);
+        try {
+            await fetch(canvasSaveUrl, {
+                method: 'POST',
+                headers: authHeaders(),
+                credentials: 'same-origin',
+                body,
+            });
+        } catch (_) { /* sessiz */ }
+    }
+
+    async function loadCanvasFromServer() {
+        if (!canvasLoadUrl || !canvasApi) return;
+        try {
+            const res = await fetch(canvasLoadUrl, {
+                headers: authHeaders(),
+                credentials: 'same-origin',
+                cache: 'no-store',
+            });
+            const data = await res.json().catch(() => ({}));
+            if (data.image) canvasApi.applySnapshot(data.image);
+        } catch (_) { /* sessiz */ }
+    }
+
     function createPeerConnection() {
         if (pc) {
             pc.onicecandidate = null;
@@ -211,6 +299,8 @@
             iceCandidatePoolSize: 10,
             bundlePolicy: 'max-bundle',
         });
+
+        setupPaintChannel();
 
         pc.onicecandidate = (ev) => {
             if (ev.candidate) {
@@ -385,6 +475,7 @@
             pc.close();
             pc = null;
         }
+        paintDc = null;
         if (remoteVideo) remoteVideo.srcObject = null;
         if (remoteAudio) remoteAudio.srcObject = null;
         remoteStream = null;
@@ -574,5 +665,19 @@
     checkHealth();
     pollStatus();
     setInterval(pollStatus, 2000);
+
+    canvasApi = initPaintRoomCanvas({
+        lineArtUrl,
+        enabled: () => participantCount >= 2,
+        onStroke: (stroke) => {
+            sendPaint({ t: 'stroke', ...stroke });
+            scheduleCanvasSave();
+        },
+        onClear: () => {
+            sendPaint({ t: 'clear' });
+            scheduleCanvasSave();
+        },
+    });
+    loadCanvasFromServer();
     initLocalMedia();
 })();

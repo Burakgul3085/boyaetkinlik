@@ -55,9 +55,11 @@ class PaintRoomController extends Controller
         }
 
         $guestSession = session('paint_room_guest', []);
+        $room = $room->fresh()->load('coloringPage');
+        $coloringPage = $room->coloringPage;
 
         return view('frontend.paint-room.lobby', [
-            'room' => $room->fresh(),
+            'room' => $room,
             'role' => $role,
             'inviteUrl' => route('paint-room.invite', $room->invite_token),
             'pin' => $room->pin,
@@ -66,6 +68,12 @@ class PaintRoomController extends Controller
                 ? (string) ($guestSession['token'] ?? '')
                 : '',
             'iceServers' => $this->iceServers(),
+            'coloringPageTitle' => $coloringPage?->title,
+            'lineArtUrl' => $coloringPage
+                ? route('products.online-paint.line-art', $coloringPage)
+                : null,
+            'canvasLoadUrl' => route('paint-room.canvas.load', $room),
+            'canvasSaveUrl' => route('paint-room.canvas.save', $room),
         ]);
     }
 
@@ -128,6 +136,35 @@ class PaintRoomController extends Controller
             })->values(),
             'role' => $role,
         ]);
+    }
+
+    public function loadCanvas(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role === null || ! $room->isOpen()) {
+            return $this->signalJson(['image' => null], 403);
+        }
+
+        return $this->signalJson([
+            'image' => $room->canvas_snapshot,
+            'updated' => $room->updated_at?->toIso8601String(),
+        ]);
+    }
+
+    public function saveCanvas(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role === null || ! $room->isOpen()) {
+            return $this->signalJson(['ok' => false], 403);
+        }
+
+        $data = $request->validate([
+            'image' => ['required', 'string', 'max:524288'],
+        ]);
+
+        $room->update(['canvas_snapshot' => $data['image']]);
+
+        return $this->signalJson(['ok' => true]);
     }
 
     public function signalHealth(Request $request, PaintRoom $room): JsonResponse
