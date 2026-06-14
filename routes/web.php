@@ -30,6 +30,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MemberAccountController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\PaintRoomController;
 use App\Http\Controllers\PurchaseVerificationController;
 use App\Http\Controllers\ShopierController;
 use App\Http\Controllers\SitemapController;
@@ -76,6 +77,29 @@ Route::post('/e-bulten/kayit', [NewsletterController::class, 'store'])->name('ne
 Route::post('/ziyaretci-geri-bildirim', [VisitorFeedbackController::class, 'store'])
     ->middleware('throttle:8,1')
     ->name('visitor-feedback.store');
+
+Route::prefix('goruntulu-boyama')->name('paint-room.')->group(function () {
+    Route::get('/', [PaintRoomController::class, 'index'])->name('index');
+    Route::get('/katil', [PaintRoomController::class, 'joinForm'])->name('join.form');
+    Route::post('/katil', [PaintRoomController::class, 'joinByPin'])
+        ->middleware('throttle:8,1')
+        ->name('join.pin');
+    Route::get('/davet/{inviteToken}', [PaintRoomController::class, 'inviteForm'])
+        ->where('inviteToken', '[A-Za-z0-9]+')
+        ->name('invite');
+    Route::post('/davet/{inviteToken}', [PaintRoomController::class, 'joinByInvite'])
+        ->middleware('throttle:8,1')
+        ->where('inviteToken', '[A-Za-z0-9]+')
+        ->name('invite.submit');
+    Route::get('/oda/{room}', [PaintRoomController::class, 'lobby'])->name('lobby');
+    Route::get('/oda/{room}/durum', [PaintRoomController::class, 'status'])->name('status');
+    Route::post('/oda/{room}/ayril', [PaintRoomController::class, 'leave'])->name('leave');
+
+    Route::middleware(['member', 'member.code'])->group(function () {
+        Route::post('/oda-olustur', [PaintRoomController::class, 'create'])->name('create');
+    });
+});
+
 Route::get('/boyama/{coloringPage}', [ColoringPageController::class, 'show'])->name('products.show');
 Route::get('/boyama/{coloringPage}/preview-image', [ColoringPageController::class, 'previewImage'])->name('products.preview-image');
 Route::get('/boyama/{coloringPage}/urun-baglanti.html', [ColoringPageController::class, 'previewDoorHtml'])->name('products.preview-door');

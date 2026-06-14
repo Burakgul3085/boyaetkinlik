@@ -159,6 +159,7 @@
     }
 
     $menuItems->push(['label' => 'Deneyler', 'url' => '/deneyler', 'children' => []]);
+    $menuItems->push(['label' => 'Görüntülü Boyama', 'url' => '/goruntulu-boyama', 'children' => []]);
     $menuItems->push(['label' => 'Blog', 'url' => '/blog', 'children' => []]);
 
     if ($hasContact) {

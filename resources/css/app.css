@@ -2376,3 +2376,20 @@
         animation: none;
     }
 }
+
+/* Görüntülü boyama odası (MVP) */
+.paint-room-pill {
+    @apply rounded-full border border-violet-200 bg-white px-4 py-2 font-mono text-sm font-bold text-violet-800 shadow-sm;
+}
+
+.paint-room-occupancy {
+    @apply flex shrink-0 flex-col items-center justify-center rounded-2xl border border-violet-200 bg-violet-50 px-4 py-2;
+}
+
+.paint-room-occupancy__count {
+    @apply text-2xl font-bold leading-none text-violet-700;
+}
+
+.paint-room-occupancy__label {
+    @apply text-[10px] font-semibold uppercase tracking-wide text-slate-500;
+}
