@@ -10,6 +10,7 @@
     </p>
     <p class="mt-2 max-w-3xl text-xs font-medium text-violet-700">
         Not: AdSense genel scripti layout içinde zaten yüklüdür. Alanlara yalnızca reklam birimi kodunu (ins + push) yapıştırmanız yeterlidir.
+        Boş bıraktığınız alanlar sitede <strong>hiç görünmez</strong> (yer tutucu veya boş kutu oluşturulmaz).
     </p>
 
     <div class="card mt-5 space-y-4 p-5">
@@ -68,25 +69,25 @@
 
         <div>
             <label class="mb-2 block text-sm font-semibold text-slate-900" for="ads_header">1) Üst bant — <span class="font-normal text-slate-600">ads_header</span></label>
-            <p class="mb-2 text-xs text-slate-500">Yatay reklam birimi (ör. 728×90 veya responsive display). Boş bırakılırsa sitede gri çerçeveli yer tutucu görünür.</p>
+            <p class="mb-2 text-xs text-slate-500">Yatay reklam birimi (ör. 728×90 veya responsive display). Boş bırakılırsa sitede hiçbir şey görünmez.</p>
             <textarea id="ads_header" name="ads_header" rows="5" class="input-ui font-mono text-xs" placeholder="&lt;script&gt;...&lt;/script&gt;">{{ $settings['ads_header'] ?? '' }}</textarea>
         </div>
 
         <div>
             <label class="mb-2 block text-sm font-semibold text-slate-900" for="ads_left">2) Sol sütun — <span class="font-normal text-slate-600">ads_left</span></label>
-            <p class="mb-2 text-xs text-slate-500">Dikey / geniş skyscraper tarzı birimler için. Sadece masaüstünde görünür.</p>
+            <p class="mb-2 text-xs text-slate-500">Dikey / geniş skyscraper tarzı birimler için. Sadece masaüstünde görünür. Boş bırakılırsa sitede hiçbir şey görünmez.</p>
             <textarea id="ads_left" name="ads_left" rows="5" class="input-ui font-mono text-xs" placeholder="Sol sütun reklam kodu">{{ $settings['ads_left'] ?? '' }}</textarea>
         </div>
 
         <div>
             <label class="mb-2 block text-sm font-semibold text-slate-900" for="ads_right">3) Sağ sütun — <span class="font-normal text-slate-600">ads_right</span></label>
-            <p class="mb-2 text-xs text-slate-500">Sol ile aynı mantık; içerik ortada kalır, reklamlar kenarda hizalanır.</p>
+            <p class="mb-2 text-xs text-slate-500">Sol ile aynı mantık; içerik ortada kalır, reklamlar kenarda hizalanır. Boş bırakılırsa sitede hiçbir şey görünmez.</p>
             <textarea id="ads_right" name="ads_right" rows="5" class="input-ui font-mono text-xs" placeholder="Sağ sütun reklam kodu">{{ $settings['ads_right'] ?? '' }}</textarea>
         </div>
 
         <div>
             <label class="mb-2 block text-sm font-semibold text-slate-900" for="ads_product_detail">4) Boyama detayı içi — <span class="font-normal text-slate-600">ads_product_detail</span></label>
-            <p class="mb-2 text-xs text-slate-500">Sadece ürün detay şablonunda, görsel ve açıklamadan hemen sonra tek blok halinde.</p>
+            <p class="mb-2 text-xs text-slate-500">Sadece ürün detay şablonunda, görsel ve açıklamadan hemen sonra tek blok halinde. Boş bırakılırsa sitede hiçbir şey görünmez.</p>
             <textarea id="ads_product_detail" name="ads_product_detail" rows="5" class="input-ui font-mono text-xs" placeholder="Ürün detay içi reklam">{{ $settings['ads_product_detail'] ?? '' }}</textarea>
         </div>
 

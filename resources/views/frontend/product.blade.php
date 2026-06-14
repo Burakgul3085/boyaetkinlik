@@ -59,9 +59,14 @@
             </div>
             <h1 class="mt-4 break-words text-2xl font-bold text-slate-900">{{ $coloringPage->title }}</h1>
             <p class="mt-2 text-slate-600">{{ $coloringPage->description }}</p>
-            <div class="mt-6">
-                {!! \App\Models\Setting::getValue('ads_product_detail') ?: '<div class="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">Ürün detay reklam alanı</div>' !!}
-            </div>
+            @php
+                $productDetailAd = trim((string) \App\Models\Setting::getValue('ads_product_detail', ''));
+            @endphp
+            @if($productDetailAd !== '')
+                <div class="mt-6 overflow-hidden rounded-xl text-center [&_*]:max-w-full">
+                    {!! $productDetailAd !!}
+                </div>
+            @endif
             </div>
 
             <aside class="min-w-0 lg:col-span-4 card p-5" x-data="{ verificationInfoOpen: false }" aria-label="Ürün satın alma ve indirme paneli">
