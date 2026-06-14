@@ -143,6 +143,13 @@ class PaintRoomController extends Controller
             'created_at' => now(),
         ]);
 
+        if ($data['type'] === 'offer') {
+            PaintRoomSignal::query()
+                ->where('paint_room_id', $room->id)
+                ->where('id', '<', $signal->id)
+                ->delete();
+        }
+
         return response()->json(['ok' => true, 'id' => $signal->id]);
     }
 

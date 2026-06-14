@@ -71,9 +71,9 @@
                     </div>
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2">
-                    <button type="button" id="paint-room-start-media" class="btn-primary text-xs">Kamera ve mikrofonu aç</button>
-                    <button type="button" id="paint-room-toggle-mic" class="btn-secondary text-xs" hidden>Mikrofonu kapat</button>
-                    <button type="button" id="paint-room-toggle-cam" class="btn-secondary text-xs" hidden>Kamerayı kapat</button>
+                    <button type="button" id="paint-room-start-media" class="btn-primary hidden text-xs">Kamera ve mikrofonu aç</button>
+                    <button type="button" id="paint-room-toggle-mic" class="btn-secondary hidden text-xs">Mikrofonu kapat</button>
+                    <button type="button" id="paint-room-toggle-cam" class="btn-secondary hidden text-xs">Kamerayı kapat</button>
                 </div>
             </div>
 
