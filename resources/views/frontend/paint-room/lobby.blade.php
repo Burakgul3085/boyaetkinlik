@@ -17,6 +17,7 @@
     data-index-url="{{ route('paint-room.index') }}"
     data-role="{{ $role }}"
     data-expires-at="{{ $expiresAtIso }}"
+    data-csrf="{{ csrf_token() }}"
 >
     <div class="card overflow-hidden p-0">
         <div class="border-b border-violet-100 bg-gradient-to-r from-violet-50 to-teal-50 px-6 py-5 md:px-8">
