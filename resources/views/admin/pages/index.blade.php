@@ -4,11 +4,12 @@
 
 @section('content')
     <h1 class="text-3xl font-bold text-slate-900">Boyama Sayfası Yönetimi</h1>
+    <p class="mt-1 text-sm text-slate-500">Toplam {{ number_format($pages->total(), 0, ',', '.') }} kayıt — sayfa başına 30 listelenir.</p>
 
     <form method="post" action="{{ route('admin.pages.store') }}" enctype="multipart/form-data" class="card mt-5 grid gap-3 p-5 md:grid-cols-2">
         @csrf
-        <input name="title" placeholder="Başlık" class="input-ui">
-        <select name="category_id" class="input-ui">
+        <input name="title" placeholder="Başlık" class="input-ui" required>
+        <select name="category_id" class="input-ui" required>
             @foreach($categoryAssignmentOptions as $opt)
                 <option value="{{ $opt['id'] }}">{{ \App\Models\Category::adminSelectOptionLabel($opt['depth'], $opt['name']) }}</option>
             @endforeach
@@ -16,106 +17,96 @@
         <input type="number" step="0.01" name="price" placeholder="Fiyat" class="input-ui">
         <input type="url" name="shopier_product_url" placeholder="Shopier ürün linki (https://...)" class="input-ui md:col-span-2">
         <label class="input-ui">Kapak (PNG/JPG/JPEG) <input type="file" name="cover_image" accept=".png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
-        <label class="input-ui md:col-span-2">Dosya (PDF/PNG/JPG/JPEG) <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
+        <label class="input-ui md:col-span-2">Dosya (PDF/PNG/JPG/JPEG) <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm" required></label>
         <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-2"></textarea>
         <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="is_free" value="1"> Ücretsiz</label>
         <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="is_featured" value="1"> Öne Çıkan</label>
         <button class="btn-primary">Kaydet</button>
     </form>
 
-    <div
-        class="mt-6"
-        x-data="{
-            search: '',
-            match(title) {
-                const q = this.search.trim().toLocaleLowerCase('tr-TR');
-                if (!q) return true;
-                return String(title).toLocaleLowerCase('tr-TR').includes(q);
-            }
-        }"
-    >
-        <div class="card mb-4 p-4">
-            <label for="admin-pages-filter" class="text-sm font-medium text-slate-700">Listede ara</label>
+    <form method="get" action="{{ route('admin.pages.index') }}" class="card mt-6 flex flex-wrap items-end gap-3 p-4">
+        <div class="min-w-[16rem] flex-1">
+            <label for="admin-pages-filter" class="mb-1 block text-xs font-medium text-slate-600">Başlığa göre ara</label>
             <input
                 id="admin-pages-filter"
                 type="search"
-                x-model.debounce.150ms="search"
+                name="q"
+                value="{{ $search }}"
                 autocomplete="off"
                 placeholder="Başlığa göre filtrele..."
-                class="input-ui mt-2 max-w-xl"
+                class="input-ui w-full"
             >
-            <p class="mt-2 text-xs text-slate-500">Alan boşken tüm boyama sayfaları listelenir; yazdığınız metin yalnızca başlıkta aranır.</p>
         </div>
+        <button type="submit" class="btn-primary">Ara</button>
+        @if($search !== '')
+            <a href="{{ route('admin.pages.index') }}" class="btn-secondary">Temizle</a>
+        @endif
+    </form>
 
-        <div class="card overflow-x-auto p-4">
+    <div class="card mt-4 overflow-x-auto p-4">
         <table class="min-w-full text-sm">
-            <thead><tr class="text-left text-slate-500"><th class="py-2">Başlık</th><th>Kategori</th><th>Fiyat</th><th>Shopier Link</th><th>Tip</th><th>İşlem</th></tr></thead>
+            <thead>
+                <tr class="text-left text-slate-500">
+                    <th class="py-2 pr-2">Başlık</th>
+                    <th class="pr-2">Kategori</th>
+                    <th class="pr-2">Fiyat</th>
+                    <th class="pr-2">Shopier</th>
+                    <th class="pr-2">Tip</th>
+                    <th class="pr-2">Tarih</th>
+                    <th></th>
+                </tr>
+            </thead>
             <tbody>
-            @foreach($pages as $page)
-                <tr class="border-t" x-show="match({{ \Illuminate\Support\Js::from($page->title) }})">
-                    <td class="py-2">{{ $page->title }}</td>
-                    <td>{{ $page->category?->name ?? '— (kategori yok)' }}</td>
-                    <td>{{ number_format($page->price, 2) }} TL</td>
-                    <td>
+            @forelse($pages as $page)
+                <tr class="border-t border-slate-100">
+                    <td class="py-2 pr-2 font-medium text-slate-900">{{ $page->title }}</td>
+                    <td class="pr-2 text-slate-600">{{ $page->category?->name ?? '—' }}</td>
+                    <td class="pr-2 whitespace-nowrap">{{ number_format($page->price, 2) }} TL</td>
+                    <td class="pr-2">
                         @if($page->shopier_product_url)
                             <a href="{{ $page->shopier_product_url }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-violet-700 underline-offset-2 hover:underline">Aç</a>
                         @else
-                            <span class="text-xs text-slate-400">Tanımlı değil</span>
+                            <span class="text-xs text-slate-400">—</span>
                         @endif
                     </td>
-                    <td>{{ $page->is_free ? 'Ücretsiz' : 'Ücretli' }}</td>
-                    <td class="py-2">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <details class="group">
-                                <summary class="btn-secondary cursor-pointer list-none px-3 py-1.5">
-                                    Güncelle
-                                </summary>
-                                <div class="mt-3 w-[36rem] max-w-[90vw] rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
-                                    <form method="post" action="{{ route('admin.pages.update', $page) }}" enctype="multipart/form-data" class="grid gap-3 md:grid-cols-2">
-                                        @csrf
-                                        @method('PUT')
-                                        <input name="title" value="{{ $page->title }}" class="input-ui" placeholder="Başlık" required>
-                                        <select name="category_id" class="input-ui" required>
-                                            @foreach($categoryAssignmentOptions as $opt)
-                                                <option value="{{ $opt['id'] }}" @selected($opt['id'] === $page->category_id)>{{ \App\Models\Category::adminSelectOptionLabel($opt['depth'], $opt['name']) }}</option>
-                                            @endforeach
-                                        </select>
-                                        <input type="number" step="0.01" name="price" value="{{ $page->price }}" placeholder="Fiyat" class="input-ui">
-                                        <input type="url" name="shopier_product_url" value="{{ $page->shopier_product_url }}" placeholder="Shopier ürün linki (https://...)" class="input-ui md:col-span-2">
-                                        <label class="input-ui">Kapak (PNG/JPG/JPEG) <input type="file" name="cover_image" accept=".png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
-                                        <label class="input-ui md:col-span-2">Dosya (PDF/PNG/JPG/JPEG) <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
-                                        <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-2">{{ $page->description }}</textarea>
-
-                                        <div class="inline-flex items-center gap-2 text-sm">
-                                            <input type="hidden" name="is_free" value="0">
-                                            <input type="checkbox" name="is_free" value="1" @checked($page->is_free)>
-                                            <span>Ücretsiz</span>
-                                        </div>
-                                        <div class="inline-flex items-center gap-2 text-sm">
-                                            <input type="hidden" name="is_featured" value="0">
-                                            <input type="checkbox" name="is_featured" value="1" @checked($page->is_featured)>
-                                            <span>Öne Çıkan</span>
-                                        </div>
-
-                                        <div class="md:col-span-2 flex items-center justify-between gap-3">
-                                            <span class="text-xs text-slate-500">Yeni dosya yüklemezsen mevcut dosyalar korunur.</span>
-                                            <button class="btn-primary px-4 py-2">Güncellemeyi Kaydet</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </details>
-
-                            <form method="post" action="{{ route('admin.pages.destroy', $page) }}">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn-danger px-3 py-1.5">Sil</button>
-                            </form>
-                        </div>
+                    <td class="pr-2">
+                        @if($page->is_free)
+                            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800">Ücretsiz</span>
+                        @else
+                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">Ücretli</span>
+                        @endif
+                        @if($page->is_featured)
+                            <span class="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Öne çıkan</span>
+                        @endif
+                    </td>
+                    <td class="pr-2 whitespace-nowrap text-xs text-slate-500">{{ $page->created_at?->format('d.m.Y') }}</td>
+                    <td class="text-right whitespace-nowrap">
+                        <a href="{{ route('admin.pages.edit', $page) }}" class="btn-secondary inline-flex px-3 py-1.5 text-xs">Düzenle</a>
+                        <form method="post" action="{{ route('admin.pages.destroy', $page) }}" class="mt-1 inline-block" onsubmit="return confirm('Bu boyama sayfası silinsin mi?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
+                        </form>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="7" class="py-10 text-center text-slate-500">
+                        @if($search !== '')
+                            Aramanızla eşleşen boyama sayfası bulunamadı.
+                        @else
+                            Henüz boyama sayfası yok.
+                        @endif
+                    </td>
+                </tr>
+            @endforelse
             </tbody>
         </table>
-        </div>
+
+        @if($pages->hasPages())
+            <div class="mt-4 border-t border-slate-100 pt-4">
+                {{ $pages->links() }}
+            </div>
+        @endif
     </div>
 @endsection

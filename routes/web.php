@@ -197,11 +197,13 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
             ->name('members.support.reply');
 
         Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories.index');
+        Route::get('/categories/{category}/edit', [AdminCategoryController::class, 'edit'])->name('categories.edit');
         Route::post('/categories', [AdminCategoryController::class, 'store'])->name('categories.store');
         Route::put('/categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
 
         Route::get('/pages', [AdminColoringPageController::class, 'index'])->name('pages.index');
+        Route::get('/pages/{coloringPage}/edit', [AdminColoringPageController::class, 'edit'])->name('pages.edit');
         Route::post('/pages', [AdminColoringPageController::class, 'store'])->name('pages.store');
         Route::put('/pages/{coloringPage}', [AdminColoringPageController::class, 'update'])->name('pages.update');
         Route::delete('/pages/{coloringPage}', [AdminColoringPageController::class, 'destroy'])->name('pages.destroy');

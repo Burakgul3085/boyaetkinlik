@@ -10,23 +10,39 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim((string) $request->query('q', ''));
         $allCategories = Category::allForAdminTree();
 
-        $categories = $allCategories
-            ->sortBy([
-                ['parent_id', 'asc'],
-                ['nav_order', 'asc'],
-                ['name', 'asc'],
-            ])
-            ->values();
+        $query = Category::query()
+            ->orderByRaw('parent_id IS NULL DESC')
+            ->orderBy('parent_id')
+            ->orderBy('nav_order')
+            ->orderBy('name');
+
+        if ($search !== '') {
+            $query->where('name', 'like', '%'.$search.'%');
+        }
+
+        $categories = $query->paginate(30)->withQueryString();
 
         return view('admin.categories.index', [
             'categories' => $categories,
+            'search' => $search,
             'parentBreadcrumbLabels' => Category::parentBreadcrumbLabelsFor($allCategories),
             'parentSelectOptionsCreate' => Category::orderedFlatForParentSelect(null, $allCategories),
-            'parentSelectOptionsForEdit' => Category::parentSelectOptionsForAllEdits($allCategories),
+        ]);
+    }
+
+    public function edit(Category $category)
+    {
+        $allCategories = Category::allForAdminTree();
+
+        return view('admin.categories.edit', [
+            'category' => $category,
+            'parentBreadcrumbLabel' => Category::parentBreadcrumbLabelsFor($allCategories)[$category->id] ?? 'Ana kategori',
+            'parentSelectOptions' => Category::orderedFlatForParentSelect($category, $allCategories),
         ]);
     }
 
@@ -61,7 +77,9 @@ class CategoryController extends Controller
         }
         Category::query()->create($data);
 
-        return back()->with('success', 'Kategori eklendi.');
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Kategori eklendi.');
     }
 
     public function update(Request $request, Category $category)
@@ -105,7 +123,9 @@ class CategoryController extends Controller
         unset($data['cover_image_file']);
         $category->update($data);
 
-        return back()->with('success', 'Kategori güncellendi.');
+        return redirect()
+            ->route('admin.categories.edit', $category)
+            ->with('success', 'Kategori güncellendi.');
     }
 
     public function destroy(Category $category)
@@ -117,6 +137,9 @@ class CategoryController extends Controller
             Storage::disk('public')->delete($category->cover_image_path);
         }
         $category->delete();
-        return back()->with('success', 'Kategori silindi.');
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Kategori silindi.');
     }
 }

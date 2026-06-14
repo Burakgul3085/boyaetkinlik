@@ -9,13 +9,32 @@ use Illuminate\Http\Request;
 
 class ColoringPageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $allCategories = Category::allForAdminTree();
+        $search = trim((string) $request->query('q', ''));
+
+        $query = ColoringPage::query()->with('category')->latest();
+
+        if ($search !== '') {
+            $query->where('title', 'like', '%'.$search.'%');
+        }
+
+        $pages = $query->paginate(30)->withQueryString();
 
         return view('admin.pages.index', [
-            'pages' => ColoringPage::query()->with('category')->latest()->get(),
-            'categoryAssignmentOptions' => Category::orderedFlatWithDepth($allCategories),
+            'pages' => $pages,
+            'search' => $search,
+            'categoryAssignmentOptions' => Category::orderedFlatWithDepth(Category::allForAdminTree()),
+        ]);
+    }
+
+    public function edit(ColoringPage $coloringPage)
+    {
+        $coloringPage->load('category');
+
+        return view('admin.pages.edit', [
+            'page' => $coloringPage,
+            'categoryAssignmentOptions' => Category::orderedFlatWithDepth(Category::allForAdminTree()),
         ]);
     }
 
@@ -23,20 +42,29 @@ class ColoringPageController extends Controller
     {
         $data = $this->validatePayload($request, true);
         ColoringPage::query()->create($this->uploadAndFormat($request, $data));
-        return back()->with('success', 'Boyama sayfası eklendi.');
+
+        return redirect()
+            ->route('admin.pages.index')
+            ->with('success', 'Boyama sayfası eklendi.');
     }
 
     public function update(Request $request, ColoringPage $coloringPage)
     {
         $data = $this->validatePayload($request, false);
         $coloringPage->update($this->uploadAndFormat($request, $data));
-        return back()->with('success', 'Boyama sayfası güncellendi.');
+
+        return redirect()
+            ->route('admin.pages.edit', $coloringPage)
+            ->with('success', 'Boyama sayfası güncellendi.');
     }
 
     public function destroy(ColoringPage $coloringPage)
     {
         $coloringPage->delete();
-        return back()->with('success', 'Boyama sayfası silindi.');
+
+        return redirect()
+            ->route('admin.pages.index')
+            ->with('success', 'Boyama sayfası silindi.');
     }
 
     private function validatePayload(Request $request, bool $isCreate): array
@@ -76,6 +104,7 @@ class ColoringPageController extends Controller
         }
 
         unset($data['cover_image'], $data['pdf_file']);
+
         return $data;
     }
 }
