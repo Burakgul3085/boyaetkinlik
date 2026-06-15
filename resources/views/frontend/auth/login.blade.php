@@ -29,6 +29,8 @@
             </p>
             <button class="btn-primary w-full">Kod Gönder ve Devam Et</button>
         </form>
+
+        @include('frontend.auth.partials.google-auth', ['intent' => 'login'])
     </div>
 </section>
 @endsection

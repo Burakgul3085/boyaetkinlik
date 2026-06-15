@@ -23,5 +23,9 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }
+
+        if (empty(config('services.google.redirect'))) {
+            config(['services.google.redirect' => url('/auth/google/callback')]);
+        }
     }
 }

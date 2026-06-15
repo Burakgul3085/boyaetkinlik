@@ -2595,6 +2595,32 @@
     @apply absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-lg text-slate-600 transition hover:bg-slate-200;
 }
 
+/* Üye auth — Google ile giriş */
+.auth-google-divider {
+    @apply relative my-5 text-center;
+}
+
+.auth-google-divider::before {
+    content: '';
+    @apply absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-slate-200;
+}
+
+.auth-google-divider span {
+    @apply relative bg-white px-3 text-xs font-semibold uppercase tracking-wide text-slate-400;
+}
+
+.auth-google-btn {
+    @apply flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-200 hover:bg-violet-50/50 hover:text-violet-900;
+}
+
+.auth-google-btn__icon {
+    @apply h-5 w-5 shrink-0;
+}
+
+.auth-google-hint {
+    @apply mt-3 text-center text-xs text-slate-500;
+}
+
 @media (max-width: 1023px) {
     .paint-room-workspace {
         @apply flex-col;
