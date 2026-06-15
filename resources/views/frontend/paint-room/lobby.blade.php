@@ -286,9 +286,7 @@
                         <p class="text-xs font-bold uppercase text-slate-500">Davet linki</p>
                         <input type="text" readonly value="{{ $inviteUrl }}" id="paint-room-invite-url" class="input-ui mt-2 text-xs">
                         <button type="button" class="btn-secondary mt-3 text-xs" data-copy-target="paint-room-invite-url">Link kopyala</button>
-                        @if($room->inviteLinkUsed())
-                            <p class="mt-2 text-xs text-amber-700">Link kullanıldı — PIN ile de katılınabilir.</p>
-                        @endif
+                        <p class="mt-2 text-xs text-slate-500">Oda açık kaldığı sürece misafir bu linki tekrar kullanabilir.</p>
                     </div>
                 </div>
             </div>

@@ -101,7 +101,6 @@ class PaintRoomController extends Controller
             'participants' => $room->participantCount(),
             'maxParticipants' => 2,
             'guestName' => $room->guest_display_name,
-            'inviteUsed' => $room->inviteLinkUsed(),
             'expiresAt' => $room->expires_at->toIso8601String(),
             'role' => $role,
             'message' => $room->hasGuest()
@@ -338,7 +337,7 @@ class PaintRoomController extends Controller
                 return back()->withErrors(['pin' => 'Geçersiz PIN veya oda kapalı.'])->withInput();
             }
 
-            $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '', false);
+            $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '');
             $this->storeGuestSession($room, $guestToken);
             session(['paint_room_kvkk_accepted' => true]);
 
@@ -361,25 +360,16 @@ class PaintRoomController extends Controller
             ]);
         }
 
-        if ($room->inviteLinkUsed()) {
-            return view('frontend.paint-room.error', [
-                'title' => 'Link kullanıldı',
-                'message' => 'Bu davet linki zaten kullanıldı. Oda sahibinden PIN isteyerek katılabilirsiniz.',
-                'actionUrl' => route('paint-room.join.form'),
-                'actionLabel' => 'PIN ile katıl',
-            ]);
+        $existingRole = $this->resolveParticipantRole(request(), $room);
+        if ($existingRole !== null) {
+            return redirect()->route('paint-room.lobby', $room);
         }
 
         if ($room->hasGuest()) {
             return view('frontend.paint-room.error', [
                 'title' => 'Oda dolu',
-                'message' => 'Bu oda dolu (2/2 kişi).',
+                'message' => 'Bu oda dolu (2/2 kişi). Misafir ayrıldıktan sonra linki tekrar kullanabilirsiniz.',
             ]);
-        }
-
-        $existingRole = $this->resolveParticipantRole(request(), $room);
-        if ($existingRole !== null) {
-            return redirect()->route('paint-room.lobby', $room);
         }
 
         return view('frontend.paint-room.invite', [
@@ -405,7 +395,7 @@ class PaintRoomController extends Controller
         }
 
         try {
-            $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '', true);
+            $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '');
             $this->storeGuestSession($room, $guestToken);
             session(['paint_room_kvkk_accepted' => true]);
 

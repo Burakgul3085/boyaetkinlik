@@ -9,8 +9,7 @@
             <p class="text-xs font-bold uppercase tracking-widest text-white/80">Yeni özellik</p>
             <h1 class="mt-2 text-3xl font-bold tracking-tight">Görüntülü Boyama</h1>
             <p class="mt-3 max-w-xl text-sm text-white/90">
-                Üye olarak oda oluşturun; arkadaşınız PIN veya tek kullanımlık link ile katılsın.
-                Üye olarak oda oluşturun; arkadaşınız PIN veya tek kullanımlık link ile katılsın. Beraber boyama ve görüntülü sohbet.
+                Üye olarak oda oluşturun; arkadaşınız PIN veya davet linki ile katılsın. Beraber boyama ve görüntülü sohbet.
             </p>
         </div>
 
@@ -46,7 +45,7 @@
             </div>
 
             <ul class="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600">
-                <li class="flex gap-2"><span class="text-violet-600">•</span> Davet linki tek kullanımlıktır.</li>
+                <li class="flex gap-2"><span class="text-violet-600">•</span> Davet linki oda açıkken tekrar kullanılabilir; oda kapanınca geçersiz olur.</li>
                 <li class="flex gap-2"><span class="text-violet-600">•</span> PIN, oda kapanana veya süre dolana kadar geçerlidir.</li>
                 <li class="flex gap-2"><span class="text-violet-600">•</span> Oda sahibi ayrılırsa oda kapanır.</li>
                 <li class="flex gap-2"><span class="text-violet-600">•</span> Misafirler için KVKK onayı zorunludur.</li>

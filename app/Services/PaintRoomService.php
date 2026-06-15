@@ -96,7 +96,7 @@ class PaintRoomService
             ->first();
     }
 
-    public function joinAsGuest(PaintRoom $room, string $displayName, bool $viaInviteLink): string
+    public function joinAsGuest(PaintRoom $room, string $displayName): string
     {
         $this->closeExpiredRooms();
 
@@ -108,12 +108,6 @@ class PaintRoomService
             throw new RuntimeException('Oda dolu (2/2).');
         }
 
-        if ($viaInviteLink) {
-            if ($room->inviteLinkUsed()) {
-                throw new RuntimeException('Bu davet linki zaten kullanıldı. PIN ile katılmayı deneyin.');
-            }
-        }
-
         $guestToken = Str::random(40);
         $name = trim($displayName) !== '' ? trim($displayName) : 'Misafir';
 
@@ -121,7 +115,6 @@ class PaintRoomService
             'guest_display_name' => Str::limit($name, 80, ''),
             'guest_token' => hash('sha256', $guestToken),
             'status' => PaintRoom::STATUS_ACTIVE,
-            'invite_token_used_at' => $viaInviteLink ? now() : $room->invite_token_used_at,
         ]);
 
         return $guestToken;

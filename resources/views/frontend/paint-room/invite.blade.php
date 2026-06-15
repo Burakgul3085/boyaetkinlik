@@ -6,7 +6,7 @@
 <section class="mx-auto max-w-lg">
     <div class="card p-6 md:p-7">
         <h1 class="text-2xl font-bold text-slate-900">Davet ile katıl</h1>
-        <p class="mt-1 text-sm text-slate-500">Oda sahibi sizi davet etti. Bu link tek kullanımlıktır.</p>
+        <p class="mt-1 text-sm text-slate-500">Oda açık kaldığı sürece bu linki tekrar kullanabilirsiniz. Oda kapanınca geçersiz olur.</p>
 
         @if($errors->any())
             <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ $errors->first() }}</div>
