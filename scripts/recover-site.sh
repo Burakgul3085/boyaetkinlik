@@ -38,6 +38,9 @@ run composer install --no-dev --optimize-autoloader
 echo "==> Migration..."
 run php artisan migrate --force
 
+echo "==> Google ayarları (.env)..."
+run php artisan google:sync-settings
+
 echo "==> Frontend build..."
 run npm run build
 

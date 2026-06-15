@@ -40,6 +40,8 @@
             </label>
             <button class="btn-primary w-full">Kayıt Ol</button>
         </form>
+
+        @include('frontend.auth.partials.google-auth', ['intent' => 'register'])
     </div>
 </section>
 @endsection
