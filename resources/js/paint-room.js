@@ -36,7 +36,6 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const statusText = document.getElementById('paint-room-status-text');
     const timerEl = document.getElementById('paint-room-timer');
     const webrtcStatus = document.getElementById('paint-room-webrtc-status');
-    const debugEl = document.getElementById('paint-room-debug');
     const localVideo = document.getElementById('paint-room-local');
     const remoteVideo = document.getElementById('paint-room-remote');
     const remoteAudio = document.getElementById('paint-room-remote-audio');
@@ -92,13 +91,8 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         if (webrtcStatus) webrtcStatus.textContent = msg;
     }
 
-    function setDebug(extra) {
-        if (!debugEl) return;
-        debugEl.classList.remove('hidden');
-        const pcState = pc?.connectionState || '-';
-        const iceState = pc?.iceConnectionState || '-';
-        const base = `rol=${role} | kişi=${participantCount} | pc=${pcState} | ice=${iceState} | sinyal=${lastSignalId}`;
-        debugEl.textContent = extra ? `${base} | ${extra}` : base;
+    function setDebug(_extra) {
+        /* Teknik loglar yalnızca geliştirme için; kullanıcı arayüzünde gösterilmez */
     }
 
     function sdpPayload(desc) {
@@ -740,6 +734,89 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         navigator.sendBeacon?.(leaveUrl, new URLSearchParams({ _token: csrf }));
     }
 
+    function initPipDrag(pipEl) {
+        const handle = document.getElementById('paint-room-pip-drag-handle');
+        if (!pipEl || !handle) return;
+
+        const STORAGE_KEY = 'paint-room-pip-pos';
+        let dragging = false;
+        let startX = 0;
+        let startY = 0;
+        let startLeft = 0;
+        let startTop = 0;
+
+        function clampPosition(left, top) {
+            const rect = pipEl.getBoundingClientRect();
+            const margin = 8;
+            const maxLeft = window.innerWidth - rect.width - margin;
+            const maxTop = window.innerHeight - rect.height - margin;
+            return {
+                left: Math.max(margin, Math.min(maxLeft, left)),
+                top: Math.max(margin, Math.min(maxTop, top)),
+            };
+        }
+
+        function applyPosition(left, top) {
+            const clamped = clampPosition(left, top);
+            pipEl.style.left = `${clamped.left}px`;
+            pipEl.style.top = `${clamped.top}px`;
+            pipEl.style.right = 'auto';
+            pipEl.style.bottom = 'auto';
+            pipEl.classList.add('paint-room-pip--dragged');
+            try {
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(clamped));
+            } catch (_) { /* depolama kapalı olabilir */ }
+        }
+
+        function restorePosition() {
+            try {
+                const saved = sessionStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+                const { left, top } = JSON.parse(saved);
+                if (typeof left === 'number' && typeof top === 'number') {
+                    applyPosition(left, top);
+                }
+            } catch (_) { /* geçersiz kayıt */ }
+        }
+
+        handle.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0 || e.target.closest('button')) return;
+            dragging = true;
+            handle.setPointerCapture(e.pointerId);
+            const rect = pipEl.getBoundingClientRect();
+            pipEl.style.right = 'auto';
+            pipEl.style.bottom = 'auto';
+            startLeft = rect.left;
+            startTop = rect.top;
+            startX = e.clientX;
+            startY = e.clientY;
+            pipEl.classList.add('paint-room-pip--grabbing');
+            e.preventDefault();
+        });
+
+        handle.addEventListener('pointermove', (e) => {
+            if (!dragging) return;
+            applyPosition(startLeft + e.clientX - startX, startTop + e.clientY - startY);
+        });
+
+        const endDrag = () => {
+            if (!dragging) return;
+            dragging = false;
+            pipEl.classList.remove('paint-room-pip--grabbing');
+        };
+
+        handle.addEventListener('pointerup', endDrag);
+        handle.addEventListener('pointercancel', endDrag);
+
+        window.addEventListener('resize', () => {
+            if (!pipEl.classList.contains('paint-room-pip--dragged')) return;
+            const rect = pipEl.getBoundingClientRect();
+            applyPosition(rect.left, rect.top);
+        });
+
+        restorePosition();
+    }
+
     unlockAudioBtn?.addEventListener('click', async () => {
         const ok = await playRemoteAudio();
         if (ok) setWebrtcStatus('Ses açıldı');
@@ -771,6 +848,8 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     pipExpand?.addEventListener('click', () => {
         pipEl?.classList.toggle('paint-room-pip--expanded');
     });
+
+    initPipDrag(pipEl);
 
     const infoPanel = document.getElementById('paint-room-info-panel');
     const infoToggle = document.getElementById('paint-room-info-toggle');

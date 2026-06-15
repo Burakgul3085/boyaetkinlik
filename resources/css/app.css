@@ -2539,7 +2539,15 @@
 }
 
 .paint-room-pip__head {
-    @apply flex items-center gap-2 border-b border-white/10 px-3 py-2.5;
+    @apply flex cursor-grab select-none touch-none items-center gap-2 border-b border-white/10 px-3 py-2.5;
+}
+
+.paint-room-pip--grabbing .paint-room-pip__head {
+    @apply cursor-grabbing;
+}
+
+.paint-room-pip__grip {
+    @apply shrink-0 text-[10px] leading-none tracking-tighter text-slate-500;
 }
 
 .paint-room-pip__title {
@@ -2551,7 +2559,7 @@
 }
 
 .paint-room-pip__collapse {
-    @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-sm text-white transition hover:bg-white/20;
+    @apply flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-white/10 text-sm text-white transition hover:bg-white/20;
 }
 
 .paint-room-pip__videos {
