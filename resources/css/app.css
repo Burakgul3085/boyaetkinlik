@@ -2526,7 +2526,15 @@
 
 /* Yüzen görüntülü sohbet */
 .paint-room-pip {
-    @apply fixed bottom-20 right-3 z-[60] w-[min(94vw,400px)] overflow-hidden rounded-2xl border border-violet-200/90 bg-slate-900/95 shadow-2xl shadow-violet-900/30 backdrop-blur-md transition-all duration-300 md:bottom-6 md:right-6 md:w-[min(44vw,460px)];
+    @apply fixed bottom-20 right-3 z-[60] w-[min(94vw,400px)] overflow-hidden rounded-2xl border border-violet-200/90 bg-slate-900/95 shadow-2xl shadow-violet-900/30 backdrop-blur-md md:bottom-6 md:right-6 md:w-[min(44vw,460px)];
+    transition: width 0.3s ease, box-shadow 0.3s ease;
+}
+
+.paint-room-pip--grabbing {
+    transition: none !important;
+    will-change: transform;
+    touch-action: none;
+    @apply backdrop-blur-sm;
 }
 
 .paint-room-pip--expanded {

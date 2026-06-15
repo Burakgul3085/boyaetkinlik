@@ -739,33 +739,49 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         if (!pipEl || !handle) return;
 
         const STORAGE_KEY = 'paint-room-pip-pos';
+        const margin = 8;
         let dragging = false;
-        let startX = 0;
-        let startY = 0;
-        let startLeft = 0;
-        let startTop = 0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let pipW = 0;
+        let pipH = 0;
+        let anchorLeft = 0;
+        let anchorTop = 0;
+        let lastLeft = 0;
+        let lastTop = 0;
 
         function clampPosition(left, top) {
-            const rect = pipEl.getBoundingClientRect();
-            const margin = 8;
-            const maxLeft = window.innerWidth - rect.width - margin;
-            const maxTop = window.innerHeight - rect.height - margin;
+            const maxLeft = window.innerWidth - pipW - margin;
+            const maxTop = window.innerHeight - pipH - margin;
             return {
                 left: Math.max(margin, Math.min(maxLeft, left)),
                 top: Math.max(margin, Math.min(maxTop, top)),
             };
         }
 
-        function applyPosition(left, top) {
+        function commitPosition(left, top, persist) {
             const clamped = clampPosition(left, top);
+            lastLeft = clamped.left;
+            lastTop = clamped.top;
             pipEl.style.left = `${clamped.left}px`;
             pipEl.style.top = `${clamped.top}px`;
             pipEl.style.right = 'auto';
             pipEl.style.bottom = 'auto';
+            pipEl.style.transform = 'translate3d(0,0,0)';
             pipEl.classList.add('paint-room-pip--dragged');
-            try {
-                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(clamped));
-            } catch (_) { /* depolama kapalı olabilir */ }
+            if (persist) {
+                try {
+                    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(clamped));
+                } catch (_) { /* depolama kapalı olabilir */ }
+            }
+            return clamped;
+        }
+
+        function moveByPointer(clientX, clientY) {
+            const clamped = clampPosition(clientX - offsetX, clientY - offsetY);
+            lastLeft = clamped.left;
+            lastTop = clamped.top;
+            pipEl.style.transform = `translate3d(${clamped.left - anchorLeft}px,${clamped.top - anchorTop}px,0)`;
         }
 
         function restorePosition() {
@@ -774,7 +790,10 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
                 if (!saved) return;
                 const { left, top } = JSON.parse(saved);
                 if (typeof left === 'number' && typeof top === 'number') {
-                    applyPosition(left, top);
+                    const rect = pipEl.getBoundingClientRect();
+                    pipW = rect.width;
+                    pipH = rect.height;
+                    commitPosition(left, top, false);
                 }
             } catch (_) { /* geçersiz kayıt */ }
         }
@@ -783,26 +802,36 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
             if (e.button !== 0 || e.target.closest('button')) return;
             dragging = true;
             handle.setPointerCapture(e.pointerId);
+
             const rect = pipEl.getBoundingClientRect();
+            pipW = rect.width;
+            pipH = rect.height;
+            anchorLeft = rect.left;
+            anchorTop = rect.top;
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            lastLeft = anchorLeft;
+            lastTop = anchorTop;
+
+            pipEl.style.left = `${anchorLeft}px`;
+            pipEl.style.top = `${anchorTop}px`;
             pipEl.style.right = 'auto';
             pipEl.style.bottom = 'auto';
-            startLeft = rect.left;
-            startTop = rect.top;
-            startX = e.clientX;
-            startY = e.clientY;
+            pipEl.style.transform = 'translate3d(0,0,0)';
             pipEl.classList.add('paint-room-pip--grabbing');
             e.preventDefault();
         });
 
         handle.addEventListener('pointermove', (e) => {
             if (!dragging) return;
-            applyPosition(startLeft + e.clientX - startX, startTop + e.clientY - startY);
+            moveByPointer(e.clientX, e.clientY);
         });
 
         const endDrag = () => {
             if (!dragging) return;
             dragging = false;
             pipEl.classList.remove('paint-room-pip--grabbing');
+            commitPosition(lastLeft, lastTop, true);
         };
 
         handle.addEventListener('pointerup', endDrag);
@@ -811,7 +840,9 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         window.addEventListener('resize', () => {
             if (!pipEl.classList.contains('paint-room-pip--dragged')) return;
             const rect = pipEl.getBoundingClientRect();
-            applyPosition(rect.left, rect.top);
+            pipW = rect.width;
+            pipH = rect.height;
+            commitPosition(rect.left, rect.top, true);
         });
 
         restorePosition();
