@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\GoogleAuthConfig;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,8 @@ class MemberGoogleAuthController extends Controller
 
         $request->session()->put('member_google_intent', $request->query('from') === 'register' ? 'register' : 'login');
 
+        GoogleAuthConfig::applyToSocialite();
+
         return Socialite::driver('google')->redirect();
     }
 
@@ -34,6 +37,7 @@ class MemberGoogleAuthController extends Controller
         }
 
         try {
+            GoogleAuthConfig::applyToSocialite();
             $googleUser = Socialite::driver('google')->user();
         } catch (Throwable $exception) {
             report($exception);
@@ -146,7 +150,6 @@ class MemberGoogleAuthController extends Controller
 
     private function googleConfigured(): bool
     {
-        return (string) config('services.google.client_id') !== ''
-            && (string) config('services.google.client_secret') !== '';
+        return GoogleAuthConfig::isConfigured();
     }
 }

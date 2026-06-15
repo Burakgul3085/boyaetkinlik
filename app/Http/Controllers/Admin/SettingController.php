@@ -49,6 +49,9 @@ class SettingController extends Controller
             'shopier_api_secret' => ['nullable', 'string'],
             'shopier_website_index' => ['nullable', 'string'],
             'shopier_endpoint' => ['nullable', 'string'],
+            'google_client_id' => ['nullable', 'string', 'max:255'],
+            'google_client_secret' => ['nullable', 'string', 'max:255'],
+            'google_redirect_uri' => ['nullable', 'url', 'max:500'],
             'site_logo' => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png', 'max:4096'],
         ]);
 
