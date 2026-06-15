@@ -1,34 +1,48 @@
 #!/usr/bin/env bash
-# Site 500 sonrası hızlı kurtarma
-set -euo pipefail
+# Site 500 sonrası kurtarma — adım adım, hata olsa da devam eder
+set -u
 
 cd /var/www/boyaetkinlik
 
-echo "==> İzinler düzeltiliyor..."
-sudo mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache
-sudo chown -R "$USER:www-data" storage bootstrap/cache
-sudo chmod -R 775 storage bootstrap/cache
+DEPLOY_USER="${SUDO_USER:-${USER:-burakadmin}}"
 
-echo "==> Önbellek temizleniyor..."
-php artisan optimize:clear 2>/dev/null || true
-rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php 2>/dev/null || true
+run() {
+  echo ""
+  echo "==> $*"
+  if ! "$@"; then
+    echo "!! UYARI: Komut başarısız (devam ediliyor): $*"
+  fi
+}
+
+echo "==> İzinler düzeltiliyor (${DEPLOY_USER} + www-data)..."
+sudo mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache public/build
+sudo chown -R "${DEPLOY_USER}:www-data" storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+sudo rm -f storage/logs/laravel.log 2>/dev/null || true
+
+echo "==> Eski önbellek dosyaları siliniyor..."
+rm -f bootstrap/cache/*.php 2>/dev/null || true
+run php artisan optimize:clear
+run php artisan view:clear
 
 echo "==> Composer..."
-composer install --no-dev --optimize-autoloader
+run composer install --no-dev --optimize-autoloader
 
 echo "==> Migration..."
-php artisan migrate --force
+run php artisan migrate --force
 
 echo "==> Google ayarları..."
-php artisan google:sync-settings 2>/dev/null || true
+run php artisan google:sync-settings
 
-echo "==> Build..."
-npm run build
+echo "==> Frontend build..."
+run npm run build
 
-php artisan view:clear
-php artisan config:clear
+run php artisan config:clear
+run php artisan route:clear
 
-echo "==> Son log satırları:"
-tail -n 15 storage/logs/laravel.log 2>/dev/null || echo "(log yok)"
+echo ""
+echo "==> Tanı:"
+run php artisan site:diagnose
 
-echo "Kurtarma tamamlandı."
+echo ""
+echo "Kurtarma tamamlandı. Tarayıcıda Ctrl+F5 ile siteyi yenileyin."

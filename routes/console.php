@@ -99,3 +99,50 @@ Artisan::command('google:sync-settings', function () {
 
     return 0;
 })->purpose('.env Google OAuth değerlerini site ayarlarına aktarır');
+
+Artisan::command('site:diagnose', function () {
+    $this->line('PHP: '.PHP_VERSION.' ('.PHP_SAPI.')');
+    $this->line('APP_ENV: '.config('app.env'));
+    $this->line('APP_DEBUG: '.(config('app.debug') ? 'true' : 'false'));
+    $this->line('APP_KEY: '.(config('app.key') ? 'tanımlı' : 'EKSİK'));
+    $this->line('APP_URL: '.config('app.url'));
+
+    foreach (['storage/logs', 'storage/framework/views', 'storage/framework/sessions', 'bootstrap/cache'] as $dir) {
+        $writable = is_writable(base_path($dir));
+        $this->line(($writable ? '[OK]' : '[HATA]')." yazılabilir: {$dir}");
+    }
+
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $this->info('[OK] Veritabanı bağlantısı');
+    } catch (\Throwable $e) {
+        $this->error('[HATA] Veritabanı: '.$e->getMessage());
+    }
+
+    try {
+        $siteName = Setting::getValue('header_site_name', 'Boya Etkinlik');
+        $this->info('[OK] settings sorgusu: '.$siteName);
+    } catch (\Throwable $e) {
+        $this->error('[HATA] settings: '.$e->getMessage());
+    }
+
+    $socialite = base_path('vendor/laravel/socialite/src/SocialiteServiceProvider.php');
+    $this->line((is_file($socialite) ? '[OK]' : '[HATA]').' laravel/socialite');
+
+    $manifest = base_path('public/build/manifest.json');
+    $this->line((is_file($manifest) ? '[OK]' : '[HATA]').' public/build/manifest.json');
+
+    $log = storage_path('logs/laravel.log');
+    if (is_file($log)) {
+        $this->newLine();
+        $this->warn('Son 8 log satırı:');
+        $lines = @file($log, FILE_IGNORE_NEW_LINES) ?: [];
+        foreach (array_slice($lines, -8) as $line) {
+            $this->line($line);
+        }
+    } else {
+        $this->warn('laravel.log yok (izin veya henüz hata yazılmamış).');
+    }
+
+    return 0;
+})->purpose('500 hatası için sunucu tanısı (DB, izin, paket, log)');
