@@ -75,3 +75,27 @@ Artisan::command('mail:diagnostics', function () {
 
     return 0;
 })->purpose('CLI ortamında SMTP soket ve SiteMailer denemesi');
+
+Artisan::command('google:sync-settings', function () {
+    $clientId = trim((string) env('GOOGLE_CLIENT_ID', ''));
+    $clientSecret = trim((string) env('GOOGLE_CLIENT_SECRET', ''));
+    $redirectUri = trim((string) env('GOOGLE_REDIRECT_URI', url('/auth/google/callback')));
+
+    if ($clientId === '') {
+        $this->error('GOOGLE_CLIENT_ID .env içinde boş.');
+
+        return 1;
+    }
+
+    Setting::query()->updateOrCreate(['key' => 'google_client_id'], ['value' => $clientId]);
+    Setting::query()->updateOrCreate(['key' => 'google_redirect_uri'], ['value' => $redirectUri]);
+
+    if ($clientSecret !== '') {
+        Setting::query()->updateOrCreate(['key' => 'google_client_secret'], ['value' => $clientSecret]);
+        $this->info('Google OAuth ayarları veritabanına yazıldı (ID + Secret).');
+    } else {
+        $this->warn('GOOGLE_CLIENT_SECRET boş — yalnızca Client ID kaydedildi.');
+    }
+
+    return 0;
+})->purpose('.env Google OAuth değerlerini site ayarlarına aktarır');
