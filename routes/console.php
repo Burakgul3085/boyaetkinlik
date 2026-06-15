@@ -102,16 +102,30 @@ Artisan::command('site:diagnose', function () {
         $this->error('[HATA] settings: '.$e->getMessage());
     }
 
+    try {
+        view('frontend.hakkimizda')->render();
+        $this->info('[OK] Blade sayfa render (hakkimizda)');
+    } catch (\Throwable $e) {
+        $this->error('[HATA] Blade render: '.$e->getMessage());
+    }
+
     $manifest = base_path('public/build/manifest.json');
     $this->line((is_file($manifest) ? '[OK]' : '[HATA]').' public/build/manifest.json');
 
     $log = storage_path('logs/laravel.log');
     if (is_file($log)) {
         $this->newLine();
-        $this->warn('Son 8 log satırı:');
+        $this->warn('Son hata özeti (laravel.log):');
         $lines = @file($log, FILE_IGNORE_NEW_LINES) ?: [];
-        foreach (array_slice($lines, -8) as $line) {
-            $this->line($line);
+        $errorLines = array_values(array_filter($lines, fn ($line) => str_contains($line, 'production.ERROR') || str_contains($line, 'local.ERROR')));
+        if ($errorLines !== []) {
+            foreach (array_slice($errorLines, -3) as $line) {
+                $this->line($line);
+            }
+        } else {
+            foreach (array_slice($lines, -12) as $line) {
+                $this->line($line);
+            }
         }
     } else {
         $this->warn('laravel.log yok (izin veya henüz hata yazılmamış).');
