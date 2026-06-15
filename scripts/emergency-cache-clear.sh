@@ -9,6 +9,11 @@ echo "==> İzinler..."
 sudo mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache
 sudo chown -R "${DEPLOY_USER}:www-data" storage bootstrap/cache
 sudo chmod -R 775 storage bootstrap/cache
+if [[ -f .env ]]; then
+  sudo chown "${DEPLOY_USER}:www-data" .env
+  sudo chmod 640 .env
+  echo ".env izinleri www-data okuyacak şekilde ayarlandı (640)."
+fi
 
 echo "==> Önbellek siliniyor..."
 sudo rm -f bootstrap/cache/*.php

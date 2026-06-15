@@ -561,9 +561,9 @@
                 </div>
             @endif
 
-            @if($errors->has('first_name') || $errors->has('last_name') || $errors->has('email') || $errors->has('newsletter'))
+            @if(($errors ?? null)?->has('first_name') || ($errors ?? null)?->has('last_name') || ($errors ?? null)?->has('email') || ($errors ?? null)?->has('newsletter'))
                 <div class="mt-3 rounded-lg border border-rose-700/60 bg-rose-900/30 px-3 py-2 text-xs text-rose-200">
-                    {{ $errors->first('first_name') ?: $errors->first('last_name') ?: $errors->first('email') ?: $errors->first('newsletter') }}
+                    {{ ($errors ?? null)?->first('first_name') ?: ($errors ?? null)?->first('last_name') ?: ($errors ?? null)?->first('email') ?: ($errors ?? null)?->first('newsletter') }}
                 </div>
             @endif
 

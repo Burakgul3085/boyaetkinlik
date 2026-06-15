@@ -83,6 +83,14 @@ Artisan::command('site:diagnose', function () {
     $this->line('APP_KEY: '.(config('app.key') ? 'tanımlı' : 'EKSİK'));
     $this->line('APP_URL: '.config('app.url'));
 
+    $envPath = base_path('.env');
+    if (is_file($envPath)) {
+        $perms = substr(sprintf('%o', fileperms($envPath)), -4);
+        $this->line((is_readable($envPath) ? '[OK]' : '[HATA]')." .env okunabilir (izin: {$perms})");
+    } else {
+        $this->error('[HATA] .env dosyası yok');
+    }
+
     foreach (['storage/logs', 'storage/framework/views', 'storage/framework/sessions', 'bootstrap/cache'] as $dir) {
         $writable = is_writable(base_path($dir));
         $this->line(($writable ? '[OK]' : '[HATA]')." yazılabilir: {$dir}");
