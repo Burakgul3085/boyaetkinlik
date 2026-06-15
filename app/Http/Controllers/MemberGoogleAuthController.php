@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Support\GoogleAuthConfig;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
@@ -39,62 +41,73 @@ class MemberGoogleAuthController extends Controller
         try {
             GoogleAuthConfig::applyToSocialite();
             $googleUser = Socialite::driver('google')->user();
-        } catch (Throwable $exception) {
-            report($exception);
 
-            return redirect()->route('member.login')
-                ->withErrors(['email' => 'Google doğrulaması tamamlanamadı. Lütfen tekrar deneyin.']);
-        }
+            $googleId = trim((string) $googleUser->getId());
+            $email = Str::lower(trim((string) $googleUser->getEmail()));
 
-        $googleId = trim((string) $googleUser->getId());
-        $email = Str::lower(trim((string) $googleUser->getEmail()));
-
-        if ($googleId === '' || $email === '') {
-            return redirect()->route('member.login')
-                ->withErrors(['email' => 'Google hesabından e-posta bilgisi alınamadı.']);
-        }
-
-        $userByGoogle = User::query()->where('google_id', $googleId)->first();
-
-        if ($userByGoogle !== null) {
-            return $this->loginMember($request, $userByGoogle, false);
-        }
-
-        $userByEmail = User::query()
-            ->where('email', $email)
-            ->where('is_admin', false)
-            ->first();
-
-        if ($userByEmail !== null) {
-            if ($userByEmail->google_id !== null && $userByEmail->google_id !== $googleId) {
+            if ($googleId === '' || $email === '') {
                 return redirect()->route('member.login')
-                    ->withErrors(['email' => 'Bu e-posta farklı bir Google hesabına bağlı.']);
+                    ->withErrors(['email' => 'Google hesabından e-posta bilgisi alınamadı.']);
             }
 
-            $userByEmail->forceFill([
+            $avatar = $this->normalizeAvatar($googleUser->getAvatar());
+
+            $userByGoogle = User::query()->where('google_id', $googleId)->first();
+
+            if ($userByGoogle !== null) {
+                return $this->loginMember($request, $userByGoogle, false);
+            }
+
+            $userByEmail = User::query()
+                ->where('email', $email)
+                ->where('is_admin', false)
+                ->first();
+
+            if ($userByEmail !== null) {
+                if ($userByEmail->google_id !== null && $userByEmail->google_id !== $googleId) {
+                    return redirect()->route('member.login')
+                        ->withErrors(['email' => 'Bu e-posta farklı bir Google hesabına bağlı.']);
+                }
+
+                $userByEmail->forceFill([
+                    'google_id' => $googleId,
+                    'avatar' => $avatar ?: $userByEmail->avatar,
+                    'email_verified_at' => $userByEmail->email_verified_at ?? now(),
+                ])->save();
+
+                return $this->loginMember($request, $userByEmail->fresh(), false);
+            }
+
+            [$firstName, $lastName] = $this->splitName($googleUser);
+
+            $user = User::query()->create([
+                'name' => trim($firstName.' '.$lastName) ?: $googleUser->getName() ?: 'Üye',
+                'first_name' => $firstName !== '' ? $firstName : 'Üye',
+                'last_name' => $lastName,
+                'email' => $email,
                 'google_id' => $googleId,
-                'avatar' => $googleUser->getAvatar() ?: $userByEmail->avatar,
-                'email_verified_at' => $userByEmail->email_verified_at ?? now(),
-            ])->save();
+                'avatar' => $avatar,
+                'is_admin' => false,
+            ]);
 
-            return $this->loginMember($request, $userByEmail->fresh(), false);
+            $user->forceFill(['email_verified_at' => now()])->save();
+
+            return $this->loginMember($request, $user->fresh(), true);
+        } catch (Throwable $exception) {
+            Log::error('[google_callback] '.$exception->getMessage(), [
+                'type' => get_class($exception),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]);
+            report($exception);
+
+            $message = 'Google ile giriş tamamlanamadı. Lütfen tekrar deneyin.';
+            if ($exception instanceof QueryException && str_contains($exception->getMessage(), 'google_id')) {
+                $message = 'Veritabanı Google girişi için hazır değil. Sunucuda php artisan migrate --force çalıştırın.';
+            }
+
+            return redirect()->route('member.login')->withErrors(['email' => $message]);
         }
-
-        [$firstName, $lastName] = $this->splitName($googleUser);
-
-        $user = User::query()->create([
-            'name' => trim($firstName.' '.$lastName) ?: $googleUser->getName() ?: 'Üye',
-            'first_name' => $firstName,
-            'last_name' => $lastName,
-            'email' => $email,
-            'google_id' => $googleId,
-            'avatar' => $googleUser->getAvatar(),
-            'password' => null,
-            'is_admin' => false,
-            'email_verified_at' => now(),
-        ]);
-
-        return $this->loginMember($request, $user, true);
     }
 
     private function loginMember(Request $request, User $user, bool $isNewGoogleAccount): RedirectResponse
@@ -125,6 +138,13 @@ class MemberGoogleAuthController extends Controller
             : 'Google ile giriş başarılı. Hoş geldiniz.';
 
         return redirect()->route('home')->with('success', $message);
+    }
+
+    private function normalizeAvatar(mixed $avatar): ?string
+    {
+        $value = trim((string) ($avatar ?? ''));
+
+        return $value !== '' ? $value : null;
     }
 
     /**

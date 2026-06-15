@@ -17,7 +17,7 @@ return new class extends Migration
 
         if (! Schema::hasColumn('users', 'avatar')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->string('avatar')->nullable()->after('google_id');
+                $table->text('avatar')->nullable()->after('google_id');
             });
         }
 

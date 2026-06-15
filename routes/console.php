@@ -141,6 +141,11 @@ Artisan::command('site:diagnose', function () {
         $this->error('[HATA] Blade render: '.$e->getMessage());
     }
 
+    $hasGoogleId = \Illuminate\Support\Facades\Schema::hasColumn('users', 'google_id');
+    $hasAvatar = \Illuminate\Support\Facades\Schema::hasColumn('users', 'avatar');
+    $this->line(($hasGoogleId ? '[OK]' : '[HATA]').' users.google_id sütunu');
+    $this->line(($hasAvatar ? '[OK]' : '[HATA]').' users.avatar sütunu');
+
     $manifest = base_path('public/build/manifest.json');
     $this->line((is_file($manifest) ? '[OK]' : '[HATA]').' public/build/manifest.json');
 
