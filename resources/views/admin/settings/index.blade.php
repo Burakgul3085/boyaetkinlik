@@ -97,19 +97,6 @@
             <p class="mt-2 text-xs text-slate-500">İletişim formu mesajları, yukarıdaki SMTP ayarlarıyla footerdaki iletişim e-posta adresine gönderilir.</p>
         </div>
 
-        <div class="rounded-xl border border-violet-100 bg-violet-50/40 p-4">
-            <h2 class="mb-3 text-lg font-semibold text-slate-900">Google ile Üye Girişi (OAuth)</h2>
-            <div class="grid gap-3 md:grid-cols-2">
-                <input name="google_client_id" value="{{ $settings['google_client_id'] ?? '' }}" class="input-ui md:col-span-2" placeholder="Google Client ID">
-                <input name="google_client_secret" value="{{ $settings['google_client_secret'] ?? '' }}" class="input-ui md:col-span-2" placeholder="Google Client Secret">
-                <input type="url" name="google_redirect_uri" value="{{ $settings['google_redirect_uri'] ?? url('/auth/google/callback') }}" class="input-ui md:col-span-2" placeholder="Redirect URI">
-            </div>
-            <p class="mt-2 text-xs text-slate-500">
-                Google Cloud Console → OAuth 2.0 Client ID (Web). Redirect URI:
-                <code class="rounded bg-white px-1">{{ url('/auth/google/callback') }}</code>
-            </p>
-        </div>
-
         <div class="rounded-xl border border-slate-200 p-4">
             <h2 class="mb-3 text-lg font-semibold text-slate-900">Shopier Ayarları</h2>
             <div class="grid gap-3 md:grid-cols-2">

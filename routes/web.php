@@ -29,7 +29,6 @@ use App\Http\Controllers\GuestPurchaseRecoveryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MemberAccountController;
 use App\Http\Controllers\MemberAuthController;
-use App\Http\Controllers\MemberGoogleAuthController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PaintRoomController;
 use App\Http\Controllers\PurchaseVerificationController;
@@ -156,12 +155,6 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:5,1')
         ->name('member.forgot-password.submit');
 
-    Route::get('/auth/google', [MemberGoogleAuthController::class, 'redirect'])
-        ->middleware('throttle:12,1')
-        ->name('member.google.redirect');
-    Route::get('/auth/google/callback', [MemberGoogleAuthController::class, 'callback'])
-        ->middleware('throttle:12,1')
-        ->name('member.google.callback');
 });
 
 Route::middleware('member')->group(function () {

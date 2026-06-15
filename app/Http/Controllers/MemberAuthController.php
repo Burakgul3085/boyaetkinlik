@@ -37,17 +37,6 @@ class MemberAuthController extends Controller
             'email.unique' => 'Bu e-posta ile kayıtlı bir hesap zaten var.',
         ]);
 
-        $existingGoogle = User::query()
-            ->where('email', $data['email'])
-            ->whereNotNull('google_id')
-            ->exists();
-
-        if ($existingGoogle) {
-            return back()
-                ->withErrors(['email' => 'Bu e-posta Google ile kayıtlı. Lütfen Google ile giriş yapın.'])
-                ->withInput();
-        }
-
         try {
             $user = User::query()->create([
                 'name' => trim($data['first_name'].' '.$data['last_name']),
@@ -146,12 +135,6 @@ class MemberAuthController extends Controller
             ->first();
 
         if ($user !== null) {
-            if ($user->isGoogleOnly()) {
-                return redirect()
-                    ->route('member.forgot-password')
-                    ->with('forgot_status', 'Bu hesap Google ile kayıtlı. Şifre sıfırlama yerine Google ile giriş yapın.');
-            }
-
             $plainPassword = $this->generateNumericPassword(8);
             $user->password = $plainPassword;
             $user->save();
@@ -221,17 +204,6 @@ HTML;
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
-
-        $member = User::query()
-            ->where('email', $credentials['email'])
-            ->where('is_admin', false)
-            ->first();
-
-        if ($member?->isGoogleOnly()) {
-            return back()
-                ->withErrors(['email' => 'Bu hesap Google ile kayıtlı. Lütfen Google ile giriş yapın.'])
-                ->onlyInput('email');
-        }
 
         if (! Auth::attempt($credentials, true)) {
             return back()->withErrors(['email' => 'E-posta veya şifre hatalı.'])->onlyInput('email');

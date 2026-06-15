@@ -76,30 +76,6 @@ Artisan::command('mail:diagnostics', function () {
     return 0;
 })->purpose('CLI ortamında SMTP soket ve SiteMailer denemesi');
 
-Artisan::command('google:sync-settings', function () {
-    $clientId = trim((string) env('GOOGLE_CLIENT_ID', ''));
-    $clientSecret = trim((string) env('GOOGLE_CLIENT_SECRET', ''));
-    $redirectUri = trim((string) env('GOOGLE_REDIRECT_URI', url('/auth/google/callback')));
-
-    if ($clientId === '') {
-        $this->error('GOOGLE_CLIENT_ID .env içinde boş.');
-
-        return 1;
-    }
-
-    Setting::query()->updateOrCreate(['key' => 'google_client_id'], ['value' => $clientId]);
-    Setting::query()->updateOrCreate(['key' => 'google_redirect_uri'], ['value' => $redirectUri]);
-
-    if ($clientSecret !== '') {
-        Setting::query()->updateOrCreate(['key' => 'google_client_secret'], ['value' => $clientSecret]);
-        $this->info('Google OAuth ayarları veritabanına yazıldı (ID + Secret).');
-    } else {
-        $this->warn('GOOGLE_CLIENT_SECRET boş — yalnızca Client ID kaydedildi.');
-    }
-
-    return 0;
-})->purpose('.env Google OAuth değerlerini site ayarlarına aktarır');
-
 Artisan::command('site:diagnose', function () {
     $this->line('PHP: '.PHP_VERSION.' ('.PHP_SAPI.')');
     $this->line('APP_ENV: '.config('app.env'));
@@ -125,9 +101,6 @@ Artisan::command('site:diagnose', function () {
     } catch (\Throwable $e) {
         $this->error('[HATA] settings: '.$e->getMessage());
     }
-
-    $socialite = base_path('vendor/laravel/socialite/src/SocialiteServiceProvider.php');
-    $this->line((is_file($socialite) ? '[OK]' : '[HATA]').' laravel/socialite');
 
     $manifest = base_path('public/build/manifest.json');
     $this->line((is_file($manifest) ? '[OK]' : '[HATA]').' public/build/manifest.json');

@@ -26,8 +26,6 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
-        'google_id',
-        'avatar',
         'is_admin',
     ];
 
@@ -99,15 +97,5 @@ class User extends Authenticatable
         }
 
         return (string) $this->name;
-    }
-
-    public function usesGoogleAuth(): bool
-    {
-        return $this->google_id !== null && $this->google_id !== '';
-    }
-
-    public function isGoogleOnly(): bool
-    {
-        return $this->usesGoogleAuth() && blank($this->getRawOriginal('password'));
     }
 }
