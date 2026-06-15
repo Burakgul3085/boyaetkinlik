@@ -18,6 +18,12 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <form method="get" action="{{ route('admin.members.index') }}" class="card mt-5 flex flex-wrap items-end gap-3 p-4">
         <div class="min-w-[16rem] flex-1">
             <label class="mb-1 block text-xs font-medium text-slate-600">Ara (ad, soyad, e-posta)</label>
@@ -66,7 +72,18 @@
                     </td>
                     <td class="pr-2 whitespace-nowrap text-slate-600">{{ $member->updated_at?->format('d.m.Y H:i') }}</td>
                     <td class="text-right">
-                        <a href="{{ route('admin.members.show', $member) }}" class="btn-secondary inline-flex px-3 py-1.5 text-xs">Detay</a>
+                        <div class="flex flex-wrap items-center justify-end gap-2">
+                            <a href="{{ route('admin.members.show', $member) }}" class="btn-secondary inline-flex px-3 py-1.5 text-xs">Detay</a>
+                            <form
+                                method="post"
+                                action="{{ route('admin.members.destroy', $member) }}"
+                                onsubmit="return confirm('Bu üyeyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')"
+                            >
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-danger px-3 py-1.5 text-xs">Sil</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             @empty

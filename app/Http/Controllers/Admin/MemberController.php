@@ -94,6 +94,18 @@ class MemberController extends Controller
             ->with('success', 'Yanıt kaydedildi ve üyeye e-posta ile gönderildi.');
     }
 
+    public function destroy(User $user): RedirectResponse
+    {
+        abort_if($user->is_admin, 404);
+
+        $label = $user->display_name.' ('.$user->email.')';
+        $user->delete();
+
+        return redirect()
+            ->route('admin.members.index')
+            ->with('success', 'Üye silindi: '.$label);
+    }
+
     private function sendPurchaseSupportReplyEmail(PurchaseSupportTicket $ticket, User $user): void
     {
         $appName = config('app.name', 'Boya Etkinlik');

@@ -9,7 +9,18 @@
             <h1 class="mt-2 text-3xl font-bold text-slate-900">{{ $member->display_name }}</h1>
             <p class="mt-1 text-sm text-slate-500">Üye #{{ $member->id }} · Kayıt {{ $member->created_at?->format('d.m.Y H:i') }}</p>
         </div>
-        <a href="{{ route('admin.members.index') }}" class="btn-secondary">Listeye dön</a>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('admin.members.index') }}" class="btn-secondary">Listeye dön</a>
+            <form
+                method="post"
+                action="{{ route('admin.members.destroy', $member) }}"
+                onsubmit="return confirm('Bu üyeyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')"
+            >
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-danger text-sm">Üyeyi Sil</button>
+            </form>
+        </div>
     </div>
 
     <div class="mt-6 grid gap-4 lg:grid-cols-3">

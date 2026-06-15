@@ -231,6 +231,7 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
 
         Route::get('/uyeler', [AdminMemberController::class, 'index'])->name('members.index');
         Route::get('/uyeler/{user}', [AdminMemberController::class, 'show'])->name('members.show');
+        Route::delete('/uyeler/{user}', [AdminMemberController::class, 'destroy'])->name('members.destroy');
         Route::post('/uyeler/{user}/destek/{ticket}/yanit', [AdminMemberController::class, 'replyPurchaseSupport'])
             ->middleware('throttle:30,1')
             ->name('members.support.reply');
