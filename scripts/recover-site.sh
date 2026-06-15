@@ -21,6 +21,8 @@ sudo chmod -R 775 storage bootstrap/cache
 sudo rm -f storage/logs/laravel.log 2>/dev/null || true
 
 echo "==> Eski önbellek dosyaları siliniyor..."
+sudo rm -f bootstrap/cache/*.php 2>/dev/null || true
+sudo rm -rf storage/framework/views/* 2>/dev/null || true
 rm -f bootstrap/cache/*.php 2>/dev/null || true
 run php artisan optimize:clear
 run php artisan view:clear
