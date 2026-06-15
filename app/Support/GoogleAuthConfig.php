@@ -9,15 +9,29 @@ class GoogleAuthConfig
     public static function clientId(): string
     {
         $fromEnv = trim((string) config('services.google.client_id', ''));
+        if ($fromEnv !== '') {
+            return $fromEnv;
+        }
 
-        return $fromEnv !== '' ? $fromEnv : trim((string) Setting::getValue('google_client_id', ''));
+        try {
+            return trim((string) Setting::getValue('google_client_id', ''));
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     public static function clientSecret(): string
     {
         $fromEnv = trim((string) config('services.google.client_secret', ''));
+        if ($fromEnv !== '') {
+            return $fromEnv;
+        }
 
-        return $fromEnv !== '' ? $fromEnv : trim((string) Setting::getValue('google_client_secret', ''));
+        try {
+            return trim((string) Setting::getValue('google_client_secret', ''));
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     public static function redirectUri(): string
@@ -27,9 +41,16 @@ class GoogleAuthConfig
             return $fromEnv;
         }
 
-        $fromSetting = trim((string) Setting::getValue('google_redirect_uri', ''));
+        try {
+            $fromSetting = trim((string) Setting::getValue('google_redirect_uri', ''));
+            if ($fromSetting !== '') {
+                return $fromSetting;
+            }
+        } catch (\Throwable) {
+            /* */
+        }
 
-        return $fromSetting !== '' ? $fromSetting : url('/auth/google/callback');
+        return url('/auth/google/callback');
     }
 
     public static function isConfigured(): bool
