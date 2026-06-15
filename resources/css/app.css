@@ -2615,6 +2615,8 @@
 
 .auth-google-btn__icon {
     @apply h-5 w-5 shrink-0;
+    display: block;
+    aspect-ratio: 1 / 1;
 }
 
 .auth-google-hint {
