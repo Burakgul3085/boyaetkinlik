@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\ColoringPage;
 use App\Models\PaintRoom;
 use App\Models\PaintRoomSignal;
@@ -76,6 +77,87 @@ class PaintRoomService
     }
 
     /**
+     * @return array<int, array{id: int, title: string, previewUrl: string}>
+     */
+    public function freePagesInCategory(int $categoryId): array
+    {
+        $exists = Category::query()->whereKey($categoryId)->exists();
+        if (! $exists) {
+            return [];
+        }
+
+        return ColoringPage::query()
+            ->where('is_free', true)
+            ->where('category_id', $categoryId)
+            ->orderBy('title')
+            ->get(['id', 'title'])
+            ->map(fn (ColoringPage $page) => [
+                'id' => $page->id,
+                'title' => $page->title,
+                'previewUrl' => route('products.preview-image', $page),
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function hasAnyFreePages(): bool
+    {
+        return ColoringPage::query()->where('is_free', true)->exists();
+    }
+
+    /**
+     * Ücretsiz boyaması olan kategoriler — iç içe ağaç.
+     *
+     * @return list<array{id: int, name: string, directCount: int, totalCount: int, children: array}>
+     */
+    public function freeCategoryTree(): array
+    {
+        $allCategories = Category::allForAdminTree();
+
+        $directCounts = ColoringPage::query()
+            ->where('is_free', true)
+            ->selectRaw('category_id, COUNT(*) as aggregate')
+            ->groupBy('category_id')
+            ->pluck('aggregate', 'category_id')
+            ->map(fn ($count) => (int) $count)
+            ->all();
+
+        $subtreeCounts = [];
+        foreach ($allCategories as $category) {
+            $sum = 0;
+            foreach (Category::subtreeIdsFromCollection($allCategories, $category->id) as $id) {
+                $sum += $directCounts[$id] ?? 0;
+            }
+            $subtreeCounts[$category->id] = $sum;
+        }
+
+        $byParent = Category::childrenGroupedByParentId($allCategories);
+
+        $build = function (int $parentKey) use (&$build, $byParent, $directCounts, $subtreeCounts): array {
+            $nodes = [];
+            foreach ($byParent[$parentKey] ?? [] as $category) {
+                $total = $subtreeCounts[$category->id] ?? 0;
+                if ($total === 0) {
+                    continue;
+                }
+
+                $nodes[] = [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'directCount' => $directCounts[$category->id] ?? 0,
+                    'totalCount' => $total,
+                    'children' => $build($category->id),
+                ];
+            }
+
+            return $nodes;
+        };
+
+        return $build(0);
+    }
+
+    /**
+     * @deprecated freeCategoryTree + freePagesInCategory kullanın
      * @return array<int, array{id: int, title: string, previewUrl: string}>
      */
     public function freePagesForPicker(): array

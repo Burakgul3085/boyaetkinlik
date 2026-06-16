@@ -81,6 +81,7 @@ Route::post('/ziyaretci-geri-bildirim', [VisitorFeedbackController::class, 'stor
 
 Route::prefix('goruntulu-boyama')->name('paint-room.')->group(function () {
     Route::get('/', [PaintRoomController::class, 'index'])->name('index');
+    Route::get('/ucretsiz-sayfalar', [PaintRoomController::class, 'freePagesByCategory'])->name('free-pages');
     Route::get('/katil', [PaintRoomController::class, 'joinForm'])->name('join.form');
     Route::post('/katil', [PaintRoomController::class, 'joinByPin'])
         ->middleware('throttle:8,1')

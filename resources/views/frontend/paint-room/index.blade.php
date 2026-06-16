@@ -2,8 +2,12 @@
 
 @section('title', 'Görüntülü Boyama')
 
+@push('scripts')
+    @vite('resources/js/paint-room-page-browser.js')
+@endpush
+
 @section('content')
-<section class="mx-auto max-w-3xl">
+<section class="mx-auto max-w-4xl">
     <div class="card overflow-hidden p-0">
         <div class="bg-gradient-to-br from-violet-600 via-indigo-600 to-teal-500 px-6 py-8 text-white md:px-8">
             <p class="text-xs font-bold uppercase tracking-widest text-white/80">Yeni özellik</p>
@@ -24,29 +28,19 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="rounded-2xl border border-violet-100 bg-violet-50/60 p-5 sm:col-span-2">
                     <h2 class="text-lg font-bold text-slate-900">Oda oluştur</h2>
-                    <p class="mt-2 text-sm text-slate-600">Yalnızca kayıtlı üyeler oda açabilir. Önce boyama sayfası seçin; oda en fazla 2 kişi ve 30 dakika sürer.</p>
+                    <p class="mt-2 text-sm text-slate-600">Kategori ve alt kategorilerden ücretsiz boyama seçin; oda en fazla 2 kişi ve 30 dakika sürer.</p>
                     @if($canCreate)
-                        @if(count($freePages) > 0)
+                        @if($hasFreePages && count($categoryTree) > 0)
                             <form method="post" action="{{ route('paint-room.create') }}" class="mt-4 space-y-4" id="paint-room-create-form">
                                 @csrf
                                 <input type="hidden" name="coloring_page_id" id="paint-room-create-page-id" value="{{ old('coloring_page_id') }}">
-                                <div class="paint-room-page-picker" id="paint-room-create-picker">
-                                    @foreach($freePages as $page)
-                                        <button
-                                            type="button"
-                                            class="paint-room-page-picker__item"
-                                            data-page-id="{{ $page['id'] }}"
-                                            data-page-title="{{ $page['title'] }}"
-                                            title="{{ $page['title'] }}"
-                                        >
-                                            <span class="paint-room-page-picker__thumb">
-                                                <img src="{{ $page['previewUrl'] }}" alt="" loading="lazy" width="120" height="150">
-                                            </span>
-                                            <span class="paint-room-page-picker__label">{{ $page['title'] }}</span>
-                                        </button>
-                                    @endforeach
-                                </div>
-                                <p id="paint-room-create-hint" class="text-sm text-slate-500">Boyama seçmek için bir görsele tıklayın.</p>
+                                @include('partials.paint-room-page-browser', [
+                                    'browserId' => 'paint-room-create-browser',
+                                    'categoryTree' => $categoryTree,
+                                    'freePagesUrl' => $freePagesUrl,
+                                    'selectedPageId' => old('coloring_page_id'),
+                                    'compact' => false,
+                                ])
                                 <button type="submit" class="btn-primary w-full" id="paint-room-create-submit" disabled>Oda oluştur</button>
                             </form>
                         @else
@@ -67,49 +61,29 @@
             </div>
 
             <ul class="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600">
-                <li class="flex gap-2"><span class="text-violet-600">•</span> Oda sahibi istediği ücretsiz boyamayı seçebilir ve odadayken değiştirebilir.</li>
+                <li class="flex gap-2"><span class="text-violet-600">•</span> Oda sahibi kategorilerden istediği ücretsiz boyamayı seçebilir ve odadayken değiştirebilir.</li>
                 <li class="flex gap-2"><span class="text-violet-600">•</span> Davet linki oda açıkken tekrar kullanılabilir; oda kapanınca geçersiz olur.</li>
                 <li class="flex gap-2"><span class="text-violet-600">•</span> PIN, oda kapanana veya süre dolana kadar geçerlidir.</li>
-                <li class="flex gap-2"><span class="text-violet-600">•</span> Oda sahibi ayrılırsa oda kapanır.</li>
             </ul>
         </div>
     </div>
 </section>
 
-@if($canCreate && count($freePages) > 0)
+@if($canCreate && $hasFreePages && count($categoryTree) > 0)
     @push('scripts')
     <script>
         (function () {
             const form = document.getElementById('paint-room-create-form');
             const input = document.getElementById('paint-room-create-page-id');
             const submit = document.getElementById('paint-room-create-submit');
-            const hint = document.getElementById('paint-room-create-hint');
-            const picker = document.getElementById('paint-room-create-picker');
-            if (!form || !input || !submit || !picker) return;
+            if (!form || !input || !submit) return;
 
-            function selectPage(btn) {
-                picker.querySelectorAll('.paint-room-page-picker__item').forEach((el) => {
-                    el.classList.toggle('paint-room-page-picker__item--active', el === btn);
-                });
-                input.value = btn.dataset.pageId || '';
+            form.addEventListener('paint-room:page-selected', (e) => {
+                input.value = e.detail?.pageId || '';
                 submit.disabled = !input.value;
-                if (hint) {
-                    hint.textContent = input.value
-                        ? `Seçilen: ${btn.dataset.pageTitle || 'Boyama'}`
-                        : 'Boyama seçmek için bir görsele tıklayın.';
-                }
-            }
-
-            picker.addEventListener('click', (e) => {
-                const btn = e.target.closest('.paint-room-page-picker__item');
-                if (!btn) return;
-                selectPage(btn);
             });
 
-            const initial = input.value
-                ? picker.querySelector(`[data-page-id="${input.value}"]`)
-                : null;
-            if (initial) selectPage(initial);
+            if (input.value) submit.disabled = false;
         })();
     </script>
     @endpush

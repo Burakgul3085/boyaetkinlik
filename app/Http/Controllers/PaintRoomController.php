@@ -25,7 +25,9 @@ class PaintRoomController extends Controller
     {
         return view('frontend.paint-room.index', [
             'canCreate' => auth()->check() && ! auth()->user()->is_admin,
-            'freePages' => $this->rooms->freePagesForPicker(),
+            'hasFreePages' => $this->rooms->hasAnyFreePages(),
+            'categoryTree' => $this->rooms->freeCategoryTree(),
+            'freePagesUrl' => route('paint-room.free-pages'),
         ]);
     }
 
@@ -98,7 +100,8 @@ class PaintRoomController extends Controller
                 ? (auth()->user()->name ?? 'Oda sahibi')
                 : ($room->guest_display_name ?: 'Misafir'),
             'coloringPageId' => $room->coloring_page_id,
-            'freePages' => $role === 'owner' ? $this->rooms->freePagesForPicker() : [],
+            'categoryTree' => $role === 'owner' ? $this->rooms->freeCategoryTree() : [],
+            'freePagesUrl' => $role === 'owner' ? route('paint-room.free-pages') : null,
             'changePageUrl' => $role === 'owner' ? route('paint-room.page.change', $room) : null,
         ]);
     }
@@ -398,6 +401,19 @@ class PaintRoomController extends Controller
                 fn (PaintRoomSignal $signal): array => $this->formatChatMessage($signal)
             )->values(),
             'role' => $role,
+        ]);
+    }
+
+    public function freePagesByCategory(Request $request): JsonResponse
+    {
+        $categoryId = max(0, (int) $request->query('category_id', 0));
+        if ($categoryId <= 0) {
+            return response()->json(['pages' => [], 'categoryId' => null]);
+        }
+
+        return response()->json([
+            'categoryId' => $categoryId,
+            'pages' => $this->rooms->freePagesInCategory($categoryId),
         ]);
     }
 

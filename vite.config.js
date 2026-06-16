@@ -28,6 +28,7 @@ export default defineConfig({
                 'resources/js/online-experiment-letter-trace.js',
                 'resources/js/online-experiment-number-trace.js',
                 'resources/js/paint-room.js',
+                'resources/js/paint-room-page-browser.js',
             ],
             refresh: true,
         }),

@@ -3,7 +3,7 @@
 @section('title', 'Boyama Odası')
 
 @push('scripts')
-    @vite('resources/js/paint-room.js')
+    @vite(['resources/js/paint-room.js', 'resources/js/paint-room-page-browser.js'])
 @endpush
 
 @section('content')
@@ -79,7 +79,7 @@
         <aside
             class="online-paint-toolbar paint-room-toolbar"
             aria-label="Boyama araçları"
-            x-data="{ openTools: true, openColor: true, openBrush: true, openView: true, openEdit: true, openPages: {{ $role === 'owner' && count($freePages) ? 'true' : 'false' }} }"
+            x-data="{ openTools: true, openColor: true, openBrush: true, openView: true, openEdit: true, openPages: {{ $role === 'owner' && count($categoryTree) ? 'true' : 'false' }} }"
         >
             <div class="online-paint-toolbar__head">
                 <div>
@@ -89,31 +89,21 @@
                 <span class="online-paint-toolbar__badge">Canlı</span>
             </div>
 
-            @if($role === 'owner' && count($freePages))
+            @if($role === 'owner' && count($categoryTree))
                 <section class="online-paint-panel paint-room-page-panel" id="paint-room-page-panel">
                     <button type="button" class="online-paint-panel__toggle" @click="openPages = !openPages">
                         <span>Boyama seç</span>
                         <span class="online-paint-panel__chevron" :class="openPages && 'online-paint-panel__chevron--open'">›</span>
                     </button>
                     <div class="online-paint-panel__body" x-show="openPages" x-cloak>
-                        <p class="online-paint-mini-label">Ücretsiz boyamalar</p>
-                        <p class="text-[11px] leading-relaxed text-slate-500">Yeni sayfa seçildiğinde tuval sıfırlanır. Yalnızca siz değiştirebilirsiniz.</p>
-                        <div class="paint-room-page-picker paint-room-page-picker--compact" id="paint-room-lobby-picker">
-                            @foreach($freePages as $page)
-                                <button
-                                    type="button"
-                                    class="paint-room-page-picker__item {{ (int) $coloringPageId === (int) $page['id'] ? 'paint-room-page-picker__item--active' : '' }}"
-                                    data-page-id="{{ $page['id'] }}"
-                                    data-page-title="{{ $page['title'] }}"
-                                    title="{{ $page['title'] }}"
-                                >
-                                    <span class="paint-room-page-picker__thumb">
-                                        <img src="{{ $page['previewUrl'] }}" alt="" loading="lazy" width="80" height="100">
-                                    </span>
-                                    <span class="paint-room-page-picker__label">{{ $page['title'] }}</span>
-                                </button>
-                            @endforeach
-                        </div>
+                        <p class="text-[11px] leading-relaxed text-slate-500">Kategori seçin, ardından boyama. Yeni sayfada tuval sıfırlanır.</p>
+                        @include('partials.paint-room-page-browser', [
+                            'browserId' => 'paint-room-lobby-browser',
+                            'categoryTree' => $categoryTree,
+                            'freePagesUrl' => $freePagesUrl,
+                            'selectedPageId' => $coloringPageId,
+                            'compact' => true,
+                        ])
                     </div>
                 </section>
             @endif

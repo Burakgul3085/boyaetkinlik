@@ -128,7 +128,7 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     }
 
     function setActivePickerItem(pageId) {
-        document.querySelectorAll('#paint-room-lobby-picker .paint-room-page-picker__item').forEach((btn) => {
+        document.querySelectorAll('[data-paint-room-page-browser] .paint-room-page-picker__item').forEach((btn) => {
             btn.classList.toggle('paint-room-page-picker__item--active', btn.dataset.pageId === String(pageId));
             btn.disabled = btn.dataset.pageId === String(pageId);
         });
@@ -1230,16 +1230,15 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const infoToggle = document.getElementById('paint-room-info-toggle');
     const infoClose = document.getElementById('paint-room-info-close');
     const pageToggle = document.getElementById('paint-room-page-toggle');
-    const lobbyPicker = document.getElementById('paint-room-lobby-picker');
+    const lobbyBrowser = document.getElementById('paint-room-lobby-browser');
 
     pageToggle?.addEventListener('click', () => {
         document.getElementById('paint-room-page-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
-    lobbyPicker?.addEventListener('click', (e) => {
-        const btn = e.target.closest('.paint-room-page-picker__item');
-        if (!btn || role !== 'owner') return;
-        changeColoringPage(btn.dataset.pageId, btn.dataset.pageTitle || '');
+    lobbyBrowser?.addEventListener('paint-room:page-selected', (e) => {
+        if (role !== 'owner') return;
+        changeColoringPage(e.detail?.pageId, e.detail?.title || '');
     });
 
     if (currentColoringPageId) {
