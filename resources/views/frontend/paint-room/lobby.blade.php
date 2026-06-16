@@ -93,6 +93,22 @@
         </div>
     </header>
 
+    @if($role === 'owner')
+        <div id="paint-room-mobile-invite" class="paint-room-mobile-invite lg:hidden" @if($room->hasGuest()) hidden @endif>
+            <div class="paint-room-mobile-invite__inner">
+                <div class="min-w-0 flex-1">
+                    <p class="paint-room-mobile-invite__label">Misafir davet et</p>
+                    <p class="paint-room-mobile-invite__pin">{{ $pin }}</p>
+                </div>
+                <div class="paint-room-mobile-invite__actions">
+                    <button type="button" class="paint-room-mobile-invite__btn" data-copy-target="paint-room-pin">PIN</button>
+                    <button type="button" class="paint-room-mobile-invite__btn" data-copy-target="paint-room-invite-url">Link</button>
+                    <button type="button" id="paint-room-mobile-share" class="paint-room-mobile-invite__btn paint-room-mobile-invite__btn--primary">Paylaş</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @if(session('success'))
         <div class="paint-room-studio__toast" data-paint-room-toast>{{ session('success') }}</div>
     @endif

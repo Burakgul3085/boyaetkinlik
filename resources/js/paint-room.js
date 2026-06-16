@@ -809,6 +809,7 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
             const prev = participantCount;
             participantCount = data.participants;
             if (countEl) countEl.textContent = String(participantCount);
+            syncMobileInviteBar(participantCount);
             if (statusText) statusText.textContent = data.message;
 
             const nextPageId = data.coloringPageId ? parseInt(String(data.coloringPageId), 10) : null;
@@ -1239,6 +1240,8 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const infoPanel = document.getElementById('paint-room-info-panel');
     const infoToggle = document.getElementById('paint-room-info-toggle');
     const infoClose = document.getElementById('paint-room-info-close');
+    const mobileInviteBar = document.getElementById('paint-room-mobile-invite');
+    const mobileShareBtn = document.getElementById('paint-room-mobile-share');
     const pageToggle = document.getElementById('paint-room-page-toggle');
     const lobbyBrowser = document.getElementById('paint-room-lobby-browser');
 
@@ -1255,11 +1258,43 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         setActivePickerItem(currentColoringPageId);
     }
 
+    function syncMobileInviteBar(count = participantCount) {
+        if (!mobileInviteBar) return;
+        mobileInviteBar.hidden = count >= 2;
+    }
+
     infoToggle?.addEventListener('click', () => infoPanel?.classList.remove('hidden'));
     infoClose?.addEventListener('click', () => infoPanel?.classList.add('hidden'));
     infoPanel?.addEventListener('click', (e) => {
         if (e.target === infoPanel) infoPanel.classList.add('hidden');
     });
+
+    mobileShareBtn?.addEventListener('click', async () => {
+        const inviteInput = document.getElementById('paint-room-invite-url');
+        const pinEl = document.getElementById('paint-room-pin');
+        const inviteUrl = inviteInput?.value?.trim() || '';
+        const pin = pinEl?.textContent?.trim() || '';
+        const shareText = pin && inviteUrl
+            ? `Görüntülü boyama odasına katıl.\nPIN: ${pin}\nLink: ${inviteUrl}`
+            : inviteUrl;
+
+        if (navigator.share && inviteUrl) {
+            try {
+                await navigator.share({
+                    title: 'Boya Etkinlik — Görüntülü boyama daveti',
+                    text: shareText,
+                    url: inviteUrl,
+                });
+                return;
+            } catch (err) {
+                if (err?.name === 'AbortError') return;
+            }
+        }
+
+        infoPanel?.classList.remove('hidden');
+    });
+
+    syncMobileInviteBar();
 
     if (role === 'owner') {
         window.addEventListener('pagehide', () => { teardownAll(); sendLeaveBeacon(); });

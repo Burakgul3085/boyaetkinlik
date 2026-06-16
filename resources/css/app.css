@@ -3037,6 +3037,38 @@ body.paint-room-tam-mod-active {
 }
 
 /* Oda sahibi PIN/davet paneli */
+.paint-room-mobile-invite {
+    @apply shrink-0 border-b border-violet-200/80 bg-gradient-to-r from-violet-50 via-white to-teal-50/80 px-2 py-2 shadow-sm;
+}
+
+.paint-room-mobile-invite[hidden] {
+    display: none !important;
+}
+
+.paint-room-mobile-invite__inner {
+    @apply flex items-center gap-2;
+}
+
+.paint-room-mobile-invite__label {
+    @apply text-[10px] font-bold uppercase tracking-wide text-violet-700;
+}
+
+.paint-room-mobile-invite__pin {
+    @apply font-mono text-lg font-bold tracking-[0.25em] text-slate-900;
+}
+
+.paint-room-mobile-invite__actions {
+    @apply flex shrink-0 items-stretch gap-1.5;
+}
+
+.paint-room-mobile-invite__btn {
+    @apply rounded-xl border border-violet-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-violet-800 shadow-sm transition active:scale-95;
+}
+
+.paint-room-mobile-invite__btn--primary {
+    @apply border-violet-500 bg-violet-600 text-white;
+}
+
 .paint-room-info-panel {
     @apply fixed inset-0 z-[70] flex items-end justify-center bg-black/40 p-4 sm:items-center;
 }
