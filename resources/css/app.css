@@ -2821,6 +2821,11 @@
     @apply h-full w-full object-cover;
 }
 
+/* Ön kamera çoğu cihazda aynalı gelir; düz (gerçek yön) gösterim — oda sahibi ve misafir */
+.paint-room-pip__tile--local .paint-room-pip__video {
+    transform: scaleX(-1);
+}
+
 .paint-room-pip__label {
     @apply absolute bottom-1.5 left-1.5 rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white;
 }
