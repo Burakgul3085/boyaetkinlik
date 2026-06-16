@@ -264,8 +264,12 @@ class PaintRoomService
             return;
         }
 
-        $lastSeen = $room->guest_last_seen_at ?? $room->updated_at;
-        if ($lastSeen && $lastSeen->diffInSeconds(now()) < 90) {
+        $lastSeen = $room->guest_last_seen_at;
+        if ($lastSeen === null) {
+            return;
+        }
+
+        if ($lastSeen->diffInSeconds(now()) < 120) {
             return;
         }
 

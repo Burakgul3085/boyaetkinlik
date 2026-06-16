@@ -73,6 +73,12 @@ class PaintRoomController extends Controller
                 ->withErrors(['room' => $room->closed_reason ?? 'Oda kapalı veya süresi dolmuş.']);
         }
 
+        $bootstrapKey = trim((string) $request->query('gk', ''));
+        if ($bootstrapKey !== '' && $room->guest_token
+            && hash_equals($room->guest_token, hash('sha256', $bootstrapKey))) {
+            $this->participants->storeGuestSession($room, $bootstrapKey);
+        }
+
         $role = $this->participants->resolveRole($request, $room);
         if ($role === null) {
             if ($room->isOpen()) {
@@ -84,6 +90,14 @@ class PaintRoomController extends Controller
         }
 
         $guestSession = session('paint_room_guest', []);
+        $guestAccessToken = '';
+        if ($role === 'guest') {
+            $guestAccessToken = (string) ($guestSession['token'] ?? '');
+            if ($guestAccessToken === '' && $bootstrapKey !== '') {
+                $guestAccessToken = $bootstrapKey;
+            }
+        }
+
         $room = $room->fresh()->load('coloringPage');
         $coloringPage = $room->coloringPage;
 
@@ -93,9 +107,7 @@ class PaintRoomController extends Controller
             'inviteUrl' => route('paint-room.join.guest', $room->invite_token),
             'pin' => $room->pin,
             'expiresAtIso' => $room->expires_at->toIso8601String(),
-            'guestAccessToken' => $role === 'guest'
-                ? (string) ($guestSession['token'] ?? '')
-                : '',
+            'guestAccessToken' => $guestAccessToken,
             'iceServers' => $this->iceServers(),
             'coloringPageTitle' => $coloringPage?->title,
             'lineArtUrl' => $coloringPage

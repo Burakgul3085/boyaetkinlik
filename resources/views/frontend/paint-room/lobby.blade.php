@@ -38,6 +38,7 @@
     data-leave-url="{{ route('paint-room.leave', $room) }}"
     data-index-url="{{ route('paint-room.index') }}"
     data-role="{{ $role }}"
+    data-room-code="{{ $room->room_code }}"
     data-expires-at="{{ $expiresAtIso }}"
     data-csrf="{{ csrf_token() }}"
     data-guest-token="{{ $guestAccessToken }}"
@@ -66,6 +67,11 @@
                 @endif
             </h1>
             <p class="paint-room-studio__status text-xs text-slate-500" id="paint-room-status-text">
+                @if($role === 'owner')
+                    <span class="font-semibold text-violet-700">Oda sahibi</span> ·
+                @else
+                    <span class="font-semibold text-teal-700">Misafir</span> ·
+                @endif
                 @if($room->hasGuest())
                     Görüntülü bağlantı hazırlanıyor…
                 @else

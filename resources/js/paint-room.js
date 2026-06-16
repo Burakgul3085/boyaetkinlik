@@ -24,7 +24,29 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const chatPollUrl = root.dataset.chatPollUrl || '';
     const chatHistoryUrl = root.dataset.chatHistoryUrl || '';
     const chatDisplayName = root.dataset.chatDisplayName || (role === 'owner' ? 'Oda sahibi' : 'Misafir');
-    const guestToken = root.dataset.guestToken || '';
+    const guestStorageKey = `paint-room-guest-${root.dataset.roomCode || window.location.pathname}`;
+
+    function persistGuestToken(token) {
+        if (!token) return;
+        try {
+            sessionStorage.setItem(guestStorageKey, token);
+        } catch (_) { /* depolama kapalı */ }
+    }
+
+    function readGuestToken() {
+        const fromDom = (root.dataset.guestToken || '').trim();
+        if (fromDom) {
+            persistGuestToken(fromDom);
+            return fromDom;
+        }
+        try {
+            return (sessionStorage.getItem(guestStorageKey) || '').trim();
+        } catch (_) {
+            return '';
+        }
+    }
+
+    let guestToken = readGuestToken();
     const expiresAt = new Date(root.dataset.expiresAt);
     const csrf = root.dataset.csrf
         || document.querySelector('meta[name="csrf-token"]')?.content
@@ -104,7 +126,8 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
             Accept: 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
         };
-        if (guestToken) headers['X-Paint-Room-Guest-Token'] = guestToken;
+        const token = readGuestToken();
+        if (token) headers['X-Paint-Room-Guest-Token'] = token;
         return headers;
     }
 
@@ -735,8 +758,8 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         }
     }
 
-    async function initLocalMedia() {
-        if (localMediaReady) return;
+    async function initLocalMedia(allowRetry = false) {
+        if (localMediaReady && !allowRetry) return;
         setWebrtcStatus('Kamera ve mikrofon izni isteniyor…');
 
         try {
@@ -832,8 +855,16 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
                 if (!chatHistoryLoaded) loadChatHistory();
             }
 
+            if (participantCount >= 2 && !localMediaReady && prev < 2) {
+                void initLocalMedia(true);
+            }
+
             if (participantCount >= 2 && localMediaReady && !callActive) {
                 await startCall();
+            } else if (participantCount >= 2 && !localMediaReady) {
+                setWebrtcStatus('Misafir katıldı — kamera izni verin');
+            } else if (participantCount >= 2 && callActive && !isConnected()) {
+                setWebrtcStatus('Bağlantı kuruluyor…');
             }
         } catch (_) { /* sessiz */ }
     }
@@ -1304,9 +1335,20 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
     syncMobileInviteBar();
 
+    if (role === 'guest' && window.history?.replaceState) {
+        try {
+            const clean = new URL(window.location.href);
+            if (clean.searchParams.has('gk')) {
+                clean.searchParams.delete('gk');
+                window.history.replaceState({}, '', clean.toString());
+            }
+        } catch (_) { /* sessiz */ }
+    }
+
     updateTimer();
     setInterval(updateTimer, 1000);
     checkHealth();
+    startSignalPolling();
     pollStatus();
     setInterval(pollStatus, 2000);
 

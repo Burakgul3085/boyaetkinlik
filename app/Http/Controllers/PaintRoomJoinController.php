@@ -66,11 +66,21 @@ class PaintRoomJoinController extends Controller
         }
 
         $room->load('owner');
+
+        if ($this->participants->isRoomOwner($request, $room)) {
+            return view('frontend.paint-room.join-owner-notice', [
+                'room' => $room,
+                'lobbyUrl' => route('paint-room.lobby', $room),
+                'inviteUrl' => route('paint-room.join.guest', $inviteToken),
+                'pin' => $room->pin,
+            ]);
+        }
+
         $this->rooms->releaseStaleGuest($room);
         $room->refresh();
 
-        if ($redirect = $this->redirectIfAlreadyInside($request, $room)) {
-            return $redirect;
+        if ($this->participants->resolveGuestRole($request, $room) === 'guest') {
+            return redirect()->route('paint-room.lobby', $room);
         }
 
         if ($room->hasGuest()) {
@@ -121,7 +131,7 @@ class PaintRoomJoinController extends Controller
             session(['paint_room_consent_accepted' => true]);
 
             return redirect()
-                ->route('paint-room.lobby', $room)
+                ->route('paint-room.lobby', ['room' => $room, 'gk' => $guestToken])
                 ->with('success', 'Odaya katıldınız. Oda sahibi ile boyayabilir ve görüntülü konuşabilirsiniz.');
         } catch (RuntimeException $e) {
             return back()->withErrors(['room' => $e->getMessage()])->withInput();
@@ -130,12 +140,6 @@ class PaintRoomJoinController extends Controller
 
     private function redirectIfAlreadyInside(Request $request, $room): ?RedirectResponse
     {
-        if ($this->participants->isRoomOwner($request, $room)) {
-            return redirect()
-                ->route('paint-room.lobby', $room)
-                ->with('success', 'Odanız açık. Bu linki veya PIN\'i misafirinizle paylaşın.');
-        }
-
         if ($this->participants->resolveGuestRole($request, $room) === 'guest') {
             return redirect()->route('paint-room.lobby', $room);
         }
