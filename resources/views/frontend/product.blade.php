@@ -59,6 +59,7 @@
             </div>
             <h1 class="mt-4 break-words text-2xl font-bold text-slate-900">{{ $coloringPage->title }}</h1>
             <p class="mt-2 text-slate-600">{{ $coloringPage->description }}</p>
+            @include('partials.coloring-page-meta', ['coloringPage' => $coloringPage])
             @php
                 $productDetailAd = trim((string) \App\Models\Setting::getValue('ads_product_detail', ''));
             @endphp

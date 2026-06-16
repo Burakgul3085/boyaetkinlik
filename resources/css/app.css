@@ -2377,6 +2377,111 @@
     }
 }
 
+/* Boyama sayfası — içerik bilgi kartları */
+.coloring-page-meta {
+    @apply mt-5;
+}
+
+.coloring-page-meta__title {
+    @apply text-sm font-bold uppercase tracking-wide text-slate-500;
+}
+
+.coloring-page-meta__grid {
+    @apply mt-3 grid gap-3 sm:grid-cols-2;
+}
+
+.coloring-page-meta__card {
+    @apply rounded-2xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md;
+}
+
+.coloring-page-meta__card-head {
+    @apply mb-2 flex items-center gap-2;
+}
+
+.coloring-page-meta__icon {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-xl text-base;
+}
+
+.coloring-page-meta__label {
+    @apply text-xs font-bold uppercase tracking-wide;
+}
+
+.coloring-page-meta__value {
+    @apply text-sm leading-relaxed text-slate-700;
+}
+
+.coloring-page-meta__card--violet {
+    @apply border-violet-200 bg-violet-50/60;
+}
+
+.coloring-page-meta__card--violet .coloring-page-meta__icon {
+    @apply bg-violet-100 text-violet-700;
+}
+
+.coloring-page-meta__card--violet .coloring-page-meta__label {
+    @apply text-violet-700;
+}
+
+.coloring-page-meta__card--emerald {
+    @apply border-emerald-200 bg-emerald-50/60;
+}
+
+.coloring-page-meta__card--emerald .coloring-page-meta__icon {
+    @apply bg-emerald-100 text-emerald-700;
+}
+
+.coloring-page-meta__card--emerald .coloring-page-meta__label {
+    @apply text-emerald-700;
+}
+
+.coloring-page-meta__card--sky {
+    @apply border-sky-200 bg-sky-50/60;
+}
+
+.coloring-page-meta__card--sky .coloring-page-meta__icon {
+    @apply bg-sky-100 text-sky-700;
+}
+
+.coloring-page-meta__card--sky .coloring-page-meta__label {
+    @apply text-sky-700;
+}
+
+.coloring-page-meta__card--amber {
+    @apply border-amber-200 bg-amber-50/60;
+}
+
+.coloring-page-meta__card--amber .coloring-page-meta__icon {
+    @apply bg-amber-100 text-amber-700;
+}
+
+.coloring-page-meta__card--amber .coloring-page-meta__label {
+    @apply text-amber-700;
+}
+
+.coloring-page-meta__card--indigo {
+    @apply border-indigo-200 bg-indigo-50/60;
+}
+
+.coloring-page-meta__card--indigo .coloring-page-meta__icon {
+    @apply bg-indigo-100 text-indigo-700;
+}
+
+.coloring-page-meta__card--indigo .coloring-page-meta__label {
+    @apply text-indigo-700;
+}
+
+.coloring-page-meta__card--rose {
+    @apply border-rose-200 bg-rose-50/60;
+}
+
+.coloring-page-meta__card--rose .coloring-page-meta__icon {
+    @apply bg-rose-100 text-rose-700;
+}
+
+.coloring-page-meta__card--rose .coloring-page-meta__label {
+    @apply text-rose-700;
+}
+
 /* Görüntülü boyama — oda girişi bilgilendirme ve onay */
 .paint-room-consent {
     @apply rounded-2xl border border-violet-200/80 bg-violet-50/40 p-4;

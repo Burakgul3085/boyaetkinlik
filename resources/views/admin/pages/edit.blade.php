@@ -37,6 +37,7 @@
             <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm">
         </label>
         <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-2">{{ old('description', $page->description) }}</textarea>
+        @include('admin.pages._meta-fields', ['page' => $page])
 
         <div class="inline-flex items-center gap-2 text-sm">
             <input type="hidden" name="is_free" value="0">

@@ -19,6 +19,7 @@
         <label class="input-ui">Kapak (PNG/JPG/JPEG) <input type="file" name="cover_image" accept=".png,.jpg,.jpeg" class="mt-1 block w-full text-sm"></label>
         <label class="input-ui md:col-span-2">Dosya (PDF/PNG/JPG/JPEG) <input type="file" name="pdf_file" accept=".pdf,.png,.jpg,.jpeg" class="mt-1 block w-full text-sm" required></label>
         <textarea name="description" placeholder="Açıklama" class="input-ui md:col-span-2"></textarea>
+        @include('admin.pages._meta-fields')
         <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="is_free" value="1"> Ücretsiz</label>
         <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="is_featured" value="1"> Öne Çıkan</label>
         <button class="btn-primary">Kaydet</button>
