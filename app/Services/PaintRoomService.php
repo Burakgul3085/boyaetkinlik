@@ -210,6 +210,11 @@ class PaintRoomService
     {
         $this->closeExpiredRooms();
 
+        $pin = str_pad(preg_replace('/\D/', '', trim($pin)), 6, '0', STR_PAD_LEFT);
+        if (! preg_match('/^\d{6}$/', $pin)) {
+            return null;
+        }
+
         return PaintRoom::query()
             ->where('pin', $pin)
             ->where('status', '!=', PaintRoom::STATUS_CLOSED)

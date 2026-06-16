@@ -21,8 +21,7 @@
                     name="pin"
                     value="{{ old('pin') }}"
                     inputmode="numeric"
-                    pattern="\d{6}"
-                    maxlength="6"
+                    maxlength="8"
                     required
                     class="input-ui mt-1 text-center text-2xl font-bold tracking-[0.4em]"
                     placeholder="000000"

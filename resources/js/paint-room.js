@@ -839,8 +839,16 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     }
 
     function sendLeaveBeacon() {
-        if (role !== 'owner' || !leaveUrl || !csrf) return;
+        if (!leaveUrl || !csrf) return;
         navigator.sendBeacon?.(leaveUrl, new URLSearchParams({ _token: csrf }));
+    }
+
+    if (role === 'owner') {
+        window.addEventListener('pagehide', () => { teardownAll(); sendLeaveBeacon(); });
+    } else if (role === 'guest') {
+        window.addEventListener('pagehide', () => { teardownAll(); sendLeaveBeacon(); });
+    } else {
+        window.addEventListener('pagehide', teardownAll);
     }
 
     function initPipDrag(pipEl) {
@@ -1295,12 +1303,6 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     });
 
     syncMobileInviteBar();
-
-    if (role === 'owner') {
-        window.addEventListener('pagehide', () => { teardownAll(); sendLeaveBeacon(); });
-    } else {
-        window.addEventListener('pagehide', teardownAll);
-    }
 
     updateTimer();
     setInterval(updateTimer, 1000);

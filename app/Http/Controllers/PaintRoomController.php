@@ -71,8 +71,12 @@ class PaintRoomController extends Controller
 
         $role = $this->resolveParticipantRole($request, $room);
         if ($role === null) {
-            return redirect()->route('paint-room.join.form')
-                ->withErrors(['room' => 'Bu odaya erişim yetkiniz yok. PIN veya davet linki ile katılın.']);
+            if ($room->isOpen()) {
+                return redirect()->route('paint-room.invite', $room->invite_token);
+            }
+
+            return redirect()->route('paint-room.index')
+                ->withErrors(['room' => $room->closed_reason ?? 'Oda kapalı veya süresi dolmuş.']);
         }
 
         $guestSession = session('paint_room_guest', []);
@@ -490,18 +494,26 @@ class PaintRoomController extends Controller
     public function joinByPin(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'pin' => ['required', 'string', 'size:6', 'regex:/^\d{6}$/'],
+            'pin' => ['required', 'string', 'max:12'],
             'display_name' => ['nullable', 'string', 'max:80'],
             'paint_room_consent_accepted' => ['accepted'],
         ], [
-            'pin.regex' => 'PIN 6 haneli rakamlardan oluşmalıdır.',
             'paint_room_consent_accepted.accepted' => 'Odaya katılmak için görüntülü boyama bilgilendirme metnini okuyup onaylamanız gerekir.',
         ]);
 
+        $pin = $this->normalizePaintRoomPin($data['pin']);
+        if (! preg_match('/^\d{6}$/', $pin)) {
+            return back()->withErrors(['pin' => 'PIN 6 haneli rakamlardan oluşmalıdır.'])->withInput();
+        }
+
         try {
-            $room = $this->rooms->findOpenRoomByPin($data['pin']);
+            $room = $this->rooms->findOpenRoomByPin($pin);
             if (! $room) {
                 return back()->withErrors(['pin' => 'Geçersiz PIN veya oda kapalı.'])->withInput();
+            }
+
+            if ($redirect = $this->prepareForGuestJoin($request, $room)) {
+                return $redirect;
             }
 
             $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '');
@@ -532,13 +544,6 @@ class PaintRoomController extends Controller
             return redirect()->route('paint-room.lobby', $room);
         }
 
-        if ($room->hasGuest()) {
-            return view('frontend.paint-room.error', [
-                'title' => 'Oda dolu',
-                'message' => 'Bu oda dolu (2/2 kişi). Misafir ayrıldıktan sonra linki tekrar kullanabilirsiniz.',
-            ]);
-        }
-
         return view('frontend.paint-room.invite', [
             'room' => $room,
             'inviteToken' => $inviteToken,
@@ -560,6 +565,10 @@ class PaintRoomController extends Controller
                 ->withErrors(['room' => 'Davet linki geçersiz veya oda kapalı.']);
         }
 
+        if ($redirect = $this->prepareForGuestJoin($request, $room)) {
+            return $redirect;
+        }
+
         try {
             $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '');
             $this->storeGuestSession($room, $guestToken);
@@ -571,6 +580,37 @@ class PaintRoomController extends Controller
         } catch (RuntimeException $e) {
             return back()->withErrors(['room' => $e->getMessage()])->withInput();
         }
+    }
+
+    private function normalizePaintRoomPin(string $raw): string
+    {
+        $digits = preg_replace('/\D/', '', trim($raw));
+
+        if ($digits === '') {
+            return '';
+        }
+
+        return str_pad($digits, 6, '0', STR_PAD_LEFT);
+    }
+
+    private function prepareForGuestJoin(Request $request, PaintRoom $room): ?RedirectResponse
+    {
+        $existingRole = $this->resolveParticipantRole($request, $room);
+        if ($existingRole !== null) {
+            return redirect()->route('paint-room.lobby', $room);
+        }
+
+        if ($room->hasGuest()) {
+            PaintRoomSignal::query()->where('paint_room_id', $room->id)->delete();
+            $room->update([
+                'guest_display_name' => null,
+                'guest_token' => null,
+                'status' => PaintRoom::STATUS_WAITING,
+            ]);
+            $room->refresh();
+        }
+
+        return null;
     }
 
     private function resolveParticipantRole(Request $request, PaintRoom $room): ?string
