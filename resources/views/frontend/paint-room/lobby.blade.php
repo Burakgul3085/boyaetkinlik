@@ -28,11 +28,13 @@
     data-chat-poll-url="{{ route('paint-room.chat.poll', $room) }}"
     data-chat-history-url="{{ route('paint-room.chat.history', $room) }}"
     data-chat-display-name="{{ $chatDisplayName }}"
+    data-coloring-page-id="{{ $coloringPageId ?? '' }}"
+    data-change-page-url="{{ $changePageUrl }}"
 >
     <header class="paint-room-studio__topbar">
         <div class="min-w-0 flex-1">
             <p class="text-[10px] font-bold uppercase tracking-widest text-violet-600">Görüntülü boyama</p>
-            <h1 class="truncate text-base font-bold text-slate-900 md:text-lg">
+            <h1 class="truncate text-base font-bold text-slate-900 md:text-lg" id="paint-room-page-title">
                 @if($coloringPageTitle)
                     {{ $coloringPageTitle }}
                 @elseif($role === 'owner')
@@ -57,6 +59,7 @@
             </div>
             <div class="paint-room-pill" id="paint-room-timer" aria-live="polite">30:00</div>
             @if($role === 'owner')
+                <button type="button" id="paint-room-page-toggle" class="paint-room-studio__icon-btn" title="Boyama değiştir">🖼</button>
                 <button type="button" id="paint-room-info-toggle" class="paint-room-studio__icon-btn" title="PIN ve davet">🔗</button>
             @endif
             <form method="post" action="{{ route('paint-room.leave', $room) }}" class="inline">
@@ -76,7 +79,7 @@
         <aside
             class="online-paint-toolbar paint-room-toolbar"
             aria-label="Boyama araçları"
-            x-data="{ openTools: true, openColor: true, openBrush: true, openView: true, openEdit: true }"
+            x-data="{ openTools: true, openColor: true, openBrush: true, openView: true, openEdit: true, openPages: {{ $role === 'owner' && count($freePages) ? 'true' : 'false' }} }"
         >
             <div class="online-paint-toolbar__head">
                 <div>
@@ -85,6 +88,35 @@
                 </div>
                 <span class="online-paint-toolbar__badge">Canlı</span>
             </div>
+
+            @if($role === 'owner' && count($freePages))
+                <section class="online-paint-panel paint-room-page-panel" id="paint-room-page-panel">
+                    <button type="button" class="online-paint-panel__toggle" @click="openPages = !openPages">
+                        <span>Boyama seç</span>
+                        <span class="online-paint-panel__chevron" :class="openPages && 'online-paint-panel__chevron--open'">›</span>
+                    </button>
+                    <div class="online-paint-panel__body" x-show="openPages" x-cloak>
+                        <p class="online-paint-mini-label">Ücretsiz boyamalar</p>
+                        <p class="text-[11px] leading-relaxed text-slate-500">Yeni sayfa seçildiğinde tuval sıfırlanır. Yalnızca siz değiştirebilirsiniz.</p>
+                        <div class="paint-room-page-picker paint-room-page-picker--compact" id="paint-room-lobby-picker">
+                            @foreach($freePages as $page)
+                                <button
+                                    type="button"
+                                    class="paint-room-page-picker__item {{ (int) $coloringPageId === (int) $page['id'] ? 'paint-room-page-picker__item--active' : '' }}"
+                                    data-page-id="{{ $page['id'] }}"
+                                    data-page-title="{{ $page['title'] }}"
+                                    title="{{ $page['title'] }}"
+                                >
+                                    <span class="paint-room-page-picker__thumb">
+                                        <img src="{{ $page['previewUrl'] }}" alt="" loading="lazy" width="80" height="100">
+                                    </span>
+                                    <span class="paint-room-page-picker__label">{{ $page['title'] }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </section>
+            @endif
 
             <section class="online-paint-panel">
                 <button type="button" class="online-paint-panel__toggle" @click="openTools = !openTools">

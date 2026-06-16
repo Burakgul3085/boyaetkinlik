@@ -14,6 +14,9 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const canvasLoadUrl = root.dataset.canvasLoadUrl;
     const canvasSaveUrl = root.dataset.canvasSaveUrl;
     const lineArtUrl = root.dataset.lineArtUrl || null;
+    const changePageUrl = root.dataset.changePageUrl || '';
+    let activeLineArtUrl = lineArtUrl;
+    let currentColoringPageId = parseInt(root.dataset.coloringPageId || '0', 10) || null;
     const leaveUrl = root.dataset.leaveUrl;
     const indexUrl = root.dataset.indexUrl;
     const role = root.dataset.role;
@@ -111,6 +114,74 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
     function setDebug(_extra) {
         /* Teknik loglar yalnızca geliştirme için; kullanıcı arayüzünde gösterilmez */
+    }
+
+    function lineArtUrlWithBust(baseUrl) {
+        if (!baseUrl) return null;
+        const sep = baseUrl.includes('?') ? '&' : '?';
+        return `${baseUrl}${sep}_=${Date.now()}`;
+    }
+
+    function updatePageTitle(title) {
+        const el = document.getElementById('paint-room-page-title');
+        if (el && title) el.textContent = title;
+    }
+
+    function setActivePickerItem(pageId) {
+        document.querySelectorAll('#paint-room-lobby-picker .paint-room-page-picker__item').forEach((btn) => {
+            btn.classList.toggle('paint-room-page-picker__item--active', btn.dataset.pageId === String(pageId));
+            btn.disabled = btn.dataset.pageId === String(pageId);
+        });
+    }
+
+    async function applyColoringPageChange(pageId, title, artUrl, options = {}) {
+        const nextId = parseInt(String(pageId), 10);
+        if (!nextId || nextId === currentColoringPageId) return;
+
+        currentColoringPageId = nextId;
+        root.dataset.coloringPageId = String(nextId);
+        activeLineArtUrl = artUrl || lineArtUrl;
+        updatePageTitle(title);
+        setActivePickerItem(nextId);
+        canvasApi?.reloadLineArt(lineArtUrlWithBust(activeLineArtUrl));
+        if (options.notifyRemote) {
+            sendPaint({ t: 'page-change', pageId: nextId, title });
+        }
+    }
+
+    async function changeColoringPage(pageId, title) {
+        if (role !== 'owner' || !changePageUrl || !csrf) return;
+        const nextId = parseInt(String(pageId), 10);
+        if (!nextId || nextId === currentColoringPageId) return;
+
+        const ok = window.confirm('Boyama değişince tuval sıfırlanır. Devam edilsin mi?');
+        if (!ok) return;
+
+        const body = new FormData();
+        body.append('_token', csrf);
+        body.append('coloring_page_id', String(nextId));
+
+        try {
+            const res = await fetch(changePageUrl, {
+                method: 'POST',
+                headers: authHeaders(),
+                credentials: 'same-origin',
+                cache: 'no-store',
+                body,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.status === 419) throw new Error('Oturum süresi doldu — sayfayı yenileyin.');
+            if (!res.ok) throw new Error(data.message || 'Boyama değiştirilemedi');
+
+            await applyColoringPageChange(
+                data.coloringPageId,
+                data.coloringPageTitle,
+                data.lineArtUrl,
+                { notifyRemote: true },
+            );
+        } catch (err) {
+            setWebrtcStatus(err?.message || 'Boyama değiştirilemedi');
+        }
     }
 
     function sdpPayload(desc) {
@@ -272,6 +343,9 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
             if (msg.t === 'stroke') canvasApi.drawRemoteStroke(msg);
             if (msg.t === 'fill') canvasApi.applyRemoteFill(msg);
             if (msg.t === 'clear') canvasApi.clear(false);
+            if (msg.t === 'page-change' && role === 'guest') {
+                applyColoringPageChange(msg.pageId, msg.title, lineArtUrl);
+            }
             if (msg.t === 'sync-req' && role === 'owner') {
                 const snap = canvasApi.getSnapshot();
                 if (snap) dc.send(JSON.stringify({ t: 'sync', data: snap }));
@@ -737,6 +811,15 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
             if (countEl) countEl.textContent = String(participantCount);
             if (statusText) statusText.textContent = data.message;
 
+            const nextPageId = data.coloringPageId ? parseInt(String(data.coloringPageId), 10) : null;
+            if (nextPageId && nextPageId !== currentColoringPageId) {
+                await applyColoringPageChange(
+                    nextPageId,
+                    data.coloringPageTitle,
+                    lineArtUrl,
+                );
+            }
+
             if (participantCount < 2 && prev >= 2) {
                 teardownCall();
                 stopChatPolling();
@@ -1146,6 +1229,23 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const infoPanel = document.getElementById('paint-room-info-panel');
     const infoToggle = document.getElementById('paint-room-info-toggle');
     const infoClose = document.getElementById('paint-room-info-close');
+    const pageToggle = document.getElementById('paint-room-page-toggle');
+    const lobbyPicker = document.getElementById('paint-room-lobby-picker');
+
+    pageToggle?.addEventListener('click', () => {
+        document.getElementById('paint-room-page-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    lobbyPicker?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.paint-room-page-picker__item');
+        if (!btn || role !== 'owner') return;
+        changeColoringPage(btn.dataset.pageId, btn.dataset.pageTitle || '');
+    });
+
+    if (currentColoringPageId) {
+        setActivePickerItem(currentColoringPageId);
+    }
+
     infoToggle?.addEventListener('click', () => infoPanel?.classList.remove('hidden'));
     infoClose?.addEventListener('click', () => infoPanel?.classList.add('hidden'));
     infoPanel?.addEventListener('click', (e) => {

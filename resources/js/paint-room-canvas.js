@@ -42,6 +42,7 @@ export function initPaintRoomCanvas(options) {
 
     let paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
     let lineCtx = lineCanvas.getContext('2d');
+    let activeLineArtUrl = lineArtUrl;
 
     const state = {
         tool: 'brush',
@@ -560,7 +561,7 @@ export function initPaintRoomCanvas(options) {
     }
 
     function loadLineArt() {
-        if (!lineArtUrl) {
+        if (!activeLineArtUrl) {
             resizeCanvases(800, 600);
             markReady();
             return;
@@ -574,6 +575,7 @@ export function initPaintRoomCanvas(options) {
             const w = Math.round(img.naturalWidth * scale);
             const h = Math.round(img.naturalHeight * scale);
             resizeCanvases(w, h);
+            lineCtx.clearRect(0, 0, w, h);
             lineCtx.drawImage(img, 0, 0, w, h);
             applyLineArtTransparency();
             markReady();
@@ -583,8 +585,23 @@ export function initPaintRoomCanvas(options) {
             resizeCanvases(800, 600);
             markReady();
         };
-        const sep = lineArtUrl.includes('?') ? '&' : '?';
-        img.src = `${lineArtUrl}${sep}_=${Date.now()}`;
+        const sep = activeLineArtUrl.includes('?') ? '&' : '?';
+        img.src = `${activeLineArtUrl}${sep}_=${Date.now()}`;
+    }
+
+    function reloadLineArt(newUrl) {
+        activeLineArtUrl = newUrl || null;
+        state.ready = false;
+        state.undoStack = [];
+        state.redoStack = [];
+        loader?.classList.remove('hidden');
+        errBox?.classList.add('hidden');
+        if (state.naturalW > 0 && state.naturalH > 0) {
+            paintCtx.fillStyle = '#ffffff';
+            paintCtx.fillRect(0, 0, state.naturalW, state.naturalH);
+            lineCtx.clearRect(0, 0, state.naturalW, state.naturalH);
+        }
+        loadLineArt();
     }
 
     toolButtons.forEach((btn) => {
@@ -708,6 +725,7 @@ export function initPaintRoomCanvas(options) {
         },
         isReady: () => state.ready,
         fitToView,
+        reloadLineArt,
     };
 }
 

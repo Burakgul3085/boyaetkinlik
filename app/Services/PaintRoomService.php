@@ -38,25 +38,75 @@ class PaintRoomService
             ]);
     }
 
-    public function createRoom(User $owner): PaintRoom
+    public function createRoom(User $owner, ?int $coloringPageId = null): PaintRoom
     {
         $this->closeExpiredRooms();
         $this->closeActiveRoomsForOwner($owner, 'Yeni oda oluşturuldu');
 
-        return DB::transaction(function () use ($owner) {
+        return DB::transaction(function () use ($owner, $coloringPageId) {
             $pin = $this->generateUniquePin();
-            $page = ColoringPage::query()->where('is_free', true)->inRandomOrder()->first();
+            $page = $this->resolveFreeColoringPage($coloringPageId);
 
             return PaintRoom::query()->create([
                 'room_code' => $this->generateUniqueRoomCode(),
                 'pin' => $pin,
                 'invite_token' => Str::random(48),
                 'owner_user_id' => $owner->id,
-                'coloring_page_id' => $page?->id,
+                'coloring_page_id' => $page->id,
                 'status' => PaintRoom::STATUS_WAITING,
                 'expires_at' => now()->addMinutes(self::ROOM_TTL_MINUTES),
             ]);
         });
+    }
+
+    public function changeColoringPage(PaintRoom $room, int $coloringPageId): ColoringPage
+    {
+        if (! $room->isOpen()) {
+            throw new RuntimeException('Oda kapalı veya süresi dolmuş.');
+        }
+
+        $page = $this->resolveFreeColoringPage($coloringPageId);
+
+        $room->update([
+            'coloring_page_id' => $page->id,
+            'canvas_snapshot' => null,
+        ]);
+
+        return $page;
+    }
+
+    /**
+     * @return array<int, array{id: int, title: string, previewUrl: string}>
+     */
+    public function freePagesForPicker(): array
+    {
+        return ColoringPage::query()
+            ->where('is_free', true)
+            ->orderBy('title')
+            ->get(['id', 'title'])
+            ->map(fn (ColoringPage $page) => [
+                'id' => $page->id,
+                'title' => $page->title,
+                'previewUrl' => route('products.preview-image', $page),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function resolveFreeColoringPage(?int $coloringPageId): ColoringPage
+    {
+        $query = ColoringPage::query()->where('is_free', true);
+
+        if ($coloringPageId !== null) {
+            $page = (clone $query)->where('id', $coloringPageId)->first();
+            if (! $page) {
+                throw new RuntimeException('Seçilen boyama bulunamadı veya ücretsiz değil.');
+            }
+
+            return $page;
+        }
+
+        throw new RuntimeException('Lütfen bir boyama sayfası seçin.');
     }
 
     public function closeRoom(PaintRoom $room, string $reason): void

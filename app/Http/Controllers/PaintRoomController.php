@@ -25,6 +25,7 @@ class PaintRoomController extends Controller
     {
         return view('frontend.paint-room.index', [
             'canCreate' => auth()->check() && ! auth()->user()->is_admin,
+            'freePages' => $this->rooms->freePagesForPicker(),
         ]);
     }
 
@@ -36,7 +37,19 @@ class PaintRoomController extends Controller
                 ->withErrors(['room' => 'Oda oluşturmak için üye girişi yapmalısınız.']);
         }
 
-        $room = $this->rooms->createRoom($user);
+        $data = $request->validate([
+            'coloring_page_id' => ['required', 'integer', 'exists:coloring_pages,id'],
+        ], [
+            'coloring_page_id.required' => 'Lütfen bir boyama sayfası seçin.',
+        ]);
+
+        try {
+            $room = $this->rooms->createRoom($user, (int) $data['coloring_page_id']);
+        } catch (RuntimeException $e) {
+            return redirect()->route('paint-room.index')
+                ->withErrors(['room' => $e->getMessage()])
+                ->withInput();
+        }
 
         return redirect()
             ->route('paint-room.lobby', $room)
@@ -84,6 +97,9 @@ class PaintRoomController extends Controller
             'chatDisplayName' => $role === 'owner'
                 ? (auth()->user()->name ?? 'Oda sahibi')
                 : ($room->guest_display_name ?: 'Misafir'),
+            'coloringPageId' => $room->coloring_page_id,
+            'freePages' => $role === 'owner' ? $this->rooms->freePagesForPicker() : [],
+            'changePageUrl' => $role === 'owner' ? route('paint-room.page.change', $room) : null,
         ]);
     }
 
@@ -100,6 +116,7 @@ class PaintRoomController extends Controller
         }
 
         $role = $this->resolveParticipantRole($request, $room);
+        $room->load('coloringPage');
 
         return response()->json([
             'open' => true,
@@ -109,6 +126,8 @@ class PaintRoomController extends Controller
             'guestName' => $room->guest_display_name,
             'expiresAt' => $room->expires_at->toIso8601String(),
             'role' => $role,
+            'coloringPageId' => $room->coloring_page_id,
+            'coloringPageTitle' => $room->coloringPage?->title,
             'message' => $room->hasGuest()
                 ? 'Görüntülü bağlantı kuruluyor…'
                 : 'Misafir bekleniyor…',
@@ -379,6 +398,31 @@ class PaintRoomController extends Controller
                 fn (PaintRoomSignal $signal): array => $this->formatChatMessage($signal)
             )->values(),
             'role' => $role,
+        ]);
+    }
+
+    public function changeColoringPage(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role !== 'owner' || ! $room->isOpen()) {
+            return $this->signalJson(['ok' => false, 'message' => 'Yetkisiz'], 403);
+        }
+
+        $data = $request->validate([
+            'coloring_page_id' => ['required', 'integer', 'exists:coloring_pages,id'],
+        ]);
+
+        try {
+            $page = $this->rooms->changeColoringPage($room, (int) $data['coloring_page_id']);
+        } catch (RuntimeException $e) {
+            return $this->signalJson(['ok' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        return $this->signalJson([
+            'ok' => true,
+            'coloringPageId' => $page->id,
+            'coloringPageTitle' => $page->title,
+            'lineArtUrl' => route('paint-room.line-art', $room),
         ]);
     }
 
