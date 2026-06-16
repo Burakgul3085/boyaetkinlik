@@ -2594,6 +2594,120 @@
     @apply rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-white/20;
 }
 
+body.paint-room-tam-mod-active {
+    overflow: hidden;
+}
+
+.paint-room-studio--tam-mod {
+    @apply fixed inset-0 z-[45] -mx-0 min-h-[100dvh] bg-gradient-to-br from-violet-50/95 via-white to-fuchsia-50/70;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(300px, 30vw);
+    grid-template-rows: auto 1fr;
+}
+
+.paint-room-studio--tam-mod .paint-room-studio__topbar {
+    grid-column: 1 / -1;
+}
+
+.paint-room-studio--tam-mod .paint-room-studio__toast {
+    grid-column: 1 / -1;
+}
+
+.paint-room-studio--tam-mod:has(.paint-room-studio__toast) {
+    grid-template-rows: auto auto 1fr;
+}
+
+.paint-room-studio--tam-mod:has(.paint-room-studio__toast) .paint-room-workspace,
+.paint-room-studio--tam-mod:has(.paint-room-studio__toast) #paint-room-pip {
+    grid-row: 3;
+}
+
+.paint-room-studio--tam-mod .paint-room-workspace {
+    @apply min-h-0 overflow-hidden;
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.paint-room-studio--tam-mod #paint-room-pip {
+    position: relative !important;
+    inset: auto !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    grid-column: 2;
+    grid-row: 2;
+    @apply flex h-full min-h-0 w-full max-w-none flex-col self-stretch rounded-none rounded-tl-2xl border-y-0 border-r-0 shadow-xl;
+}
+
+.paint-room-pip--tam-mod .paint-room-pip__grip {
+    @apply hidden;
+}
+
+.paint-room-pip--tam-mod .paint-room-pip__head {
+    @apply cursor-default;
+}
+
+.paint-room-pip--tam-mod .paint-room-pip__videos {
+    @apply grid min-h-0 flex-1 grid-cols-1 gap-2.5 p-3;
+}
+
+.paint-room-pip--tam-mod .paint-room-pip__tile--remote {
+    @apply min-h-[min(42vh,320px)] flex-1;
+}
+
+.paint-room-pip--tam-mod .paint-room-pip__tile--local {
+    @apply max-h-[120px] min-h-[88px];
+}
+
+.paint-room-pip--tam-mod .paint-room-pip__actions {
+    @apply shrink-0;
+}
+
+.paint-room-pip--tam-mod .paint-room-pip__btn {
+    @apply min-h-10 min-w-10 px-3 py-2 text-sm;
+}
+
+@media (max-width: 1023px) {
+    .paint-room-studio--tam-mod {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+
+    .paint-room-studio--tam-mod:has(.paint-room-studio__toast) {
+        grid-template-rows: auto auto 1fr auto;
+    }
+
+    .paint-room-studio--tam-mod .paint-room-workspace {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .paint-room-studio--tam-mod:has(.paint-room-studio__toast) .paint-room-workspace {
+        grid-row: 3;
+    }
+
+    .paint-room-studio--tam-mod #paint-room-pip {
+        grid-column: 1;
+        grid-row: 3;
+        @apply max-h-[38vh] rounded-none rounded-t-2xl border-x-0 border-b-0;
+    }
+
+    .paint-room-studio--tam-mod:has(.paint-room-studio__toast) #paint-room-pip {
+        grid-row: 4;
+    }
+
+    .paint-room-pip--tam-mod .paint-room-pip__videos {
+        @apply grid-cols-2;
+    }
+
+    .paint-room-pip--tam-mod .paint-room-pip__tile--remote,
+    .paint-room-pip--tam-mod .paint-room-pip__tile--local {
+        @apply min-h-[100px] max-h-none flex-none;
+    }
+}
+
 /* Oda sahibi PIN/davet paneli */
 .paint-room-info-panel {
     @apply fixed inset-0 z-[70] flex items-end justify-center bg-black/40 p-4 sm:items-center;

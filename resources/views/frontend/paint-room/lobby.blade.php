@@ -251,15 +251,16 @@
             <span class="paint-room-pip__grip" aria-hidden="true">⋮⋮</span>
             <span class="paint-room-pip__title">Görüntülü</span>
             <p class="paint-room-pip__status" id="paint-room-webrtc-status">Bağlanıyor…</p>
+            <button type="button" id="paint-room-pip-focus" class="paint-room-pip__collapse" title="Tam mod — boyama ve görüntülü" aria-pressed="false">⊞</button>
             <button type="button" id="paint-room-pip-expand" class="paint-room-pip__collapse" title="Büyüt/küçült">⤢</button>
             <button type="button" id="paint-room-pip-toggle" class="paint-room-pip__collapse" title="Gizle/göster">−</button>
         </div>
         <div class="paint-room-pip__videos">
-            <div class="paint-room-pip__tile">
+            <div class="paint-room-pip__tile paint-room-pip__tile--local">
                 <video id="paint-room-local" class="paint-room-pip__video" autoplay playsinline muted></video>
                 <span class="paint-room-pip__label">Siz</span>
             </div>
-            <div class="paint-room-pip__tile">
+            <div class="paint-room-pip__tile paint-room-pip__tile--remote">
                 <video id="paint-room-remote" class="paint-room-pip__video" autoplay playsinline muted></video>
                 <audio id="paint-room-remote-audio" class="sr-only" autoplay playsinline></audio>
                 <span class="paint-room-pip__label" id="paint-room-remote-label">Karşı taraf</span>

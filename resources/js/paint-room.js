@@ -800,6 +800,7 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
         handle.addEventListener('pointerdown', (e) => {
             if (e.button !== 0 || e.target.closest('button')) return;
+            if (pipEl.classList.contains('paint-room-pip--tam-mod')) return;
             dragging = true;
             handle.setPointerCapture(e.pointerId);
 
@@ -846,6 +847,8 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         });
 
         restorePosition();
+
+        return { restorePosition };
     }
 
     unlockAudioBtn?.addEventListener('click', async () => {
@@ -872,15 +875,63 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const pipEl = document.getElementById('paint-room-pip');
     const pipToggle = document.getElementById('paint-room-pip-toggle');
     const pipExpand = document.getElementById('paint-room-pip-expand');
+    const pipFocus = document.getElementById('paint-room-pip-focus');
+    const pipDrag = initPipDrag(pipEl);
+
+    function resetPipFloatPosition() {
+        if (!pipEl) return;
+        pipEl.style.left = '';
+        pipEl.style.top = '';
+        pipEl.style.right = '';
+        pipEl.style.bottom = '';
+        pipEl.style.transform = '';
+        pipDrag?.restorePosition();
+    }
+
+    function setTamMod(active) {
+        root.classList.toggle('paint-room-studio--tam-mod', active);
+        document.body.classList.toggle('paint-room-tam-mod-active', active);
+        pipEl?.classList.toggle('paint-room-pip--tam-mod', active);
+
+        if (active) {
+            pipEl?.classList.remove('paint-room-pip--expanded', 'paint-room-pip--collapsed');
+            pipEl.style.left = '';
+            pipEl.style.top = '';
+            pipEl.style.right = '';
+            pipEl.style.bottom = '';
+            pipEl.style.transform = '';
+        } else {
+            resetPipFloatPosition();
+        }
+
+        if (pipFocus) {
+            pipFocus.textContent = active ? '⊟' : '⊞';
+            pipFocus.title = active ? 'Küçük görünüme dön' : 'Tam mod — boyama ve görüntülü';
+            pipFocus.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
+        if (pipToggle) {
+            pipToggle.textContent = pipEl?.classList.contains('paint-room-pip--collapsed') ? '+' : '−';
+        }
+    }
+
     pipToggle?.addEventListener('click', () => {
+        if (pipEl?.classList.contains('paint-room-pip--tam-mod')) return;
         pipEl?.classList.toggle('paint-room-pip--collapsed');
         pipToggle.textContent = pipEl?.classList.contains('paint-room-pip--collapsed') ? '+' : '−';
     });
     pipExpand?.addEventListener('click', () => {
+        if (pipEl?.classList.contains('paint-room-pip--tam-mod')) return;
         pipEl?.classList.toggle('paint-room-pip--expanded');
     });
+    pipFocus?.addEventListener('click', () => {
+        setTamMod(!root.classList.contains('paint-room-studio--tam-mod'));
+    });
 
-    initPipDrag(pipEl);
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && root.classList.contains('paint-room-studio--tam-mod')) {
+            setTamMod(false);
+        }
+    });
 
     const infoPanel = document.getElementById('paint-room-info-panel');
     const infoToggle = document.getElementById('paint-room-info-toggle');
