@@ -83,7 +83,7 @@ Route::prefix('goruntulu-boyama')->name('paint-room.')->group(function () {
     Route::get('/', [PaintRoomController::class, 'index'])->name('index');
     Route::get('/ucretsiz-sayfalar', [PaintRoomController::class, 'freePagesByCategory'])->name('free-pages');
     Route::get('/katil', [PaintRoomController::class, 'joinForm'])->name('join.form');
-    Route::post('/katil', [PaintRoomController::class, 'joinByPin'])
+    Route::post('/katil', [PaintRoomController::class, 'verifyPin'])
         ->middleware('throttle:8,1')
         ->name('join.pin');
     Route::get('/davet/{inviteToken}', [PaintRoomController::class, 'inviteForm'])

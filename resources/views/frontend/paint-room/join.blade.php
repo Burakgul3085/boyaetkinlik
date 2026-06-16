@@ -4,43 +4,43 @@
 
 @section('content')
 <section class="mx-auto max-w-lg">
-    <div class="card p-6 md:p-7">
-        <h1 class="text-2xl font-bold text-slate-900">Odaya katıl</h1>
-        <p class="mt-1 text-sm text-slate-500">6 haneli PIN'i girin. Üyelik gerekmez.</p>
+    <div class="card overflow-hidden p-0">
+        <div class="bg-gradient-to-br from-violet-600 to-indigo-600 px-6 py-6 text-white">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-white/80">Adım 1 / 2</p>
+            <h1 class="mt-1 text-2xl font-bold">PIN ile katıl</h1>
+            <p class="mt-2 text-sm text-white/90">Oda sahibinin verdiği 6 haneli PIN'i girin. Sonraki adımda adınızı yazıp onaylayacaksınız.</p>
+        </div>
 
-        @if($errors->any())
-            <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ $errors->first() }}</div>
-        @endif
+        <div class="p-6 md:p-7">
+            @if($errors->any())
+                <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ $errors->first() }}</div>
+            @endif
 
-        <form method="post" action="{{ route('paint-room.join.pin') }}" class="mt-5 space-y-4">
-            @csrf
-            <label class="block text-sm font-medium text-slate-700">
-                PIN (6 hane)
-                <input
-                    type="text"
-                    name="pin"
-                    value="{{ old('pin') }}"
-                    inputmode="numeric"
-                    maxlength="8"
-                    required
-                    class="input-ui mt-1 text-center text-2xl font-bold tracking-[0.4em]"
-                    placeholder="000000"
-                    autocomplete="one-time-code"
-                >
-            </label>
-            <label class="block text-sm font-medium text-slate-700">
-                Görünen ad (isteğe bağlı)
-                <input type="text" name="display_name" value="{{ old('display_name') }}" maxlength="80" class="input-ui mt-1" placeholder="Örn: Ayşe">
-            </label>
+            <form method="post" action="{{ route('paint-room.join.pin') }}" class="mt-5 space-y-4">
+                @csrf
+                <label class="block text-sm font-medium text-slate-700">
+                    Oda PIN'i (6 hane)
+                    <input
+                        type="text"
+                        name="pin"
+                        value="{{ old('pin') }}"
+                        inputmode="numeric"
+                        maxlength="8"
+                        required
+                        autofocus
+                        class="input-ui mt-1 text-center text-2xl font-bold tracking-[0.4em]"
+                        placeholder="000000"
+                        autocomplete="one-time-code"
+                    >
+                </label>
 
-            @include('frontend.paint-room._room-consent', ['context' => 'guest'])
+                <button type="submit" class="btn-primary w-full">Devam et</button>
+            </form>
 
-            <button type="submit" class="btn-primary w-full">Odaya katıl</button>
-        </form>
-
-        <p class="mt-4 text-center text-sm text-slate-500">
-            <a href="{{ route('paint-room.index') }}" class="font-medium text-violet-700 hover:underline">← Görüntülü boyama</a>
-        </p>
+            <p class="mt-4 text-center text-sm text-slate-500">
+                <a href="{{ route('paint-room.index') }}" class="font-medium text-violet-700 hover:underline">← Görüntülü boyama</a>
+            </p>
+        </div>
     </div>
 </section>
 @endsection

@@ -491,14 +491,10 @@ class PaintRoomController extends Controller
         return view('frontend.paint-room.join');
     }
 
-    public function joinByPin(Request $request): RedirectResponse
+    public function verifyPin(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'pin' => ['required', 'string', 'max:12'],
-            'display_name' => ['nullable', 'string', 'max:80'],
-            'paint_room_consent_accepted' => ['accepted'],
-        ], [
-            'paint_room_consent_accepted.accepted' => 'Odaya katılmak için görüntülü boyama bilgilendirme metnini okuyup onaylamanız gerekir.',
         ]);
 
         $pin = $this->normalizePaintRoomPin($data['pin']);
@@ -506,30 +502,18 @@ class PaintRoomController extends Controller
             return back()->withErrors(['pin' => 'PIN 6 haneli rakamlardan oluşmalıdır.'])->withInput();
         }
 
-        try {
-            $room = $this->rooms->findOpenRoomByPin($pin);
-            if (! $room) {
-                return back()->withErrors(['pin' => 'Geçersiz PIN veya oda kapalı.'])->withInput();
-            }
+        $room = $this->rooms->findOpenRoomByPin($pin);
+        if (! $room) {
+            return back()->withErrors(['pin' => 'Geçersiz PIN veya oda kapalı.'])->withInput();
+        }
 
-            if ($redirect = $this->redirectIfRoomOwner($request, $room)) {
-                return $redirect;
-            }
-
-            if ($redirect = $this->prepareForGuestJoin($request, $room)) {
-                return $redirect;
-            }
-
-            $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '');
-            $this->storeGuestSession($room, $guestToken);
-            session(['paint_room_consent_accepted' => true]);
-
+        if ($this->isRoomOwner($request, $room)) {
             return redirect()
                 ->route('paint-room.lobby', $room)
-                ->with('success', 'Odaya katıldınız.');
-        } catch (RuntimeException $e) {
-            return back()->withErrors(['pin' => $e->getMessage()])->withInput();
+                ->with('success', 'Zaten oda sahibisiniz. PIN veya davet linkini misafirinizle paylaşın.');
         }
+
+        return redirect()->route('paint-room.invite', $room->invite_token);
     }
 
     public function inviteForm(string $inviteToken): View|RedirectResponse
@@ -543,22 +527,39 @@ class PaintRoomController extends Controller
             ]);
         }
 
+        $room->load('owner');
+
         if ($this->resolveGuestRole(request(), $room) === 'guest') {
             return redirect()->route('paint-room.lobby', $room);
         }
 
-        return view('frontend.paint-room.invite', [
+        if ($this->isRoomOwner(request(), $room)) {
+            return redirect()
+                ->route('paint-room.lobby', $room)
+                ->with('success', 'Odanız açık. Bu davet linkini veya PIN\'i misafirinizle paylaşın.');
+        }
+
+        if ($room->hasGuest()) {
+            return view('frontend.paint-room.error', [
+                'title' => 'Oda dolu',
+                'message' => 'Bu odada şu an başka bir misafir var. Lütfen oda sahibinden bekleyin veya yeni bir davet isteyin.',
+            ]);
+        }
+
+        return view('frontend.paint-room.guest-join', [
             'room' => $room,
             'inviteToken' => $inviteToken,
+            'ownerName' => trim((string) ($room->owner?->name ?? '')),
         ]);
     }
 
     public function joinByInvite(Request $request, string $inviteToken): RedirectResponse
     {
         $data = $request->validate([
-            'display_name' => ['nullable', 'string', 'max:80'],
+            'display_name' => ['required', 'string', 'max:80'],
             'paint_room_consent_accepted' => ['accepted'],
         ], [
+            'display_name.required' => 'Lütfen görünen adınızı yazın.',
             'paint_room_consent_accepted.accepted' => 'Odaya katılmak için görüntülü boyama bilgilendirme metnini okuyup onaylamanız gerekir.',
         ]);
 
@@ -568,22 +569,28 @@ class PaintRoomController extends Controller
                 ->withErrors(['room' => 'Davet linki geçersiz veya oda kapalı.']);
         }
 
-        if ($redirect = $this->redirectIfRoomOwner($request, $room)) {
-            return $redirect;
+        if ($this->isRoomOwner($request, $room)) {
+            return redirect()
+                ->route('paint-room.lobby', $room)
+                ->with('success', 'Zaten oda sahibisiniz. Bu sayfa misafirler içindir.');
         }
 
-        if ($redirect = $this->prepareForGuestJoin($request, $room)) {
-            return $redirect;
+        if ($this->resolveGuestRole($request, $room) === 'guest') {
+            return redirect()->route('paint-room.lobby', $room);
+        }
+
+        if ($room->hasGuest()) {
+            return back()->withErrors(['room' => 'Oda dolu. Başka bir misafir zaten katılmış.']);
         }
 
         try {
-            $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '');
+            $guestToken = $this->rooms->joinAsGuest($room, $data['display_name']);
             $this->storeGuestSession($room, $guestToken);
             session(['paint_room_consent_accepted' => true]);
 
             return redirect()
                 ->route('paint-room.lobby', $room)
-                ->with('success', 'Odaya katıldınız.');
+                ->with('success', 'Odaya katıldınız — oda sahibi ile boyayabilir ve görüntülü konuşabilirsiniz.');
         } catch (RuntimeException $e) {
             return back()->withErrors(['room' => $e->getMessage()])->withInput();
         }
@@ -600,35 +607,13 @@ class PaintRoomController extends Controller
         return str_pad($digits, 6, '0', STR_PAD_LEFT);
     }
 
-    private function prepareForGuestJoin(Request $request, PaintRoom $room): ?RedirectResponse
-    {
-        if ($this->resolveGuestRole($request, $room) === 'guest') {
-            return redirect()->route('paint-room.lobby', $room);
-        }
-
-        if ($room->hasGuest()) {
-            PaintRoomSignal::query()->where('paint_room_id', $room->id)->delete();
-            $room->update([
-                'guest_display_name' => null,
-                'guest_token' => null,
-                'status' => PaintRoom::STATUS_WAITING,
-            ]);
-            $room->refresh();
-        }
-
-        return null;
-    }
-
-    private function redirectIfRoomOwner(Request $request, PaintRoom $room): ?RedirectResponse
+    private function isRoomOwner(Request $request, PaintRoom $room): bool
     {
         $user = $request->user();
-        if ($user && ! $user->is_admin && (int) $user->id === (int) $room->owner_user_id) {
-            return redirect()
-                ->route('paint-room.lobby', $room)
-                ->with('success', 'Zaten oda sahibisiniz. Bu linki misafirinizle paylaşın.');
-        }
 
-        return null;
+        return $user
+            && ! $user->is_admin
+            && (int) $user->id === (int) $room->owner_user_id;
     }
 
     private function resolveGuestRole(Request $request, PaintRoom $room): ?string
