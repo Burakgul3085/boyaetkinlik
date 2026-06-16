@@ -1170,6 +1170,16 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const pipExpand = document.getElementById('paint-room-pip-expand');
     const pipFocus = document.getElementById('paint-room-pip-focus');
     const pipDrag = initPipDrag(pipEl);
+    const isMobileLayout = window.matchMedia('(max-width: 1023px)').matches;
+
+    if (isMobileLayout && pipEl && !pipEl.classList.contains('paint-room-pip--tam-mod')) {
+        pipEl.classList.add('paint-room-pip--collapsed');
+        if (pipToggle) pipToggle.textContent = '+';
+    }
+
+    document.querySelectorAll('[data-paint-room-toast]').forEach((toast) => {
+        window.setTimeout(() => toast.remove(), 4500);
+    });
 
     function resetPipFloatPosition() {
         if (!pipEl) return;
@@ -1283,5 +1293,10 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         },
     });
     startCanvasSyncFallback();
+
+    document.getElementById('paint-room-mobile-zoom-fit')?.addEventListener('click', () => {
+        canvasApi?.fitToView?.();
+    });
+
     initLocalMedia();
 })();

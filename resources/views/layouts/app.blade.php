@@ -407,7 +407,7 @@
     @endif
 @endauth
 
-@if(session('success') && !request()->routeIs('admin.*'))
+@if(session('success') && !request()->routeIs('admin.*') && !request()->routeIs('paint-room.lobby'))
     <div class="mx-auto mt-4 max-w-7xl px-4">
         <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             {{ session('success') }}
@@ -561,9 +561,20 @@
                 </div>
             @endif
 
-            @if(($errors ?? null)?->has('first_name') || ($errors ?? null)?->has('last_name') || ($errors ?? null)?->has('email') || ($errors ?? null)?->has('newsletter'))
+            @php
+                $newsletterFieldErrors = ['first_name', 'last_name', 'email', 'newsletter'];
+                $newsletterErrorMessage = null;
+                if ($errors instanceof \Illuminate\Support\ViewErrorBag && $errors->hasAny($newsletterFieldErrors)) {
+                    $newsletterErrorMessage = $errors->first('first_name')
+                        ?: $errors->first('last_name')
+                        ?: $errors->first('email')
+                        ?: $errors->first('newsletter');
+                }
+            @endphp
+
+            @if($newsletterErrorMessage)
                 <div class="mt-3 rounded-lg border border-rose-700/60 bg-rose-900/30 px-3 py-2 text-xs text-rose-200">
-                    {{ ($errors ?? null)?->first('first_name') ?: ($errors ?? null)?->first('last_name') ?: ($errors ?? null)?->first('email') ?: ($errors ?? null)?->first('newsletter') }}
+                    {{ $newsletterErrorMessage }}
                 </div>
             @endif
 

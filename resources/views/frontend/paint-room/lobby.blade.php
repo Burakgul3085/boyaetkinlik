@@ -7,9 +7,31 @@
 @endpush
 
 @section('content')
+<script>document.documentElement.classList.add('paint-room-immersive');</script>
 <section
     class="paint-room-studio"
     id="paint-room-lobby"
+    x-data="{
+        openTools: false,
+        openColor: false,
+        openBrush: false,
+        openView: false,
+        openEdit: false,
+        openPages: false,
+        mobileSheet: false
+    }"
+    x-init="
+        if (window.matchMedia('(min-width: 1024px)').matches) {
+            openTools = true;
+            openColor = true;
+            openBrush = true;
+            openView = true;
+            openEdit = true;
+            @if($role === 'owner' && count($categoryTree))
+            openPages = true;
+            @endif
+        }
+    "
     data-status-url="{{ route('paint-room.status', $room) }}"
     data-signal-poll-url="{{ route('paint-room.signals.poll.post', $room) }}"
     data-signal-send-url="{{ route('paint-room.signals.send', $room) }}"
@@ -33,7 +55,7 @@
 >
     <header class="paint-room-studio__topbar">
         <div class="min-w-0 flex-1">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-violet-600">Görüntülü boyama</p>
+            <p class="paint-room-studio__eyebrow text-[10px] font-bold uppercase tracking-widest text-violet-600">Görüntülü boyama</p>
             <h1 class="truncate text-base font-bold text-slate-900 md:text-lg" id="paint-room-page-title">
                 @if($coloringPageTitle)
                     {{ $coloringPageTitle }}
@@ -43,7 +65,7 @@
                     Beraber boyama
                 @endif
             </h1>
-            <p class="text-xs text-slate-500" id="paint-room-status-text">
+            <p class="paint-room-studio__status text-xs text-slate-500" id="paint-room-status-text">
                 @if($room->hasGuest())
                     Görüntülü bağlantı hazırlanıyor…
                 @else
@@ -52,8 +74,8 @@
             </p>
         </div>
 
-        <div class="flex shrink-0 flex-wrap items-center gap-2">
-            <div class="paint-room-occupancy" id="paint-room-occupancy">
+        <div class="flex shrink-0 flex-wrap items-center gap-2 paint-room-studio__actions">
+            <div class="paint-room-occupancy paint-room-occupancy--compact" id="paint-room-occupancy">
                 <span class="paint-room-occupancy__count" id="paint-room-count">{{ $room->participantCount() }}</span>
                 <span class="paint-room-occupancy__label">/ 2</span>
             </div>
@@ -72,16 +94,31 @@
     </header>
 
     @if(session('success'))
-        <div class="paint-room-studio__toast">{{ session('success') }}</div>
+        <div class="paint-room-studio__toast" data-paint-room-toast>{{ session('success') }}</div>
     @endif
+
+    <button
+        type="button"
+        class="paint-room-mobile-backdrop lg:hidden"
+        id="paint-room-mobile-backdrop"
+        x-show="mobileSheet"
+        x-cloak
+        @click="mobileSheet = false"
+        aria-label="Araç panelini kapat"
+    ></button>
 
     <div id="room-paint-studio" class="online-paint-workspace paint-room-workspace">
         <aside
+            id="paint-room-toolbar"
             class="online-paint-toolbar paint-room-toolbar"
+            :class="mobileSheet && 'paint-room-toolbar--sheet-open'"
             aria-label="Boyama araçları"
-            x-data="{ openTools: true, openColor: true, openBrush: true, openView: true, openEdit: true, openPages: {{ $role === 'owner' && count($categoryTree) ? 'true' : 'false' }} }"
         >
-            <div class="online-paint-toolbar__head">
+            <div class="paint-room-toolbar__sheet-head lg:hidden">
+                <p class="text-sm font-bold text-slate-900">Boyama araçları</p>
+                <button type="button" class="paint-room-toolbar__sheet-close" @click="mobileSheet = false" aria-label="Kapat">×</button>
+            </div>
+            <div class="online-paint-toolbar__head paint-room-toolbar__head">
                 <div>
                     <p class="online-paint-toolbar__title">Stüdyo</p>
                     <p class="online-paint-toolbar__sub">Beraber boyama</p>
@@ -269,6 +306,14 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="paint-room-mobile-dock lg:hidden" id="paint-room-mobile-dock" aria-label="Hızlı araçlar">
+        <button type="button" class="paint-room-mobile-dock__btn" data-room-tool="brush" title="Fırça">🖌</button>
+        <button type="button" class="paint-room-mobile-dock__btn" data-room-tool="eraser" title="Silgi">🧽</button>
+        <button type="button" class="paint-room-mobile-dock__btn" data-room-tool="fill" title="Doldur">🪣</button>
+        <button type="button" class="paint-room-mobile-dock__btn" id="paint-room-mobile-zoom-fit" title="Tuvali sığdır">⊡</button>
+        <button type="button" class="paint-room-mobile-dock__btn paint-room-mobile-dock__btn--primary" @click="mobileSheet = true" title="Tüm araçlar">🎨</button>
     </div>
 
     {{-- Yüzen görüntülü sohbet (PiP) --}}

@@ -2940,15 +2940,173 @@ body.paint-room-tam-mod-active {
 }
 
 @media (max-width: 1023px) {
-    .paint-room-workspace {
-        @apply flex-col;
+    html.paint-room-immersive body {
+        @apply overflow-hidden;
     }
 
-    .paint-room-toolbar {
-        @apply max-h-[38vh] w-full shrink-0;
+    html.paint-room-immersive header,
+    html.paint-room-immersive footer,
+    html.paint-room-immersive .ads-sticky-footer,
+    html.paint-room-immersive #site-sticky-ad,
+    html.paint-room-immersive #kofi-support-widget {
+        display: none !important;
+    }
+
+    html.paint-room-immersive #site-main {
+        @apply max-w-none p-0 pb-0;
+    }
+
+    html.paint-room-immersive .paint-room-studio {
+        @apply -mx-0 -mt-0 h-[100dvh] min-h-[100dvh];
+    }
+
+    html.paint-room-immersive .paint-room-studio__topbar {
+        @apply gap-2 px-2 py-1.5;
+    }
+
+    html.paint-room-immersive .paint-room-studio__eyebrow,
+    html.paint-room-immersive .paint-room-studio__status {
+        @apply hidden;
+    }
+
+    html.paint-room-immersive .paint-room-studio__topbar h1 {
+        @apply text-sm leading-tight;
+    }
+
+    html.paint-room-immersive .paint-room-pill {
+        @apply px-2.5 py-1 text-xs;
+    }
+
+    html.paint-room-immersive .paint-room-occupancy--compact {
+        @apply flex-row items-baseline gap-0.5 rounded-xl px-2 py-1;
+    }
+
+    html.paint-room-immersive .paint-room-occupancy--compact .paint-room-occupancy__count {
+        @apply text-base;
+    }
+
+    html.paint-room-immersive .paint-room-occupancy--compact .paint-room-occupancy__label {
+        @apply text-[9px];
+    }
+
+    html.paint-room-immersive .paint-room-studio__leave-btn {
+        @apply px-2 py-1 text-[10px];
+    }
+
+    html.paint-room-immersive .paint-room-studio__toast {
+        @apply fixed left-3 right-3 top-2 z-[80] mx-0 mt-0 py-1.5 text-xs shadow-lg;
+        animation: paint-room-toast-dismiss 4.2s ease forwards;
+    }
+
+    .paint-room-workspace {
+        @apply flex flex-1 flex-col overflow-hidden px-0 pb-0 pt-0;
+    }
+
+    .paint-room-stage-wrap {
+        order: 1;
+        @apply flex min-h-0 flex-1 flex-col overflow-hidden;
+        padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
     }
 
     .paint-room-canvas-wrap {
-        @apply min-h-[45vh] flex-1;
+        @apply min-h-0 flex-1 p-1;
+    }
+
+    .paint-room-toolbar {
+        order: 2;
+        @apply pointer-events-none fixed inset-x-0 bottom-0 z-[55] max-h-0 w-full shrink-0 overflow-hidden border-0 p-0 opacity-0;
+        transition: max-height 0.32s ease, opacity 0.22s ease;
+    }
+
+    .paint-room-toolbar--sheet-open {
+        @apply pointer-events-auto max-h-[min(72dvh,520px)] overflow-y-auto rounded-t-2xl border-t border-violet-200 bg-white/95 opacity-100 shadow-2xl;
+        padding-bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .paint-room-toolbar__head {
+        @apply hidden;
+    }
+
+    .paint-room-toolbar__sheet-head {
+        @apply sticky top-0 z-10 flex items-center justify-between border-b border-violet-100 bg-white px-4 py-3;
+    }
+
+    .paint-room-toolbar__sheet-close {
+        @apply flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xl leading-none text-slate-600 transition hover:bg-slate-200;
+    }
+
+    .paint-room-mobile-backdrop {
+        @apply fixed inset-0 z-[54] bg-black/45 backdrop-blur-[2px];
+    }
+
+    .paint-room-mobile-dock {
+        @apply fixed inset-x-0 bottom-0 z-[56] flex items-stretch justify-center gap-1.5 border-t border-violet-200/90 bg-white/95 px-2 py-2 shadow-[0_-8px_24px_rgba(91,33,182,0.12)] backdrop-blur-md;
+        padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+    }
+
+    .paint-room-studio--tam-mod .paint-room-mobile-dock {
+        @apply hidden;
+    }
+
+    .paint-room-mobile-dock__btn {
+        @apply flex h-11 min-w-[2.75rem] flex-1 max-w-[4.5rem] items-center justify-center rounded-xl border border-violet-100 bg-violet-50/90 text-lg transition active:scale-95;
+    }
+
+    .paint-room-mobile-dock__btn.online-paint-tool--active {
+        @apply border-violet-400 bg-violet-200 shadow-sm;
+    }
+
+    .paint-room-mobile-dock__btn--primary {
+        @apply max-w-none flex-[1.15] border-violet-400 bg-violet-600 text-base text-white shadow-md shadow-violet-300/40;
+    }
+
+    html.paint-room-immersive .paint-room-pip:not(.paint-room-pip--tam-mod):not(.paint-room-pip--dragged) {
+        @apply bottom-auto right-2 top-[calc(3.1rem+env(safe-area-inset-top,0px))] w-[min(42vw,156px)];
+    }
+
+    html.paint-room-immersive .paint-room-pip--expanded:not(.paint-room-pip--tam-mod) {
+        @apply w-[min(68vw,220px)];
+    }
+
+    html.paint-room-immersive .paint-room-pip:not(.paint-room-pip--tam-mod) .paint-room-pip__videos {
+        @apply grid-cols-2 gap-0.5 p-1;
+    }
+
+    html.paint-room-immersive .paint-room-pip:not(.paint-room-pip--tam-mod) .paint-room-pip__tile {
+        @apply min-h-[48px] max-h-[58px];
+    }
+
+    html.paint-room-immersive .paint-room-pip:not(.paint-room-pip--tam-mod) .paint-room-pip__head {
+        @apply px-2 py-1.5;
+    }
+
+    html.paint-room-immersive .paint-room-pip:not(.paint-room-pip--tam-mod) .paint-room-pip__title {
+        @apply text-[9px];
+    }
+
+    html.paint-room-immersive .paint-room-pip:not(.paint-room-pip--tam-mod) .paint-room-pip__status {
+        @apply hidden;
+    }
+
+    html.paint-room-immersive .paint-room-pip:not(.paint-room-pip--tam-mod) .paint-room-pip__actions {
+        @apply gap-1 px-1 py-1;
+    }
+
+    html.paint-room-immersive .paint-room-pip:not(.paint-room-pip--tam-mod) .paint-room-pip__btn {
+        @apply h-8 w-8 text-sm;
+    }
+}
+
+@keyframes paint-room-toast-dismiss {
+    0%,
+    72% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-0.5rem);
+        pointer-events: none;
     }
 }
