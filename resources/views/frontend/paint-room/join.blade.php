@@ -34,7 +34,7 @@
                 <input type="text" name="display_name" value="{{ old('display_name') }}" maxlength="80" class="input-ui mt-1" placeholder="Örn: Ayşe">
             </label>
 
-            @include('frontend.paint-room._kvkk-field')
+            @include('frontend.paint-room._room-consent', ['context' => 'guest'])
 
             <button type="submit" class="btn-primary w-full">Odaya katıl</button>
         </form>

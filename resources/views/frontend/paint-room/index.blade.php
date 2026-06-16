@@ -41,6 +41,7 @@
                                     'selectedPageId' => old('coloring_page_id'),
                                     'compact' => false,
                                 ])
+                                @include('frontend.paint-room._room-consent', ['context' => 'owner'])
                                 <button type="submit" class="btn-primary w-full" id="paint-room-create-submit" disabled>Oda oluştur</button>
                             </form>
                         @else

@@ -2377,6 +2377,43 @@
     }
 }
 
+/* Görüntülü boyama — oda girişi bilgilendirme ve onay */
+.paint-room-consent {
+    @apply rounded-2xl border border-violet-200/80 bg-violet-50/40 p-4;
+}
+
+.paint-room-consent__heading {
+    @apply text-sm font-bold text-slate-900;
+}
+
+.paint-room-consent__note {
+    @apply mt-1 text-[11px] leading-relaxed text-slate-500;
+}
+
+.paint-room-consent__text {
+    @apply mt-3 max-h-[min(42vh,280px)] overflow-y-auto rounded-xl border border-violet-100 bg-white p-3 text-[11px] leading-relaxed text-slate-600 shadow-inner;
+}
+
+.paint-room-consent__text p {
+    @apply mb-2.5 last:mb-0;
+}
+
+.paint-room-consent__text strong {
+    @apply font-semibold text-slate-800;
+}
+
+.paint-room-consent__text em {
+    @apply font-semibold not-italic text-violet-800;
+}
+
+.paint-room-consent__check {
+    @apply mt-3 flex items-start gap-3 text-sm leading-relaxed text-slate-700;
+}
+
+.paint-room-consent__checkbox {
+    @apply mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-violet-600 focus:ring-violet-500;
+}
+
 /* Görüntülü boyama odası — tam ekran stüdyo */
 .paint-room-studio {
     @apply -mx-4 -mt-2 flex min-h-[calc(100dvh-5rem)] flex-col bg-gradient-to-br from-violet-50/90 via-white to-fuchsia-50/60 md:-mx-0;

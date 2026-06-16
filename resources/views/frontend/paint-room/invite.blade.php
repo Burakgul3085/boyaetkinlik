@@ -19,7 +19,7 @@
                 <input type="text" name="display_name" value="{{ old('display_name') }}" maxlength="80" class="input-ui mt-1" placeholder="Örn: Mehmet">
             </label>
 
-            @include('frontend.paint-room._kvkk-field')
+            @include('frontend.paint-room._room-consent', ['context' => 'guest'])
 
             <button type="submit" class="btn-primary w-full">Odaya bağlan</button>
         </form>

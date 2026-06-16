@@ -41,8 +41,10 @@ class PaintRoomController extends Controller
 
         $data = $request->validate([
             'coloring_page_id' => ['required', 'integer', 'exists:coloring_pages,id'],
+            'paint_room_consent_accepted' => ['accepted'],
         ], [
             'coloring_page_id.required' => 'Lütfen bir boyama sayfası seçin.',
+            'paint_room_consent_accepted.accepted' => 'Oda oluşturmak için görüntülü boyama bilgilendirme metnini okuyup onaylamanız gerekir.',
         ]);
 
         try {
@@ -482,9 +484,7 @@ class PaintRoomController extends Controller
 
     public function joinForm(): View
     {
-        return view('frontend.paint-room.join', [
-            'clarificationText' => Setting::getValue('clarification_text', ''),
-        ]);
+        return view('frontend.paint-room.join');
     }
 
     public function joinByPin(Request $request): RedirectResponse
@@ -492,10 +492,10 @@ class PaintRoomController extends Controller
         $data = $request->validate([
             'pin' => ['required', 'string', 'size:6', 'regex:/^\d{6}$/'],
             'display_name' => ['nullable', 'string', 'max:80'],
-            'kvkk_accepted' => ['accepted'],
+            'paint_room_consent_accepted' => ['accepted'],
         ], [
             'pin.regex' => 'PIN 6 haneli rakamlardan oluşmalıdır.',
-            'kvkk_accepted.accepted' => 'Devam etmek için KVKK aydınlatma metnini kabul etmelisiniz.',
+            'paint_room_consent_accepted.accepted' => 'Odaya katılmak için görüntülü boyama bilgilendirme metnini okuyup onaylamanız gerekir.',
         ]);
 
         try {
@@ -506,7 +506,7 @@ class PaintRoomController extends Controller
 
             $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '');
             $this->storeGuestSession($room, $guestToken);
-            session(['paint_room_kvkk_accepted' => true]);
+            session(['paint_room_consent_accepted' => true]);
 
             return redirect()
                 ->route('paint-room.lobby', $room)
@@ -542,7 +542,6 @@ class PaintRoomController extends Controller
         return view('frontend.paint-room.invite', [
             'room' => $room,
             'inviteToken' => $inviteToken,
-            'clarificationText' => Setting::getValue('clarification_text', ''),
         ]);
     }
 
@@ -550,9 +549,9 @@ class PaintRoomController extends Controller
     {
         $data = $request->validate([
             'display_name' => ['nullable', 'string', 'max:80'],
-            'kvkk_accepted' => ['accepted'],
+            'paint_room_consent_accepted' => ['accepted'],
         ], [
-            'kvkk_accepted.accepted' => 'Devam etmek için KVKK aydınlatma metnini kabul etmelisiniz.',
+            'paint_room_consent_accepted.accepted' => 'Odaya katılmak için görüntülü boyama bilgilendirme metnini okuyup onaylamanız gerekir.',
         ]);
 
         $room = $this->rooms->findOpenRoomByInviteToken($inviteToken);
@@ -564,7 +563,7 @@ class PaintRoomController extends Controller
         try {
             $guestToken = $this->rooms->joinAsGuest($room, $data['display_name'] ?? '');
             $this->storeGuestSession($room, $guestToken);
-            session(['paint_room_kvkk_accepted' => true]);
+            session(['paint_room_consent_accepted' => true]);
 
             return redirect()
                 ->route('paint-room.lobby', $room)
