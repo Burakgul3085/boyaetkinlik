@@ -512,6 +512,10 @@ class PaintRoomController extends Controller
                 return back()->withErrors(['pin' => 'Geçersiz PIN veya oda kapalı.'])->withInput();
             }
 
+            if ($redirect = $this->redirectIfRoomOwner($request, $room)) {
+                return $redirect;
+            }
+
             if ($redirect = $this->prepareForGuestJoin($request, $room)) {
                 return $redirect;
             }
@@ -539,8 +543,7 @@ class PaintRoomController extends Controller
             ]);
         }
 
-        $existingRole = $this->resolveParticipantRole(request(), $room);
-        if ($existingRole !== null) {
+        if ($this->resolveGuestRole(request(), $room) === 'guest') {
             return redirect()->route('paint-room.lobby', $room);
         }
 
@@ -563,6 +566,10 @@ class PaintRoomController extends Controller
         if (! $room) {
             return redirect()->route('paint-room.index')
                 ->withErrors(['room' => 'Davet linki geçersiz veya oda kapalı.']);
+        }
+
+        if ($redirect = $this->redirectIfRoomOwner($request, $room)) {
+            return $redirect;
         }
 
         if ($redirect = $this->prepareForGuestJoin($request, $room)) {
@@ -595,8 +602,7 @@ class PaintRoomController extends Controller
 
     private function prepareForGuestJoin(Request $request, PaintRoom $room): ?RedirectResponse
     {
-        $existingRole = $this->resolveParticipantRole($request, $room);
-        if ($existingRole !== null) {
+        if ($this->resolveGuestRole($request, $room) === 'guest') {
             return redirect()->route('paint-room.lobby', $room);
         }
 
@@ -613,13 +619,20 @@ class PaintRoomController extends Controller
         return null;
     }
 
-    private function resolveParticipantRole(Request $request, PaintRoom $room): ?string
+    private function redirectIfRoomOwner(Request $request, PaintRoom $room): ?RedirectResponse
     {
         $user = $request->user();
         if ($user && ! $user->is_admin && (int) $user->id === (int) $room->owner_user_id) {
-            return 'owner';
+            return redirect()
+                ->route('paint-room.lobby', $room)
+                ->with('success', 'Zaten oda sahibisiniz. Bu linki misafirinizle paylaşın.');
         }
 
+        return null;
+    }
+
+    private function resolveGuestRole(Request $request, PaintRoom $room): ?string
+    {
         $headerToken = trim((string) $request->header('X-Paint-Room-Guest-Token', ''));
         if ($headerToken !== '' && $room->guest_token) {
             if (hash_equals($room->guest_token, hash('sha256', $headerToken))) {
@@ -635,6 +648,21 @@ class PaintRoomController extends Controller
             && hash_equals($room->guest_token, hash('sha256', (string) ($session['token'] ?? '')))
         ) {
             return 'guest';
+        }
+
+        return null;
+    }
+
+    private function resolveParticipantRole(Request $request, PaintRoom $room): ?string
+    {
+        $guestRole = $this->resolveGuestRole($request, $room);
+        if ($guestRole === 'guest') {
+            return 'guest';
+        }
+
+        $user = $request->user();
+        if ($user && ! $user->is_admin && (int) $user->id === (int) $room->owner_user_id) {
+            return 'owner';
         }
 
         return null;
