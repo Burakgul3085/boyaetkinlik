@@ -32,6 +32,7 @@ use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\MemberGoogleAuthController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PaintRoomController;
+use App\Http\Controllers\PaintRoomJoinController;
 use App\Http\Controllers\PurchaseVerificationController;
 use App\Http\Controllers\ShopierController;
 use App\Http\Controllers\SitemapController;
@@ -82,17 +83,17 @@ Route::post('/ziyaretci-geri-bildirim', [VisitorFeedbackController::class, 'stor
 Route::prefix('goruntulu-boyama')->name('paint-room.')->group(function () {
     Route::get('/', [PaintRoomController::class, 'index'])->name('index');
     Route::get('/ucretsiz-sayfalar', [PaintRoomController::class, 'freePagesByCategory'])->name('free-pages');
-    Route::get('/katil', [PaintRoomController::class, 'joinForm'])->name('join.form');
-    Route::post('/katil', [PaintRoomController::class, 'verifyPin'])
+    Route::get('/katil', [PaintRoomJoinController::class, 'pinForm'])->name('join.form');
+    Route::post('/katil', [PaintRoomJoinController::class, 'pinSubmit'])
         ->middleware('throttle:8,1')
         ->name('join.pin');
-    Route::get('/davet/{inviteToken}', [PaintRoomController::class, 'inviteForm'])
+    Route::get('/davet/{inviteToken}', [PaintRoomJoinController::class, 'guestForm'])
         ->where('inviteToken', '[A-Za-z0-9]+')
-        ->name('invite');
-    Route::post('/davet/{inviteToken}', [PaintRoomController::class, 'joinByInvite'])
+        ->name('join.guest');
+    Route::post('/davet/{inviteToken}', [PaintRoomJoinController::class, 'guestSubmit'])
         ->middleware('throttle:8,1')
         ->where('inviteToken', '[A-Za-z0-9]+')
-        ->name('invite.submit');
+        ->name('join.submit');
     Route::get('/oda/{room}', [PaintRoomController::class, 'lobby'])->name('lobby');
     Route::get('/oda/{room}/durum', [PaintRoomController::class, 'status'])->name('status');
     Route::get('/oda/{room}/sinyal', [PaintRoomController::class, 'pollSignals'])->name('signals.poll');

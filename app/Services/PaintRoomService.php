@@ -251,10 +251,40 @@ class PaintRoomService
         $room->update([
             'guest_display_name' => Str::limit($name, 80, ''),
             'guest_token' => hash('sha256', $guestToken),
+            'guest_last_seen_at' => now(),
             'status' => PaintRoom::STATUS_ACTIVE,
         ]);
 
         return $guestToken;
+    }
+
+    public function releaseStaleGuest(PaintRoom $room): void
+    {
+        if (! $room->hasGuest()) {
+            return;
+        }
+
+        $lastSeen = $room->guest_last_seen_at ?? $room->updated_at;
+        if ($lastSeen && $lastSeen->diffInSeconds(now()) < 90) {
+            return;
+        }
+
+        PaintRoomSignal::query()->where('paint_room_id', $room->id)->delete();
+        $room->update([
+            'guest_display_name' => null,
+            'guest_token' => null,
+            'guest_last_seen_at' => null,
+            'status' => PaintRoom::STATUS_WAITING,
+        ]);
+    }
+
+    public function touchGuestPresence(PaintRoom $room): void
+    {
+        if (! $room->hasGuest()) {
+            return;
+        }
+
+        $room->update(['guest_last_seen_at' => now()]);
     }
 
     private function generateUniquePin(): string

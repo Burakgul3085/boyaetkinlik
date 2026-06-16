@@ -6,7 +6,13 @@
 <section class="mx-auto max-w-lg">
     <div class="card overflow-hidden p-0">
         <div class="bg-gradient-to-br from-teal-500 via-violet-600 to-indigo-600 px-6 py-6 text-white">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-white/80">Misafir girişi</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-white/80">
+                @if(!empty($viaPin))
+                    Adım 2 / 2 — Misafir girişi
+                @else
+                    Misafir girişi
+                @endif
+            </p>
             <h1 class="mt-1 text-2xl font-bold">Odaya katıl</h1>
             <p class="mt-2 text-sm text-white/90">
                 @if(!empty($ownerName))
@@ -26,10 +32,10 @@
                 <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ $errors->first() }}</div>
             @endif
 
-            <form method="post" action="{{ route('paint-room.invite.submit', $inviteToken) }}" class="mt-5 space-y-4">
+            <form method="post" action="{{ route('paint-room.join.submit', $inviteToken) }}" class="mt-5 space-y-4">
                 @csrf
                 <label class="block text-sm font-medium text-slate-700">
-                    Görünen adınız
+                    Adınız
                     <input
                         type="text"
                         name="display_name"

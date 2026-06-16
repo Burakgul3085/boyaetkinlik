@@ -22,6 +22,7 @@ class PaintRoom extends Model
         'coloring_page_id',
         'guest_display_name',
         'guest_token',
+        'guest_last_seen_at',
         'status',
         'expires_at',
         'closed_at',
@@ -33,6 +34,7 @@ class PaintRoom extends Model
     {
         return [
             'invite_token_used_at' => 'datetime',
+            'guest_last_seen_at' => 'datetime',
             'expires_at' => 'datetime',
             'closed_at' => 'datetime',
         ];

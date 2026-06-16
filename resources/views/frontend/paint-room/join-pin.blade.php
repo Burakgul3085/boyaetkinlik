@@ -8,7 +8,9 @@
         <div class="bg-gradient-to-br from-violet-600 to-indigo-600 px-6 py-6 text-white">
             <p class="text-[10px] font-bold uppercase tracking-widest text-white/80">Adım 1 / 2</p>
             <h1 class="mt-1 text-2xl font-bold">PIN ile katıl</h1>
-            <p class="mt-2 text-sm text-white/90">Oda sahibinin verdiği 6 haneli PIN'i girin. Sonraki adımda adınızı yazıp onaylayacaksınız.</p>
+            <p class="mt-2 text-sm text-white/90">
+                Oda sahibinin verdiği 6 haneli PIN'i girin. Sonraki adımda adınızı yazıp onaylayacaksınız.
+            </p>
         </div>
 
         <div class="p-6 md:p-7">
@@ -38,7 +40,8 @@
             </form>
 
             <p class="mt-4 text-center text-sm text-slate-500">
-                <a href="{{ route('paint-room.index') }}" class="font-medium text-violet-700 hover:underline">← Görüntülü boyama</a>
+                Davet linkiniz varsa doğrudan linke tıklayın.
+                <a href="{{ route('paint-room.index') }}" class="mt-2 block font-medium text-violet-700 hover:underline">← Görüntülü boyama</a>
             </p>
         </div>
     </div>

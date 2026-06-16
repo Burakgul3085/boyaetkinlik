@@ -7,6 +7,7 @@ use App\Models\PaintRoomSignal;
 use App\Models\Setting;
 use App\Services\PaintRoomService;
 use App\Support\FileFormatDownloadService;
+use App\Support\PaintRoomParticipantResolver;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +20,10 @@ use Throwable;
 
 class PaintRoomController extends Controller
 {
-    public function __construct(private readonly PaintRoomService $rooms) {}
+    public function __construct(
+        private readonly PaintRoomService $rooms,
+        private readonly PaintRoomParticipantResolver $participants,
+    ) {}
 
     public function index(): View
     {
@@ -69,10 +73,10 @@ class PaintRoomController extends Controller
                 ->withErrors(['room' => $room->closed_reason ?? 'Oda kapalı veya süresi dolmuş.']);
         }
 
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null) {
             if ($room->isOpen()) {
-                return redirect()->route('paint-room.invite', $room->invite_token);
+                return redirect()->route('paint-room.join.guest', $room->invite_token);
             }
 
             return redirect()->route('paint-room.index')
@@ -86,7 +90,7 @@ class PaintRoomController extends Controller
         return view('frontend.paint-room.lobby', [
             'room' => $room,
             'role' => $role,
-            'inviteUrl' => route('paint-room.invite', $room->invite_token),
+            'inviteUrl' => route('paint-room.join.guest', $room->invite_token),
             'pin' => $room->pin,
             'expiresAtIso' => $room->expires_at->toIso8601String(),
             'guestAccessToken' => $role === 'guest'
@@ -124,8 +128,12 @@ class PaintRoomController extends Controller
             ]);
         }
 
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         $room->load('coloringPage');
+
+        if ($role === 'guest') {
+            $this->rooms->touchGuestPresence($room);
+        }
 
         return response()->json([
             'open' => true,
@@ -145,9 +153,13 @@ class PaintRoomController extends Controller
 
     public function pollSignals(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null || ! $room->isOpen()) {
             return $this->signalJson(['signals' => [], 'error' => 'unauthorized'], 403);
+        }
+
+        if ($role === 'guest') {
+            $this->rooms->touchGuestPresence($room);
         }
 
         $after = max(0, (int) ($request->input('after', $request->query('after', 0))));
@@ -177,7 +189,7 @@ class PaintRoomController extends Controller
 
     public function lineArt(Request $request, PaintRoom $room, FileFormatDownloadService $downloadService): BinaryFileResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null || ! $room->isOpen()) {
             abort(403);
         }
@@ -216,7 +228,7 @@ class PaintRoomController extends Controller
 
     public function loadCanvas(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null || ! $room->isOpen()) {
             return $this->signalJson(['image' => null], 403);
         }
@@ -229,7 +241,7 @@ class PaintRoomController extends Controller
 
     public function saveCanvas(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null || ! $room->isOpen()) {
             return $this->signalJson(['ok' => false], 403);
         }
@@ -245,7 +257,7 @@ class PaintRoomController extends Controller
 
     public function signalHealth(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         $tableExists = Schema::hasTable('paint_room_signals');
 
         return $this->signalJson([
@@ -261,7 +273,7 @@ class PaintRoomController extends Controller
 
     public function sendSignal(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null || ! $room->isOpen()) {
             return $this->signalJson(['ok' => false, 'message' => 'Yetkisiz'], 403);
         }
@@ -311,7 +323,7 @@ class PaintRoomController extends Controller
 
     public function sendChat(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null || ! $room->isOpen()) {
             return $this->signalJson(['ok' => false, 'message' => 'Yetkisiz'], 403);
         }
@@ -362,7 +374,7 @@ class PaintRoomController extends Controller
 
     public function pollChat(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null || ! $room->isOpen()) {
             return $this->signalJson(['messages' => [], 'error' => 'unauthorized'], 403);
         }
@@ -388,7 +400,7 @@ class PaintRoomController extends Controller
 
     public function chatHistory(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role === null || ! $room->isOpen()) {
             return $this->signalJson(['messages' => []], 403);
         }
@@ -425,7 +437,7 @@ class PaintRoomController extends Controller
 
     public function changeColoringPage(Request $request, PaintRoom $room): JsonResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
         if ($role !== 'owner' || ! $room->isOpen()) {
             return $this->signalJson(['ok' => false, 'message' => 'Yetkisiz'], 403);
         }
@@ -450,11 +462,11 @@ class PaintRoomController extends Controller
 
     public function leave(Request $request, PaintRoom $room): JsonResponse|RedirectResponse
     {
-        $role = $this->resolveParticipantRole($request, $room);
+        $role = $this->participants->resolveRole($request, $room);
 
         if ($role === 'owner') {
             $this->rooms->closeRoom($room, 'Oda sahibi ayrıldı');
-            $this->clearGuestSession($room);
+            $this->participants->clearGuestSession($room);
 
             if ($request->expectsJson()) {
                 return response()->json(['ok' => true, 'closed' => true]);
@@ -468,9 +480,10 @@ class PaintRoomController extends Controller
             $room->update([
                 'guest_display_name' => null,
                 'guest_token' => null,
+                'guest_last_seen_at' => null,
                 'status' => PaintRoom::STATUS_WAITING,
             ]);
-            $this->clearGuestSession($room);
+            $this->participants->clearGuestSession($room);
 
             if ($request->expectsJson()) {
                 return response()->json(['ok' => true, 'closed' => false]);
@@ -486,190 +499,12 @@ class PaintRoomController extends Controller
         return redirect()->route('paint-room.index');
     }
 
-    public function joinForm(): View
-    {
-        return view('frontend.paint-room.join');
-    }
-
-    public function verifyPin(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'pin' => ['required', 'string', 'max:12'],
-        ]);
-
-        $pin = $this->normalizePaintRoomPin($data['pin']);
-        if (! preg_match('/^\d{6}$/', $pin)) {
-            return back()->withErrors(['pin' => 'PIN 6 haneli rakamlardan oluşmalıdır.'])->withInput();
-        }
-
-        $room = $this->rooms->findOpenRoomByPin($pin);
-        if (! $room) {
-            return back()->withErrors(['pin' => 'Geçersiz PIN veya oda kapalı.'])->withInput();
-        }
-
-        if ($this->isRoomOwner($request, $room)) {
-            return redirect()
-                ->route('paint-room.lobby', $room)
-                ->with('success', 'Zaten oda sahibisiniz. PIN veya davet linkini misafirinizle paylaşın.');
-        }
-
-        return redirect()->route('paint-room.invite', $room->invite_token);
-    }
-
-    public function inviteForm(string $inviteToken): View|RedirectResponse
-    {
-        $room = $this->rooms->findOpenRoomByInviteToken($inviteToken);
-
-        if (! $room) {
-            return view('frontend.paint-room.error', [
-                'title' => 'Davet geçersiz',
-                'message' => 'Davet linki geçersiz, süresi dolmuş veya oda kapatılmış.',
-            ]);
-        }
-
-        $room->load('owner');
-
-        if ($this->resolveGuestRole(request(), $room) === 'guest') {
-            return redirect()->route('paint-room.lobby', $room);
-        }
-
-        if ($this->isRoomOwner(request(), $room)) {
-            return redirect()
-                ->route('paint-room.lobby', $room)
-                ->with('success', 'Odanız açık. Bu davet linkini veya PIN\'i misafirinizle paylaşın.');
-        }
-
-        if ($room->hasGuest()) {
-            return view('frontend.paint-room.error', [
-                'title' => 'Oda dolu',
-                'message' => 'Bu odada şu an başka bir misafir var. Lütfen oda sahibinden bekleyin veya yeni bir davet isteyin.',
-            ]);
-        }
-
-        return view('frontend.paint-room.guest-join', [
-            'room' => $room,
-            'inviteToken' => $inviteToken,
-            'ownerName' => trim((string) ($room->owner?->name ?? '')),
-        ]);
-    }
-
-    public function joinByInvite(Request $request, string $inviteToken): RedirectResponse
-    {
-        $data = $request->validate([
-            'display_name' => ['required', 'string', 'max:80'],
-            'paint_room_consent_accepted' => ['accepted'],
-        ], [
-            'display_name.required' => 'Lütfen görünen adınızı yazın.',
-            'paint_room_consent_accepted.accepted' => 'Odaya katılmak için görüntülü boyama bilgilendirme metnini okuyup onaylamanız gerekir.',
-        ]);
-
-        $room = $this->rooms->findOpenRoomByInviteToken($inviteToken);
-        if (! $room) {
-            return redirect()->route('paint-room.index')
-                ->withErrors(['room' => 'Davet linki geçersiz veya oda kapalı.']);
-        }
-
-        if ($this->isRoomOwner($request, $room)) {
-            return redirect()
-                ->route('paint-room.lobby', $room)
-                ->with('success', 'Zaten oda sahibisiniz. Bu sayfa misafirler içindir.');
-        }
-
-        if ($this->resolveGuestRole($request, $room) === 'guest') {
-            return redirect()->route('paint-room.lobby', $room);
-        }
-
-        if ($room->hasGuest()) {
-            return back()->withErrors(['room' => 'Oda dolu. Başka bir misafir zaten katılmış.']);
-        }
-
-        try {
-            $guestToken = $this->rooms->joinAsGuest($room, $data['display_name']);
-            $this->storeGuestSession($room, $guestToken);
-            session(['paint_room_consent_accepted' => true]);
-
-            return redirect()
-                ->route('paint-room.lobby', $room)
-                ->with('success', 'Odaya katıldınız — oda sahibi ile boyayabilir ve görüntülü konuşabilirsiniz.');
-        } catch (RuntimeException $e) {
-            return back()->withErrors(['room' => $e->getMessage()])->withInput();
-        }
-    }
-
-    private function normalizePaintRoomPin(string $raw): string
-    {
-        $digits = preg_replace('/\D/', '', trim($raw));
-
-        if ($digits === '') {
-            return '';
-        }
-
-        return str_pad($digits, 6, '0', STR_PAD_LEFT);
-    }
-
-    private function isRoomOwner(Request $request, PaintRoom $room): bool
-    {
-        $user = $request->user();
-
-        return $user
-            && ! $user->is_admin
-            && (int) $user->id === (int) $room->owner_user_id;
-    }
-
-    private function resolveGuestRole(Request $request, PaintRoom $room): ?string
-    {
-        $headerToken = trim((string) $request->header('X-Paint-Room-Guest-Token', ''));
-        if ($headerToken !== '' && $room->guest_token) {
-            if (hash_equals($room->guest_token, hash('sha256', $headerToken))) {
-                return 'guest';
-            }
-        }
-
-        $session = session('paint_room_guest');
-        if (
-            is_array($session)
-            && (int) ($session['room_id'] ?? 0) === (int) $room->id
-            && $room->guest_token
-            && hash_equals($room->guest_token, hash('sha256', (string) ($session['token'] ?? '')))
-        ) {
-            return 'guest';
-        }
-
-        return null;
-    }
-
-    private function resolveParticipantRole(Request $request, PaintRoom $room): ?string
-    {
-        $guestRole = $this->resolveGuestRole($request, $room);
-        if ($guestRole === 'guest') {
-            return 'guest';
-        }
-
-        $user = $request->user();
-        if ($user && ! $user->is_admin && (int) $user->id === (int) $room->owner_user_id) {
-            return 'owner';
-        }
-
-        return null;
-    }
-
     private function signalJson(array $data, int $status = 200): JsonResponse
     {
         return response()
             ->json($data, $status)
             ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
             ->header('Pragma', 'no-cache');
-    }
-
-    private function storeGuestSession(PaintRoom $room, string $guestToken): void
-    {
-        session([
-            'paint_room_guest' => [
-                'room_id' => $room->id,
-                'token' => $guestToken,
-            ],
-        ]);
-        session()->save();
     }
 
     private function decodeSignalPayload(mixed $payload): ?array
@@ -708,14 +543,6 @@ class PaintRoomController extends Controller
         }
 
         return $servers;
-    }
-
-    private function clearGuestSession(PaintRoom $room): void
-    {
-        $session = session('paint_room_guest');
-        if (is_array($session) && (int) ($session['room_id'] ?? 0) === (int) $room->id) {
-            session()->forget('paint_room_guest');
-        }
     }
 
     private function chatSenderName(Request $request, PaintRoom $room, string $role): string
