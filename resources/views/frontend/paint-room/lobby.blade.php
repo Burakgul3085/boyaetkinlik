@@ -24,6 +24,10 @@
     data-line-art-url="{{ $lineArtUrl }}"
     data-canvas-load-url="{{ route('paint-room.canvas.load', $room) }}"
     data-canvas-save-url="{{ route('paint-room.canvas.save', $room) }}"
+    data-chat-send-url="{{ route('paint-room.chat.send', $room) }}"
+    data-chat-poll-url="{{ route('paint-room.chat.poll', $room) }}"
+    data-chat-history-url="{{ route('paint-room.chat.history', $room) }}"
+    data-chat-display-name="{{ $chatDisplayName }}"
 >
     <header class="paint-room-studio__topbar">
         <div class="min-w-0 flex-1">
@@ -266,10 +270,29 @@
                 <span class="paint-room-pip__label" id="paint-room-remote-label">Karşı taraf</span>
             </div>
         </div>
+        <div id="paint-room-chat" class="paint-room-chat hidden" aria-label="Oda mesajları">
+            <div id="paint-room-chat-messages" class="paint-room-chat__messages"></div>
+            <p id="paint-room-chat-empty" class="paint-room-chat__empty">Henüz mesaj yok — merhaba deyin!</p>
+            <form id="paint-room-chat-form" class="paint-room-chat__form" autocomplete="off">
+                <input
+                    type="text"
+                    id="paint-room-chat-input"
+                    class="paint-room-chat__input"
+                    maxlength="500"
+                    placeholder="Mesaj yazın…"
+                    aria-label="Mesaj"
+                >
+                <button type="submit" id="paint-room-chat-send" class="paint-room-chat__send" title="Gönder">➤</button>
+            </form>
+        </div>
         <div class="paint-room-pip__actions">
             <button type="button" id="paint-room-unlock-audio" class="paint-room-pip__btn hidden">🔊 Sesi aç</button>
             <button type="button" id="paint-room-toggle-mic" class="paint-room-pip__btn hidden">🎤</button>
             <button type="button" id="paint-room-toggle-cam" class="paint-room-pip__btn hidden">📷</button>
+            <button type="button" id="paint-room-chat-toggle" class="paint-room-pip__btn paint-room-pip__btn--chat" title="Mesajlaşma" aria-pressed="false">
+                💬
+                <span id="paint-room-chat-badge" class="paint-room-chat__badge hidden">0</span>
+            </button>
         </div>
     </div>
 

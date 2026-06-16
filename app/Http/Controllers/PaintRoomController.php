@@ -78,6 +78,12 @@ class PaintRoomController extends Controller
                 : null,
             'canvasLoadUrl' => route('paint-room.canvas.load', $room),
             'canvasSaveUrl' => route('paint-room.canvas.save', $room),
+            'chatSendUrl' => route('paint-room.chat.send', $room),
+            'chatPollUrl' => route('paint-room.chat.poll', $room),
+            'chatHistoryUrl' => route('paint-room.chat.history', $room),
+            'chatDisplayName' => $role === 'owner'
+                ? (auth()->user()->name ?? 'Oda sahibi')
+                : ($room->guest_display_name ?: 'Misafir'),
         ]);
     }
 
@@ -255,7 +261,7 @@ class PaintRoomController extends Controller
                 'payload' => $encoded,
                 'created_at' => now(),
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             return $this->signalJson([
@@ -273,6 +279,107 @@ class PaintRoomController extends Controller
         }
 
         return $this->signalJson(['ok' => true, 'id' => $signal->id, 'role' => $role]);
+    }
+
+    public function sendChat(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role === null || ! $room->isOpen()) {
+            return $this->signalJson(['ok' => false, 'message' => 'Yetkisiz'], 403);
+        }
+
+        $data = $request->validate([
+            'text' => ['required', 'string', 'min:1', 'max:500'],
+        ]);
+
+        $text = trim(preg_replace('/\s+/u', ' ', $data['text']) ?? '');
+        if ($text === '') {
+            return $this->signalJson(['ok' => false, 'message' => 'Mesaj boş olamaz'], 422);
+        }
+
+        $payload = [
+            'text' => $text,
+            'name' => $this->chatSenderName($request, $room, $role),
+            'at' => now()->toIso8601String(),
+        ];
+
+        $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($encoded === false) {
+            return $this->signalJson(['ok' => false, 'message' => 'Mesaj kaydedilemedi'], 422);
+        }
+
+        try {
+            $signal = PaintRoomSignal::query()->create([
+                'paint_room_id' => $room->id,
+                'from_role' => $role,
+                'signal_type' => 'chat',
+                'payload' => $encoded,
+                'created_at' => now(),
+            ]);
+        } catch (Throwable $e) {
+            report($e);
+
+            return $this->signalJson([
+                'ok' => false,
+                'message' => 'Mesaj kaydedilemedi. php artisan migrate --force çalıştırın.',
+            ], 500);
+        }
+
+        return $this->signalJson([
+            'ok' => true,
+            'id' => $signal->id,
+            'message' => $this->formatChatMessage($signal),
+        ]);
+    }
+
+    public function pollChat(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role === null || ! $room->isOpen()) {
+            return $this->signalJson(['messages' => [], 'error' => 'unauthorized'], 403);
+        }
+
+        $after = max(0, (int) $request->input('after', $request->query('after', 0)));
+
+        $messages = PaintRoomSignal::query()
+            ->where('paint_room_id', $room->id)
+            ->where('signal_type', 'chat')
+            ->where('id', '>', $after)
+            ->where('from_role', '!=', $role)
+            ->orderBy('id')
+            ->limit(30)
+            ->get();
+
+        return $this->signalJson([
+            'messages' => $messages->map(
+                fn (PaintRoomSignal $signal): array => $this->formatChatMessage($signal)
+            )->values(),
+            'role' => $role,
+        ]);
+    }
+
+    public function chatHistory(Request $request, PaintRoom $room): JsonResponse
+    {
+        $role = $this->resolveParticipantRole($request, $room);
+        if ($role === null || ! $room->isOpen()) {
+            return $this->signalJson(['messages' => []], 403);
+        }
+
+        $messages = PaintRoomSignal::query()
+            ->where('paint_room_id', $room->id)
+            ->where('signal_type', 'chat')
+            ->orderByDesc('id')
+            ->limit(60)
+            ->get()
+            ->reverse()
+            ->values();
+
+        return $this->signalJson([
+            'messages' => $messages->map(
+                fn (PaintRoomSignal $signal): array => $this->formatChatMessage($signal)
+            )->values(),
+            'role' => $role,
+        ]);
     }
 
     public function leave(Request $request, PaintRoom $room): JsonResponse|RedirectResponse
@@ -497,5 +604,42 @@ class PaintRoomController extends Controller
         if (is_array($session) && (int) ($session['room_id'] ?? 0) === (int) $room->id) {
             session()->forget('paint_room_guest');
         }
+    }
+
+    private function chatSenderName(Request $request, PaintRoom $room, string $role): string
+    {
+        if ($role === 'owner') {
+            $name = trim((string) ($request->user()?->name ?? ''));
+
+            return $name !== '' ? $name : 'Oda sahibi';
+        }
+
+        $name = trim((string) ($room->guest_display_name ?? ''));
+
+        return $name !== '' ? $name : 'Misafir';
+    }
+
+    private function formatChatMessage(PaintRoomSignal $signal): array
+    {
+        $payload = json_decode($signal->payload, true);
+        $text = is_array($payload) ? trim((string) ($payload['text'] ?? '')) : '';
+        $name = is_array($payload) ? trim((string) ($payload['name'] ?? '')) : '';
+        $at = is_array($payload) ? (string) ($payload['at'] ?? '') : '';
+
+        if ($name === '') {
+            $name = $signal->from_role === 'owner' ? 'Oda sahibi' : 'Misafir';
+        }
+
+        if ($at === '' && $signal->created_at) {
+            $at = $signal->created_at->toIso8601String();
+        }
+
+        return [
+            'id' => $signal->id,
+            'from' => $signal->from_role,
+            'name' => $name,
+            'text' => $text,
+            'at' => $at,
+        ];
     }
 }

@@ -101,6 +101,9 @@ Route::prefix('goruntulu-boyama')->name('paint-room.')->group(function () {
     Route::post('/oda/{room}/tuval', [PaintRoomController::class, 'saveCanvas'])->name('canvas.save');
     Route::get('/oda/{room}/sinyal/saglik', [PaintRoomController::class, 'signalHealth'])->name('signals.health');
     Route::post('/oda/{room}/sinyal', [PaintRoomController::class, 'sendSignal'])->name('signals.send');
+    Route::post('/oda/{room}/mesaj', [PaintRoomController::class, 'sendChat'])->name('chat.send');
+    Route::post('/oda/{room}/mesaj/al', [PaintRoomController::class, 'pollChat'])->name('chat.poll');
+    Route::get('/oda/{room}/mesaj/gecmis', [PaintRoomController::class, 'chatHistory'])->name('chat.history');
     Route::post('/oda/{room}/ayril', [PaintRoomController::class, 'leave'])->name('leave');
 
     Route::middleware(['member', 'member.code'])->group(function () {

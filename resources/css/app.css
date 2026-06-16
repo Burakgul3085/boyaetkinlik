@@ -2594,6 +2594,95 @@
     @apply rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-white/20;
 }
 
+.paint-room-pip__btn--chat {
+    @apply relative;
+}
+
+.paint-room-pip__btn--chat-unread {
+    @apply bg-violet-500/80 ring-2 ring-violet-300/60;
+}
+
+.paint-room-chat__badge {
+    @apply absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold leading-none text-white;
+}
+
+.paint-room-chat {
+    @apply flex min-h-0 flex-col border-t border-white/10 bg-slate-950/40;
+}
+
+.paint-room-chat.hidden {
+    display: none;
+}
+
+.paint-room-pip--chat-open {
+    @apply w-[min(96vw,440px)] md:w-[min(48vw,500px)];
+}
+
+.paint-room-pip--chat-open.paint-room-pip--expanded {
+    @apply w-[min(96vw,540px)] md:w-[min(52vw,580px)];
+}
+
+.paint-room-chat__messages {
+    @apply max-h-[min(28vh,220px)] min-h-[120px] space-y-2 overflow-y-auto px-2.5 py-2;
+    scroll-behavior: smooth;
+}
+
+.paint-room-chat__empty {
+    @apply px-3 pb-1 text-center text-[10px] text-slate-500;
+}
+
+.paint-room-chat__empty.hidden {
+    display: none;
+}
+
+.paint-room-chat__msg {
+    @apply max-w-[92%] rounded-xl rounded-bl-md bg-white/10 px-2.5 py-2 text-white;
+}
+
+.paint-room-chat__msg--own {
+    @apply ml-auto rounded-bl-xl rounded-br-md bg-violet-500/35;
+}
+
+.paint-room-chat__meta {
+    @apply mb-0.5 flex items-center justify-between gap-2 text-[9px] text-slate-400;
+}
+
+.paint-room-chat__name {
+    @apply truncate font-semibold text-violet-200;
+}
+
+.paint-room-chat__msg--own .paint-room-chat__name {
+    @apply text-violet-100;
+}
+
+.paint-room-chat__time {
+    @apply shrink-0 tabular-nums;
+}
+
+.paint-room-chat__text {
+    @apply whitespace-pre-wrap break-words text-[11px] leading-relaxed text-slate-100;
+}
+
+.paint-room-chat__form {
+    @apply flex items-center gap-1.5 border-t border-white/10 p-2;
+}
+
+.paint-room-chat__input {
+    @apply min-w-0 flex-1 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-[11px] text-white placeholder:text-slate-500 focus:border-violet-300/60 focus:outline-none focus:ring-2 focus:ring-violet-400/30;
+}
+
+.paint-room-chat__send {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-500 text-sm font-bold text-white transition hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.paint-room-pip--collapsed .paint-room-chat {
+    display: none;
+}
+
+.paint-room-pip--tam-mod .paint-room-chat__messages {
+    @apply max-h-[min(32vh,280px)];
+}
+
 body.paint-room-tam-mod-active {
     overflow: hidden;
 }

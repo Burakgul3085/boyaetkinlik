@@ -17,6 +17,10 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const leaveUrl = root.dataset.leaveUrl;
     const indexUrl = root.dataset.indexUrl;
     const role = root.dataset.role;
+    const chatSendUrl = root.dataset.chatSendUrl || '';
+    const chatPollUrl = root.dataset.chatPollUrl || '';
+    const chatHistoryUrl = root.dataset.chatHistoryUrl || '';
+    const chatDisplayName = root.dataset.chatDisplayName || (role === 'owner' ? 'Oda sahibi' : 'Misafir');
     const guestToken = root.dataset.guestToken || '';
     const expiresAt = new Date(root.dataset.expiresAt);
     const csrf = root.dataset.csrf
@@ -42,6 +46,14 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     const unlockAudioBtn = document.getElementById('paint-room-unlock-audio');
     const toggleMicBtn = document.getElementById('paint-room-toggle-mic');
     const toggleCamBtn = document.getElementById('paint-room-toggle-cam');
+    const chatPanel = document.getElementById('paint-room-chat');
+    const chatMessagesEl = document.getElementById('paint-room-chat-messages');
+    const chatEmptyEl = document.getElementById('paint-room-chat-empty');
+    const chatForm = document.getElementById('paint-room-chat-form');
+    const chatInput = document.getElementById('paint-room-chat-input');
+    const chatSendBtn = document.getElementById('paint-room-chat-send');
+    const chatToggleBtn = document.getElementById('paint-room-chat-toggle');
+    const chatBadge = document.getElementById('paint-room-chat-badge');
 
     let participantCount = parseInt(countEl?.textContent || '1', 10);
     let pc = null;
@@ -61,6 +73,12 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
     let reconnectAttempts = 0;
     const iceQueue = [];
     const processedSignals = new Set();
+    let lastChatId = 0;
+    let chatPollTimer = null;
+    let chatHistoryLoaded = false;
+    let chatOpen = false;
+    let chatUnread = 0;
+    const seenChatIds = new Set();
 
     function isConnected() {
         return pc?.connectionState === 'connected'
@@ -574,6 +592,7 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
     function teardownAll() {
         teardownCall();
+        stopChatPolling();
         if (localStream) {
             localStream.getTracks().forEach((t) => t.stop());
             localStream = null;
@@ -720,7 +739,13 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
 
             if (participantCount < 2 && prev >= 2) {
                 teardownCall();
+                stopChatPolling();
                 if (localMediaReady) setWebrtcStatus('Kamera hazır — misafir bekleniyor…');
+            }
+
+            if (participantCount >= 2) {
+                startChatPolling();
+                if (!chatHistoryLoaded) loadChatHistory();
             }
 
             if (participantCount >= 2 && localMediaReady && !callActive) {
@@ -849,6 +874,191 @@ import { initPaintRoomCanvas } from './paint-room-canvas.js';
         restorePosition();
 
         return { restorePosition };
+    }
+
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function formatChatTime(iso) {
+        if (!iso) return '';
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function updateChatEmptyState() {
+        if (!chatEmptyEl || !chatMessagesEl) return;
+        const hasMessages = chatMessagesEl.childElementCount > 0;
+        chatEmptyEl.classList.toggle('hidden', hasMessages);
+    }
+
+    function scrollChatToBottom() {
+        if (!chatMessagesEl) return;
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    function updateChatBadge() {
+        if (!chatBadge || !chatToggleBtn) return;
+        if (chatUnread > 0 && !chatOpen) {
+            chatBadge.textContent = chatUnread > 9 ? '9+' : String(chatUnread);
+            chatBadge.classList.remove('hidden');
+            chatToggleBtn.classList.add('paint-room-pip__btn--chat-unread');
+        } else {
+            chatBadge.classList.add('hidden');
+            chatToggleBtn.classList.remove('paint-room-pip__btn--chat-unread');
+        }
+    }
+
+    function setChatOpen(open) {
+        chatOpen = open;
+        chatPanel?.classList.toggle('hidden', !open);
+        document.getElementById('paint-room-pip')?.classList.toggle('paint-room-pip--chat-open', open);
+        chatToggleBtn?.setAttribute('aria-pressed', open ? 'true' : 'false');
+        if (open) {
+            chatUnread = 0;
+            updateChatBadge();
+            scrollChatToBottom();
+            chatInput?.focus();
+        }
+    }
+
+    function appendChatMessage(msg) {
+        if (!chatMessagesEl || !msg?.id || seenChatIds.has(msg.id)) return false;
+        seenChatIds.add(msg.id);
+        lastChatId = Math.max(lastChatId, msg.id);
+
+        const isOwn = msg.from === role;
+        const bubble = document.createElement('div');
+        bubble.className = `paint-room-chat__msg${isOwn ? ' paint-room-chat__msg--own' : ''}`;
+        bubble.dataset.id = String(msg.id);
+        bubble.innerHTML = `
+            <div class="paint-room-chat__meta">
+                <span class="paint-room-chat__name">${escapeHtml(msg.name || (isOwn ? chatDisplayName : 'Karşı taraf'))}</span>
+                <time class="paint-room-chat__time">${escapeHtml(formatChatTime(msg.at))}</time>
+            </div>
+            <p class="paint-room-chat__text">${escapeHtml(msg.text || '')}</p>
+        `;
+        chatMessagesEl.appendChild(bubble);
+        updateChatEmptyState();
+        return true;
+    }
+
+    async function loadChatHistory() {
+        if (!chatHistoryUrl || chatHistoryLoaded) return;
+        try {
+            const res = await fetch(chatHistoryUrl, {
+                headers: authHeaders(),
+                credentials: 'same-origin',
+                cache: 'no-store',
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) return;
+            (data.messages || []).forEach((msg) => appendChatMessage(msg));
+            chatHistoryLoaded = true;
+            scrollChatToBottom();
+        } catch (_) { /* sessiz */ }
+    }
+
+    async function pollChat() {
+        if (!chatPollUrl || !csrf || participantCount < 2) return;
+
+        const body = new FormData();
+        body.append('_token', csrf);
+        body.append('after', String(lastChatId));
+
+        try {
+            const res = await fetch(chatPollUrl, {
+                method: 'POST',
+                headers: authHeaders(),
+                credentials: 'same-origin',
+                cache: 'no-store',
+                body,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) return;
+
+            let added = false;
+            for (const msg of data.messages || []) {
+                if (appendChatMessage(msg)) {
+                    added = true;
+                    if (!chatOpen && msg.from !== role) {
+                        chatUnread += 1;
+                    }
+                }
+            }
+            if (added) {
+                updateChatBadge();
+                if (chatOpen) scrollChatToBottom();
+            }
+        } catch (_) { /* sessiz */ }
+    }
+
+    function startChatPolling() {
+        if (chatPollTimer || !chatPollUrl) return;
+        pollChat();
+        chatPollTimer = setInterval(pollChat, 700);
+    }
+
+    function stopChatPolling() {
+        clearInterval(chatPollTimer);
+        chatPollTimer = null;
+    }
+
+    async function sendChatMessage(text) {
+        const trimmed = text.trim();
+        if (!trimmed || !chatSendUrl || !csrf || participantCount < 2) return;
+
+        chatInput && (chatInput.disabled = true);
+        chatSendBtn && (chatSendBtn.disabled = true);
+
+        try {
+            const body = new FormData();
+            body.append('_token', csrf);
+            body.append('text', trimmed);
+
+            const res = await fetch(chatSendUrl, {
+                method: 'POST',
+                headers: authHeaders(),
+                credentials: 'same-origin',
+                cache: 'no-store',
+                body,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.status === 419) throw new Error('Oturum süresi doldu — sayfayı yenileyin.');
+            if (!res.ok) throw new Error(data.message || 'Mesaj gönderilemedi');
+
+            if (data.message) appendChatMessage(data.message);
+            if (chatInput) chatInput.value = '';
+            scrollChatToBottom();
+        } catch (err) {
+            if (chatInput) chatInput.value = trimmed;
+            setWebrtcStatus(err?.message || 'Mesaj gönderilemedi');
+        } finally {
+            if (chatInput) chatInput.disabled = false;
+            if (chatSendBtn) chatSendBtn.disabled = false;
+            chatInput?.focus();
+        }
+    }
+
+    chatToggleBtn?.addEventListener('click', () => {
+        setChatOpen(!chatOpen);
+    });
+
+    chatForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!chatInput) return;
+        sendChatMessage(chatInput.value);
+    });
+
+    if (participantCount >= 2) {
+        startChatPolling();
+        loadChatHistory();
     }
 
     unlockAudioBtn?.addEventListener('click', async () => {
