@@ -1,70 +1,223 @@
-# Boya Etkinlik Platformu (Laravel 11)
+# Boya Etkinlik Platformu
 
-Bu proje, ücretsiz ve ücretli boyama sayfalarının listelendiği, satın alınabildiği ve token bazlı indirilebildiği bir platform iskeletidir.
+Bu README dosyası, Boya Etkinlik Platformu projesinin kurulumu, yapılandırması, mimarisi ve dağıtımına yönelik kapsamlı bilgiler sunar. Proje, kullanıcılara hem ücretsiz hem de ücretli boyama sayfaları sunarak dijital ürünlerin listelenmesini, satın alınmasını ve token bazlı güvenli bir şekilde indirilmesini sağlayan bir web uygulaması iskeletidir. Odak noktası, kullanıcı dostu bir arayüz ve ürün yönetimi sunarken, Laravel 11'in modern özelliklerinden faydalanmaktır.
 
-## Kurulum
+## İçindekiler
+* [Özet](#özet)
+* [Özellikler](#özellikler)
+* [Gereksinimler](#gereksinimler)
+* [Kurulum ve çalıştırma](#kurulum-ve-çalıştırma)
+* [Yapılandırma](#yapılandırma)
+* [Kullanılan teknolojiler](#kullanılan-teknolojiler)
+* [Mimari ve klasör yapısı](#mimari-ve-klasör-yapısı)
+* [API veya uç noktalar](#api-veya-uç-noktalar)
+* [Test ve kalite](#test-ve-kalite)
+* [Dağıtım ve üretim notları](#dağıtım-ve-üretim-notları)
+* [Katkıda bulunma](#katkıda-bulunma)
+* [Lisans](#lisans)
 
-1. `cp .env.example .env`
-2. Veritabanı ayarlarını `.env` içinde doldurun.
-3. `php artisan key:generate`
-4. `php artisan migrate --seed`
-5. `npm install && npm run build`
+## Özet
+Boya Etkinlik Platformu, dijital boyama sayfalarını barındıran ve dağıtan bir e-ticaret altyapısıdır. Hedef kullanıcı kitlesi, yaratıcı içerik arayan bireyler ve dijital boyama sayfaları sunmak isteyen içerik üreticileridir. Proje, kullanıcılara çeşitli ücretsiz ve ücretli boyama sayfalarını kolayca keşfetme ve satın alma imkanı sunar. Ana işlevleri arasında ürün listeleme, güvenli ödeme işlemleri (Shopier entegrasyonu ile), ödeme sonrası tek kullanımlık indirme tokenları üretimi ve kullanıcılara indirme bağlantılarının e-posta ile gönderilmesi yer almaktadır. Ayrıca, Tailwind CSS ve Alpine.js ile modern bir kullanıcı deneyimi hedeflenmektedir.
 
-## Varsayılan Admin
+## Özellikler
+*   Ücretsiz ve ücretli dijital boyama sayfaları listeleme.
+*   Shopier ödeme ağ geçidi ile güvenli ödeme işlemleri.
+*   Ödeme sonrası benzersiz, tek kullanımlık indirme tokenı oluşturma.
+*   Kullanıcılara e-posta ile indirme bağlantıları gönderme yeteneği.
+*   Varsayılan admin hesabı ile kolay başlangıç ve yönetim.
+*   Laravel 11 tabanlı sağlam ve sürdürülebilir bir arka uç.
+*   Tailwind CSS ile hızlı ve özelleştirilebilir bir arayüz.
+*   Alpine.js ile hafif ve reaktif ön uç etkileşimleri.
+*   Vite ile hızlı geliştirme ve derleme süreçleri.
+*   Paylaşımlı hosting ortamları için özel dağıtım notları.
+*   Temiz ve modüler kod yapısı sayesinde kolay genişletilebilirlik.
+*   Güncel sürüm notları (`CHANGELOG.md`) ile proje gelişimi takibi.
 
-- E-posta: `admin@boyaetkinlik.test`
-- Şifre: `12345678`
+## Gereksinimler
+Projenin düzgün çalışması için aşağıdaki gereksinimler karşılanmalıdır:
 
-## Paylaşımlı Hosting Notları
+*   **PHP:** Sürüm 8.2 veya üzeri (`composer.json` gereksinimlerine göre).
+*   **Node.js:** Vite ve npm bağımlılıkları için Node.js 18.0.0 veya üzeri (`package.json` ve `vite.config.js` referanslarına göre).
+*   **Composer:** PHP bağımlılıklarını yönetmek için.
+*   **npm:** JavaScript bağımlılıklarını yönetmek için.
+*   **Veritabanı:** MySQL, PostgreSQL, SQLite veya başka bir desteklenen veritabanı (Laravel tarafından desteklenen).
+*   **E-posta Servisi:** Kullanıcılara indirme linkleri göndermek için yapılandırılmış bir e-posta servisi (örneğin PHPMailer kullanılabilir).
 
-- `APP_ENV=production`, `APP_DEBUG=false`
-- Canlı `.env`: `APP_URL=https://boyaetkinlik.com` (sonunda `/` yok). `http://` veya `www.` yazmayın; yönlendirme `public/.htaccess` ile tek adrese toplanır.
-- Queue ve cache için `database` veya `file` kullanın.
-- Ücretli dosyalar `storage/app/private` altında saklanır ve herkese açık erişim yoktur.
-- Ücretsiz dosyalar `storage/app/public/free-pages` altında saklanır.
+## Kurulum ve çalıştırma
 
-### `storage:link` çalışmazsa alternatif
+Projeyi yerel ortamınızda kurmak ve çalıştırmak için aşağıdaki adımları izleyin:
 
-Paylaşımlı hostingte symlink kapalıysa:
+1.  **Depoyu klonlayın:**
+    ```bash
+    git clone https://github.com/KULLANICI_ADINIZ/boya-etkinlik-platformu.git
+    cd boya-etkinlik-platformu
+    ```
+    *Not: Depo URL'si varsayımsaldır; kendi repo URL'nizle güncelleyin.*
+2.  **Ortam değişkenlerini yapılandırın:**
+    ```bash
+    cp .env.example .env
+    ```
+    `.env` dosyasını açarak veritabanı bağlantı bilgilerini ve diğer uygulama ayarlarını (örneğin `APP_URL`) doldurun.
+3.  **Uygulama anahtarını oluşturun:**
+    ```bash
+    php artisan key:generate
+    ```
+4.  **PHP bağımlılıklarını kurun:**
+    ```bash
+    composer install
+    ```
+5.  **Veritabanı tablolarını oluşturun ve varsayılan verileri doldurun:**
+    ```bash
+    php artisan migrate --seed
+    ```
+    Bu komut, veritabanınızı oluşturacak ve varsayılan admin kullanıcı gibi başlangıç verilerini ekleyecektir.
+6.  **JavaScript bağımlılıklarını kurun ve ön uç varlıklarını derleyin:**
+    ```bash
+    npm install
+    npm run build
+    ```
+7.  **Uygulamayı geliştirme modunda başlatın (isteğe bağlı):**
+    `composer.json` içindeki `dev` script'ini kullanarak Laravel geliştirme sunucusunu, kuyruk dinleyicisini, log izleyicisini ve Vite'ı aynı anda başlatabilirsiniz:
+    ```bash
+    composer dev
+    ```
+    Veya ayrı ayrı çalıştırmak isterseniz:
+    ```bash
+    php artisan serve
+    npm run dev
+    ```
+    Uygulama genellikle `http://127.0.0.1:8000` adresinde erişilebilir olacaktır.
 
-1. `storage/app/public` içeriklerini `public/storage` altına manuel kopyalayın.
-2. Yükleme stratejisini buna göre sabit tutun (deploy betiği ile senkronize edin).
+**Varsayılan Admin Bilgileri:**
+*   E-posta: `admin@boyaetkinlik.test`
+*   Şifre: `12345678`
 
-### Hostinger (hPanel) — SSL ve tek adres
+## Yapılandırma
+Projenin yapılandırma ayarları `.env` dosyasında tutulur. Aşağıda öne çıkan bazı değişkenler listelenmiştir:
 
-1. Sol menüden **Web siteleri** → siteni seç.
-2. **Güvenlik** veya **SSL** bölümünde sertifikayı etkinleştir; mümkünse **“HTTPS’e yönlendir”** / **Force HTTPS** seçeneğini aç (çift yönlendirme genelde sorun çıkarmaz; yine de tarayıcıda `http://` ve `www` adreslerini test et).
-3. **Dosya yöneticisi** ile sunucudaki `public/.htaccess` dosyasının repodaki sürümle güncel olduğundan emin ol (www kaldırma + HTTP→HTTPS kuralları burada).
-4. Proje kökündeki `.env` dosyasında `APP_URL=https://boyaetkinlik.com` olduğunu doğrula, ardından gerekirse **Önbelleği temizle**: `php artisan config:clear` (SSH veya Hostinger **Gelişmiş** → **Terminal**).
-5. Tarayıcıda kontrol: `http://boyaetkinlik.com` ve `https://www.boyaetkinlik.com` adresleri `https://boyaetkinlik.com` adresine **301** ile gitmeli.
-6. Google Search Console’da aynı mülk altında **2–4 hafta** sonra **Performans → Sayfalar** raporunda gösterimlerin çoğunun tek kanonik URL’de toplanmaya başlamasını bekle.
+| Değişken    | Açıklama                                                       | Zorunlu      |
+|-------------|----------------------------------------------------------------|--------------|
+| `APP_ENV`   | Uygulama ortamı (`local`, `production`, `testing` vb.).        | Evet         |
+| `APP_DEBUG` | Uygulama hata ayıklama modunun açık olup olmadığı (`true`/`false`). | Evet         |
+| `APP_URL`   | Uygulamanızın tam URL'si (ör. `https://boyaetkinlik.com`).      | Evet         |
+| `DB_CONNECTION` | Veritabanı bağlantı sürücüsü (ör. `mysql`, `sqlite`).         | Evet         |
+| `DB_HOST`   | Veritabanı sunucusu.                                           | Evet         |
+| `DB_PORT`   | Veritabanı portu.                                              | Evet         |
+| `DB_DATABASE` | Kullanılacak veritabanının adı.                                | Evet         |
+| `DB_USERNAME` | Veritabanı kullanıcı adı.                                      | Evet         |
+| `DB_PASSWORD` | Veritabanı parolası.                                           | Evet         |
+| `MAIL_MAILER` | E-posta gönderim sürücüsü (ör. `smtp`, `sendmail`).           | Evet         |
+| `MAIL_HOST` | E-posta sunucu adresi.                                         | Evet         |
+| `MAIL_PORT` | E-posta sunucu portu.                                          | Evet         |
+| `MAIL_USERNAME` | E-posta kullanıcı adı.                                       | Evet         |
+| `MAIL_PASSWORD` | E-posta parolası.                                            | Evet         |
+| `MAIL_ENCRYPTION` | E-posta şifreleme türü (ör. `tls`, `ssl`).                 | İsteğe bağlı |
+| `MAIL_FROM_ADDRESS` | Gönderen e-posta adresi.                                | Evet         |
+| `MAIL_FROM_NAME` | Gönderen adı.                                                | Evet         |
+| `SHOPIER_API_KEY` | Shopier API anahtarınız.                                     | Evet         |
+| `SHOPIER_SECRET` | Shopier gizli anahtarınız.                                   | Evet         |
 
-**HSTS:** Yalnızca tüm alt yolların HTTPS ile sorunsuz çalıştığından eminsen panelde aç; aksi halde atla.
+*Önemli: `SHOPIER_API_KEY` ve `SHOPIER_SECRET` gibi hassas bilgileri doğrudan `.env` dosyasına yazın ve bu dosyayı versiyon kontrolüne (git vb.) eklemeyin. `.env.example` dosyasını şablon olarak kullanın.*
 
-### Cloudflare (ad sunucuları Cloudflare ise — kanonik: `https://boyaetkinlik.com`)
+## Kullanılan teknolojiler
+*   **PHP:** 8.2+
+*   **Laravel Framework:** 11.31+
+*   **JavaScript (ES6+)**
+*   **Node.js:** 18+
+*   **npm**
+*   **Vite:** 6.0.11+ (Ön uç derleme aracı)
+*   **Tailwind CSS:** 3.4.13+ (CSS Framework)
+*   **Alpine.js:** 3.15.11+ (Hafif JavaScript Framework)
+*   **Axios:** 1.7.4+ (HTTP istemcisi)
+*   **PHPMailer:** 7.0+ (E-posta gönderim kütüphanesi)
+*   **Setasign FPDF:** 1.8+ (PDF oluşturma kütüphanesi)
+*   **Composer:** PHP bağımlılık yöneticisi
 
-Hostinger **DNS / Yönlendirmeler** bu durumda işe yaramaz; ayarlar Cloudflare’da yapılır. Sayfayı bozmamak için önce SSL’i doğrula, sonra tek kural ekleyip test et.
+## Mimari ve klasör yapısı
+Bu proje, modern bir web uygulaması geliştirmek için standart Laravel yapısını takip etmektedir. `resources/js` ve `resources/css` gibi klasörler, ön uç varlıklarının (JavaScript, CSS) düzenli bir şekilde tutulmasını sağlar. `public` dizini, web sunucusu tarafından doğrudan erişilebilen tüm varlıkları (derlenmiş CSS/JS, resimler vb.) içerir. Laravel'in MVC (Model-View-Controller) deseni, uygulamanın iş mantığını, veri yönetimini ve kullanıcı arayüzünü ayırarak kodun okunabilirliğini ve bakımını kolaylaştırır. Özellikle `storage/app/private` ücretli dosyaların, `storage/app/public/free-pages` ise ücretsiz dosyaların saklandığı konumlar olarak belirtilmiştir.
 
-1. [Cloudflare Dashboard](https://dash.cloudflare.com) → **boyaetkinlik.com** → **SSL/TLS** → genel mod **Full (strict)** (origin’de geçerli sertifika varsa). Önce **Full** deneyip site açılıyorsa strict’e geç.
-2. Aynı menüde **Edge Certificates** → **Always Use HTTPS**: **Açık** (HTTP istekleri HTTPS’e döner).
-3. **Rules** → **Redirect Rules** → **Create rule**:
-   - **Rule name:** `www to apex`
-   - **If…:** Alan *Hostname* → *equals* → `www.boyaetkinlik.com`
-   - **Then…:** *Dynamic redirect* → **301** → hedef ifade (Expression / dinamik URL alanına yapıştırın):  
-     `concat("https://boyaetkinlik.com", http.request.uri.path, if(len(http.request.uri.query) > 0, concat("?", http.request.uri.query), ""))`  
-     (Amaç: www’yi kaldırıp yol ve sorgu dizgisini aynen taşımak.)
-4. Kaydet. **Önbelleği** bir kez temizlemek için **Caching** → **Configuration** → **Purge Everything** (isteğe bağlı; sorun olursa yap).
-5. Tarayıcıda gizli sekmede dene: `https://www.boyaetkinlik.com/` → adres çubuğu **`https://boyaetkinlik.com/`** olmalı (301). Ana sayfa ve bir iç sayfa açılıyor mu kontrol et.
-6. Sunucudaki **`.env`**: `APP_URL=https://boyaetkinlik.com` ve güncel `public/.htaccess` deploy edilmiş olsun; sonra `php artisan config:clear`.
+Projenin temel klasör ve dosya yapısı aşağıdaki gibidir:
 
-**Döngü / “too many redirects” olursa:** Cloudflare SSL modunu **Full (strict)** yerine **Full** yapın veya geçici olarak **Always Use HTTPS** kapatıp hangi katmanda döngü olduğunu ayırın.
+| Bölüm / klasör       | Kısa açıklama                                                              |
+|----------------------|----------------------------------------------------------------------------|
+| `CHANGELOG.md`       | Projenin sürüm notlarını ve değişiklik geçmişini içerir.                     |
+| `README.md`          | Proje hakkında genel bilgi, kurulum ve kullanım talimatları.               |
+| `composer.json`      | PHP bağımlılıklarını ve Composer script'lerini tanımlar.                   |
+| `package-lock.json`  | npm bağımlılık ağacının kesin durumunu kilitler.                           |
+| `package.json`       | JavaScript bağımlılıklarını ve npm script'lerini tanımlar.                 |
+| `postcss.config.js`  | PostCSS yapılandırma dosyası (Tailwind CSS ve Autoprefixer için).        |
+| `resources/`         | Uygulamanın ham ön uç varlıklarını (CSS, JavaScript, Blade şablonları) içerir. |
+| `resources/css/`     | Uygulamanın stil dosyalarını (ör. `app.css`) içerir.                      |
+| `resources/js/`      | Uygulamanın JavaScript dosyalarını (ör. `app.js`, `bootstrap.js`) içerir. |
+| `tailwind.config.js` | Tailwind CSS çerçevesinin özelleştirme yapılandırması.                     |
+| `vite.config.js`     | Vite ön uç derleme aracının yapılandırması.                                |
 
-## Shopier Notu
+```mermaid
+flowchart TB
+  root["Depo Köku"]
+  changelog["CHANGELOG.md"]
+  readme["README.md"]
+  composer_json["composer.json"]
+  package_lock["package-lock.json"]
+  package_json["package.json"]
+  postcss_cfg["postcss.config.js"]
+  tailwind_cfg["tailwind.config.js"]
+  vite_cfg["vite.config.js"]
+  resources["resources/"]
+  js["js/"]
+  css["css/"]
 
-Shopier callback rotası: `POST /shopier/callback`
+  root --> changelog
+  root --> readme
+  root --> composer_json
+  root --> package_lock
+  root --> package_json
+  root --> postcss_cfg
+  root --> tailwind_cfg
+  root --> vite_cfg
+  root --> resources
+  resources --> js
+  resources --> css
+```
 
-Bu iskelette callback geldikten sonra:
+## API veya uç noktalar
+Bu projede tanımlanan ana uç nokta (endpoint):
 
-- ödeme başarılıysa işlem `paid` olur,
-- tek kullanımlık indirme tokeni üretilir,
-- kullanıcıya e-posta ile indirme linki gönderilir.
+*   **`POST /shopier/callback`**: Shopier ödeme ağ geçidinden gelen bildirimleri işlemek için kullanılan rota. Bu uç nokta, ödeme başarılı olduğunda işlemi `paid` olarak işaretler, tek kullanımlık indirme tokenı üretir ve kullanıcıya indirme bağlantısını e-posta ile gönderir.
+
+Diğer Laravel uygulamalarında olduğu gibi, kullanıcı kimlik doğrulama, ürün listeleme, sepet yönetimi ve dosya indirme gibi standart web rotalarının da mevcut olması beklenir.
+
+## Test ve kalite
+Bu depoda Laravel'in varsayılan test araçları mevcuttur.
+
+*   **PHP Birim Testleri:** PHPUnit (`phpunit/phpunit`) kullanılarak PHP tabanlı testler yazılabilir. `composer.json` dosyasında `phpunit/phpunit:^11.0.1` bağımlılığı tanımlıdır.
+*   **PHP Kod Stili:** Laravel Pint (`laravel/pint`) kullanılarak PHP kodunuzun otomatik olarak biçimlendirilmesi ve kod standardının korunması sağlanabilir. `composer.json` dosyasında `laravel/pint:^1.13` bağımlılığı tanımlıdır.
+
+Testleri çalıştırmak için `composer.json` içinde doğrudan bir test script'i tanımlanmamıştır, ancak aşağıdaki komutlar kullanılabilir:
+*   PHP birim testlerini çalıştırmak için:
+    ```bash
+    ./vendor/bin/phpunit
+    ```
+*   PHP kod stilini kontrol etmek ve düzeltmek için:
+    ```bash
+    ./vendor/bin/pint
+    ```
+
+Gelecekte daha kapsamlı test ve kalite süreçleri için `package.json`'a ek linting veya e2e (uçtan uca) test komutlarının eklenmesi önerilir.
+
+## Dağıtım ve üretim notları
+Projenin üretime dağıtımı için aşağıdaki noktalara dikkat edilmesi önerilir:
+
+1.  **Ortam Değişkenleri:** `.env` dosyasındaki `APP_ENV` değişkenini `production` ve `APP_DEBUG` değişkenini `false` olarak ayarlayın. `APP_URL` değerinin canlı site adresinizi (`https://boyaetkinlik.com` gibi, sonunda `/` olmadan) doğru bir şekilde yansıttığından emin olun.
+2.  **Kuyruk ve Önbellek:** Üretim ortamında performans için kuyruk (`queue`) ve önbellek (`cache`) sürücülerini `database` veya `file` yerine Redis veya Memcached gibi daha performanslı çözümlerle yapılandırmanız önerilir. Mevcut bağlamda `database` veya `file` olarak ayarlanabileceği belirtilmiştir.
+3.  **Güvenli Depolama:** Ücretli dosyalar `storage/app/private` altında tutulmalı ve doğrudan web erişimine kapalı olmalıdır. Ücretsiz dosyalar `storage/app/public/free-pages` altında saklanabilir.
+4.  **Sembolik Bağlantılar (`storage:link`):** `php artisan storage:link` komutu, `public/storage` dizinine `storage/app/public` için sembolik bir bağlantı oluşturur. Bazı paylaşımlı hosting sağlayıcılarında bu işlem desteklenmeyebilir. Eğer sembolik bağlantılar çalışmazsa, `storage/app/public` içeriğini manuel olarak `public/storage` altına kopyalayın ve yükleme stratejinizi buna göre güncelleyin.
+5.  **Hosting Özel Ayarları:**
+    *   **Hostinger (hPanel):** SSL sertifikasının etkin olduğundan ve "HTTPS'e yönlendir" seçeneğinin açık olduğundan emin olun. `public/.htaccess` dosyasının güncel ve HTTPS'e yönlendirme kurallarını içerdiğini doğrulayın. `APP_URL` ayarını güncelledikten sonra `php artisan config:clear` komutuyla önbelleği temizleyin.
+    *   **Cloudflare:** Eğer Cloudflare ad sunucuları kullanılıyorsa, SSL/TLS ayarlarını "Full (strict)" veya "Full" olarak yapılandırın. "Always Use HTTPS" özelliğini etkinleştirin ve `www` adresini ana domaine yönlendiren bir kural (`www to apex`) oluşturun. Sunucudaki `.env` ve `.htaccess` ayarlarının Cloudflare ile uyumlu olduğundan emin olun.
+
+## Katkıda bulunma
+Bu projenin gelişimine katkıda bulunmak isteyen herkesi memnuniyetle karşılarız. Lütfen yeni özellikler veya hata düzeltmeleri için bir "issue" açarak önerilerinizi belirtin veya doğrudan bir "pull request" gönderin. Kod standartlarına uymaya ve mevcut testleri geçmeye özen gösteriniz.
+
+## Lisans
+Bu proje, `composer.json` dosyasında belirtildiği üzere **MIT Lisansı** ile lisanslanmıştır. Daha detaylı bilgi için lütfen projenin kök dizinindeki lisans dosyasına bakınız (ancak bu depoda `LICENSE` adında bir dosya doğrulanamadı; eklenmesi önerilir).
