@@ -178,6 +178,251 @@ body {
         calc(4.5rem + var(--pg-safe-bottom));
 }
 
+.pg-scene--hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.pg-scene--hero .pg-scene__inner {
+    position: relative;
+    z-index: 2;
+}
+
+.pg-hero-sky {
+    position: absolute;
+    inset: -8% -6%;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.pg-hero-sky__glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.55;
+    animation: pg-hero-glow 10s ease-in-out infinite alternate;
+}
+
+.pg-hero-sky__glow--a {
+    width: min(70vw, 340px);
+    height: min(70vw, 340px);
+    left: -8%;
+    top: 8%;
+    background: radial-gradient(circle, rgba(201, 173, 122, 0.22), transparent 70%);
+}
+
+.pg-hero-sky__glow--b {
+    width: min(65vw, 300px);
+    height: min(65vw, 300px);
+    right: -10%;
+    bottom: 12%;
+    background: radial-gradient(circle, rgba(120, 100, 180, 0.16), transparent 70%);
+    animation-delay: -4s;
+}
+
+.pg-hero-sky__stars {
+    position: absolute;
+    inset: 0;
+}
+
+.pg-hero-sky__stars span {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: #fff8e8;
+    box-shadow: 0 0 6px rgba(255, 248, 232, 0.85);
+    opacity: 0.25;
+    animation: pg-hero-twinkle var(--d, 3s) ease-in-out infinite;
+    animation-delay: var(--w, 0s);
+}
+
+.pg-hero-sky__stars span.pg-star--big {
+    width: 3px;
+    height: 3px;
+    box-shadow: 0 0 10px rgba(201, 173, 122, 0.9);
+}
+
+/* four-point soft sparkle */
+.pg-hero-sky__stars span.pg-star--sparkle {
+    width: 5px;
+    height: 5px;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.pg-hero-sky__stars span.pg-star--sparkle::before,
+.pg-hero-sky__stars span.pg-star--sparkle::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: rgba(255, 246, 228, 0.9);
+    border-radius: 1px;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px rgba(201, 173, 122, 0.7);
+}
+
+.pg-hero-sky__stars span.pg-star--sparkle::before {
+    width: 1.5px;
+    height: 100%;
+}
+
+.pg-hero-sky__stars span.pg-star--sparkle::after {
+    width: 100%;
+    height: 1.5px;
+}
+
+.pg-hero-sky__meteors span {
+    position: absolute;
+    top: 8%;
+    left: -20%;
+    width: 90px;
+    height: 1.5px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, rgba(255, 246, 228, 0.95), transparent);
+    opacity: 0;
+    transform: rotate(18deg);
+    animation: pg-hero-meteor 7.5s linear infinite;
+}
+
+.pg-hero-sky__meteors span:nth-child(1) {
+    top: 12%;
+    animation-delay: 1.2s;
+}
+
+.pg-hero-sky__meteors span:nth-child(2) {
+    top: 28%;
+    width: 70px;
+    animation-delay: 3.8s;
+    animation-duration: 8.5s;
+}
+
+.pg-hero-sky__meteors span:nth-child(3) {
+    top: 18%;
+    width: 55px;
+    animation-delay: 6s;
+    animation-duration: 9s;
+}
+
+.pg-hero-sky__petals {
+    position: absolute;
+    inset: 0;
+}
+
+.pg-hero-sky__petals span {
+    position: absolute;
+    top: -12%;
+    width: 11px;
+    height: 15px;
+    border-radius: 70% 70% 55% 55%;
+    background: linear-gradient(160deg, rgba(255, 246, 228, 0.95), rgba(201, 173, 122, 0.55));
+    opacity: 0;
+    filter: blur(0.2px);
+    box-shadow: 0 0 10px rgba(201, 173, 122, 0.2);
+    animation: pg-hero-fall var(--fall, 9s) linear infinite;
+    animation-delay: var(--w, 0s);
+}
+
+.pg-hero-sky__petals span.pg-leaf {
+    width: 12px;
+    height: 18px;
+    border-radius: 2px 80% 2px 80%;
+    background: linear-gradient(150deg, rgba(143, 184, 150, 0.75), rgba(90, 130, 100, 0.35));
+    box-shadow: none;
+}
+
+.pg-hero-sky__orbs {
+    position: absolute;
+    inset: 0;
+}
+
+.pg-hero-sky__orbs i {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 250, 240, 0.95), rgba(201, 173, 122, 0.2));
+    box-shadow: 0 0 14px rgba(201, 173, 122, 0.35);
+    opacity: 0.55;
+    animation: pg-hero-float var(--float, 8s) ease-in-out infinite;
+    animation-delay: var(--w, 0s);
+}
+
+.pg-hero-sky__orbs i:nth-child(1) { left: 12%; top: 22%; --float: 7.5s; --w: 0s; }
+.pg-hero-sky__orbs i:nth-child(2) { left: 78%; top: 18%; width: 6px; height: 6px; --float: 9s; --w: -1.4s; }
+.pg-hero-sky__orbs i:nth-child(3) { left: 22%; top: 68%; width: 10px; height: 10px; --float: 10s; --w: -2s; }
+.pg-hero-sky__orbs i:nth-child(4) { left: 86%; top: 62%; width: 7px; height: 7px; --float: 8s; --w: -3s; }
+.pg-hero-sky__orbs i:nth-child(5) { left: 48%; top: 76%; width: 5px; height: 5px; --float: 11s; --w: -1s; }
+
+/* sahne 1 dışındayken gökyüzünü kapat (performans) */
+.pg-scene--hero:not(.is-active) .pg-hero-sky {
+    opacity: 0;
+    visibility: hidden;
+}
+
+@keyframes pg-hero-twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.85); }
+    50% { opacity: 0.95; transform: scale(1.25); }
+}
+
+@keyframes pg-hero-meteor {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) rotate(18deg);
+    }
+    4% {
+        opacity: 1;
+    }
+    18% {
+        opacity: 0;
+        transform: translate3d(120vw, 42vh, 0) rotate(18deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(120vw, 42vh, 0) rotate(18deg);
+    }
+}
+
+@keyframes pg-hero-fall {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, -8vh, 0) rotate(0deg);
+    }
+    8% {
+        opacity: 0.85;
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(var(--drift, 40px), 110vh, 0) rotate(var(--spin, 280deg));
+    }
+}
+
+@keyframes pg-hero-float {
+    0%, 100% {
+        transform: translate3d(0, 0, 0);
+        opacity: 0.4;
+    }
+    50% {
+        transform: translate3d(8px, -18px, 0);
+        opacity: 0.85;
+    }
+}
+
+@keyframes pg-hero-glow {
+    from {
+        transform: scale(0.95);
+        opacity: 0.4;
+    }
+    to {
+        transform: scale(1.08);
+        opacity: 0.7;
+    }
+}
+
 .pg-scene {
     min-height: min(100svh, 100dvh);
     min-height: 100svh;
@@ -1208,9 +1453,18 @@ body {
     #pg-smile-btn.is-ready,
     .pg-scene.is-enter .pg-card,
     .pg-scene.is-enter .pg-choice,
-    .pg-scene.is-enter .pg-maybe li {
+    .pg-scene.is-enter .pg-maybe li,
+    .pg-hero-sky__stars span,
+    .pg-hero-sky__meteors span,
+    .pg-hero-sky__petals span,
+    .pg-hero-sky__orbs i,
+    .pg-hero-sky__glow {
         transition: none !important;
         animation: none !important;
+    }
+
+    .pg-hero-sky {
+        display: none;
     }
 
     .pg-scene {

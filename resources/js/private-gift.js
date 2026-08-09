@@ -393,6 +393,38 @@
         });
     }
 
+    // Hero sky: stars + falling petals (only built once)
+    (function initHeroSky() {
+        if (reduceMotion) return;
+        const stars = document.getElementById('pg-hero-stars');
+        const petals = document.getElementById('pg-hero-petals');
+        if (!stars || !petals) return;
+
+        const starCount = window.innerWidth < 420 ? 22 : 36;
+        for (let i = 0; i < starCount; i += 1) {
+            const s = document.createElement('span');
+            s.style.left = `${Math.random() * 100}%`;
+            s.style.top = `${Math.random() * 100}%`;
+            s.style.setProperty('--d', `${2.2 + Math.random() * 3.2}s`);
+            s.style.setProperty('--w', `${Math.random() * 4}s`);
+            if (i % 7 === 0) s.classList.add('pg-star--sparkle');
+            else if (i % 4 === 0) s.classList.add('pg-star--big');
+            stars.appendChild(s);
+        }
+
+        const petalCount = window.innerWidth < 420 ? 10 : 14;
+        for (let i = 0; i < petalCount; i += 1) {
+            const p = document.createElement('span');
+            if (i % 4 === 0) p.classList.add('pg-leaf');
+            p.style.left = `${Math.random() * 100}%`;
+            p.style.setProperty('--fall', `${7 + Math.random() * 7}s`);
+            p.style.setProperty('--w', `${Math.random() * 8}s`);
+            p.style.setProperty('--drift', `${-50 + Math.random() * 100}px`);
+            p.style.setProperty('--spin', `${180 + Math.random() * 220}deg`);
+            petals.appendChild(p);
+        }
+    }());
+
     // Hero enter anim
     document.getElementById('pg-scene-1')?.classList.add('is-enter');
     updateProgress();

@@ -26,6 +26,18 @@
     <main class="pg-main" id="pg-main">
         {{-- Sahne 1 --}}
         <section class="pg-scene pg-scene--hero is-active" id="pg-scene-1" data-pg-scene>
+            <div class="pg-hero-sky" aria-hidden="true">
+                <div class="pg-hero-sky__glow pg-hero-sky__glow--a"></div>
+                <div class="pg-hero-sky__glow pg-hero-sky__glow--b"></div>
+                <div class="pg-hero-sky__stars" id="pg-hero-stars"></div>
+                <div class="pg-hero-sky__meteors">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="pg-hero-sky__petals" id="pg-hero-petals"></div>
+                <div class="pg-hero-sky__orbs">
+                    <i></i><i></i><i></i><i></i><i></i>
+                </div>
+            </div>
             <div class="pg-scene__inner pg-scene__inner--center">
                 <p class="pg-eyebrow pg-anim" data-d="0">sadece sana</p>
                 <h1 class="pg-title pg-anim" data-d="1">Bu sıradan bir web sitesi değil.</h1>
