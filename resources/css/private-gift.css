@@ -203,6 +203,124 @@ body {
     display: none !important;
 }
 
+/* staggered enter for scene children */
+.pg-scene.is-enter .pg-anim {
+    animation: pg-rise-in 0.75s ease both;
+}
+
+.pg-scene.is-enter .pg-anim[data-d="0"] { animation-delay: 0.05s; }
+.pg-scene.is-enter .pg-anim[data-d="1"] { animation-delay: 0.15s; }
+.pg-scene.is-enter .pg-anim[data-d="2"] { animation-delay: 0.28s; }
+.pg-scene.is-enter .pg-anim[data-d="3"] { animation-delay: 0.4s; }
+.pg-scene.is-enter .pg-anim[data-d="4"] { animation-delay: 0.52s; }
+
+.pg-scene.is-enter .pg-card,
+.pg-scene.is-enter .pg-choice,
+.pg-scene.is-enter .pg-maybe li {
+    animation: pg-rise-in 0.55s ease both;
+    animation-delay: calc(0.08s * (var(--i, 0) + 1));
+}
+
+.pg-scene.is-enter .pg-card:nth-child(1) { --i: 0; }
+.pg-scene.is-enter .pg-card:nth-child(2) { --i: 1; }
+.pg-scene.is-enter .pg-card:nth-child(3) { --i: 2; }
+.pg-scene.is-enter .pg-card:nth-child(4) { --i: 3; }
+.pg-scene.is-enter .pg-card:nth-child(5) { --i: 4; }
+
+.pg-scene.is-enter .pg-choice:nth-child(1) { --i: 0; }
+.pg-scene.is-enter .pg-choice:nth-child(2) { --i: 1; }
+.pg-scene.is-enter .pg-choice:nth-child(3) { --i: 2; }
+.pg-scene.is-enter .pg-choice:nth-child(4) { --i: 3; }
+
+.pg-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin: 0 0 1rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 12px;
+    border: 1px dashed rgba(201, 173, 122, 0.4);
+    background: rgba(201, 173, 122, 0.06);
+    color: rgba(243, 240, 232, 0.78);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    animation: pg-pulse-soft 2.4s ease-in-out infinite;
+}
+
+.pg-hint--center {
+    justify-content: center;
+    text-align: center;
+    margin-top: 1.25rem;
+}
+
+.pg-hint__dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    margin-top: 0.35rem;
+    border-radius: 999px;
+    background: var(--pg-gold);
+    box-shadow: 0 0 10px rgba(201, 173, 122, 0.55);
+}
+
+.is-pop {
+    animation: pg-pop 0.45s ease both;
+}
+
+#pg-smile-btn[hidden],
+#pg-smile-btn:disabled {
+    pointer-events: none;
+}
+
+#pg-smile-btn.is-ready {
+    animation: pg-btn-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes pg-rise-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+        filter: blur(3px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+        filter: none;
+    }
+}
+
+@keyframes pg-pop {
+    0% {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: none;
+        scale: 1;
+    }
+}
+
+@keyframes pg-pulse-soft {
+    0%,
+    100% {
+        border-color: rgba(201, 173, 122, 0.28);
+    }
+    50% {
+        border-color: rgba(201, 173, 122, 0.65);
+    }
+}
+
+@keyframes pg-btn-glow {
+    0%,
+    100% {
+        box-shadow: 0 0 0 1px var(--pg-gold-soft), 0 0 18px rgba(201, 173, 122, 0.12);
+    }
+    50% {
+        box-shadow: 0 0 0 1px var(--pg-gold), 0 0 28px rgba(201, 173, 122, 0.28);
+    }
+}
+
 .pg-scene__inner {
     width: min(100%, var(--pg-max));
     margin: 0 auto;
@@ -928,7 +1046,13 @@ body {
     .pg-mood-reply,
     .pg-hard-reply,
     .pg-after-flower,
-    .pg-mission__done {
+    .pg-mission__done,
+    .pg-anim,
+    .pg-hint,
+    #pg-smile-btn.is-ready,
+    .pg-scene.is-enter .pg-card,
+    .pg-scene.is-enter .pg-choice,
+    .pg-scene.is-enter .pg-maybe li {
         transition: none !important;
         animation: none !important;
     }

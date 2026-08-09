@@ -12,7 +12,7 @@
 </head>
 <body class="pg-body">
     <div class="pg-preloader" id="pg-preloader" aria-hidden="true">
-        <p class="pg-preloader__text">bir şey hazırlanıyor…</p>
+        <p class="pg-preloader__text">senin için bir şey hazırlanıyor…</p>
         <span class="pg-preloader__pulse"></span>
     </div>
 
@@ -27,12 +27,19 @@
         {{-- Sahne 1 --}}
         <section class="pg-scene pg-scene--hero is-active" id="pg-scene-1" data-pg-scene>
             <div class="pg-scene__inner pg-scene__inner--center">
-                <p class="pg-eyebrow">özel bir yer</p>
-                <h1 class="pg-title">Bu sıradan bir web sitesi değil.</h1>
-                <p class="pg-lead">Sadece bugün biraz olsun gülümsemen için hazırlanmış küçük bir yer.</p>
-                <p class="pg-soft">Hazırsan başlayalım.</p>
-                <button type="button" class="pg-btn" id="pg-start" data-pg-next="#pg-scene-2">
-                    Devam et
+                <p class="pg-eyebrow pg-anim" data-d="0">sadece sana</p>
+                <h1 class="pg-title pg-anim" data-d="1">Bu sıradan bir web sitesi değil.</h1>
+                <p class="pg-lead pg-anim" data-d="2">
+                    Kimseye gösterilmek için değil. Satış için değil.
+                    Sadece bugün, yüzünde küçük bir gülümseme kalsın diye
+                    hazırlanmış sessiz bir yer.
+                </p>
+                <p class="pg-soft pg-anim" data-d="3">
+                    Acele etme. İstersen yavaş yavaş oku.
+                    Hazır olduğunda başlayalım.
+                </p>
+                <button type="button" class="pg-btn pg-anim" data-d="4" id="pg-start" data-pg-next="#pg-scene-2">
+                    Başlayalım
                 </button>
             </div>
         </section>
@@ -40,8 +47,15 @@
         {{-- Sahne 2 --}}
         <section class="pg-scene" id="pg-scene-2" data-pg-scene hidden>
             <div class="pg-scene__inner">
-                <h2 class="pg-title pg-title--md">Bugün nasılsın?</h2>
-                <p class="pg-lead">Gerçek cevabı seçebilirsin.</p>
+                <h2 class="pg-title pg-title--md">Önce bir şey sorayım…</h2>
+                <p class="pg-lead">
+                    Bugün nasılsın? Tek bir “iyi” demen zorunlu değil.
+                    Gerçekten hissettiğin yere en yakın olanı seçebilirsin.
+                </p>
+                <p class="pg-hint" role="note">
+                    <span class="pg-hint__dot" aria-hidden="true"></span>
+                    Aşağıdaki cevaplardan birine bas — sonra mesajım gelecek.
+                </p>
                 <div class="pg-choices" id="pg-mood-choices" role="group" aria-label="Bugün nasılsın">
                     <button type="button" class="pg-choice" data-mood="tired">Biraz yorgunum</button>
                     <button type="button" class="pg-choice" data-mood="confused">Kafam biraz karışık</button>
@@ -50,7 +64,7 @@
                 </div>
                 <div class="pg-mood-reply" id="pg-mood-reply" hidden aria-live="polite"></div>
                 <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-3" id="pg-mood-continue" hidden>
-                    Devam
+                    Devam et
                 </button>
             </div>
         </section>
@@ -59,6 +73,11 @@
         <section class="pg-scene" id="pg-scene-3" data-pg-scene hidden>
             <div class="pg-scene__inner">
                 <p class="pg-eyebrow">küçük bir dokunuş</p>
+                <h2 class="pg-title pg-title--md">Birisi senin için gerçekten oturup yazdı.</h2>
+                <p class="pg-lead">
+                    Evet, burası kod. Ama asıl mesele o değil.
+                    Asıl mesele… bunu sen aklına gelince, sen iyi hissetsin diye yapmak.
+                </p>
                 <div class="pg-terminal" role="region" aria-label="Kısa not terminali">
                     <div class="pg-terminal__bar">
                         <span class="pg-terminal__dot"></span>
@@ -68,8 +87,11 @@
                     </div>
                     <pre class="pg-terminal__body" id="pg-terminal-body" aria-live="polite"></pre>
                 </div>
-                <p class="pg-soft pg-mt">Evet, buraya kadar gerçekten kod yazıldı.<br>Biraz gereksiz olabilir. Ama bazen güzel şeyler biraz gereksiz emek ister.</p>
-                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-4">Devam</button>
+                <p class="pg-soft pg-mt">
+                    Biraz gereksiz emek gibi durabilir.
+                    Ama bazen en tatlı şeyler, kimsenin istemediği o “gereksiz” emekten doğar.
+                </p>
+                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-4">Devam et</button>
             </div>
         </section>
 
@@ -77,35 +99,53 @@
         <section class="pg-scene" id="pg-scene-4" data-pg-scene hidden>
             <div class="pg-scene__inner">
                 <h2 class="pg-title pg-title--md">Sende fark ettiğim birkaç güzel şey var.</h2>
-                <p class="pg-lead">Belki sen her zaman fark etmiyorsundur.</p>
+                <p class="pg-lead">
+                    Belki sen her gün bakınca fark etmiyorsundur.
+                    Ama dışarıdan, sessizce bakıldığında bunlar çok net görünüyor.
+                </p>
                 <div class="pg-cards">
-                    <article class="pg-card">
+                    <article class="pg-card" style="--i:0">
                         <span class="pg-card__num">01</span>
                         <h3 class="pg-card__title">İçtenliğin</h3>
-                        <p class="pg-card__text">Bir şey anlatırken gerçekten kendin olman güzel. İnsan bunu fark ediyor.</p>
+                        <p class="pg-card__text">
+                            Bir şey anlatırken gerçekten kendin olman güzel.
+                            İnsan savrulmadan, süslemeden konuştuğunu fark ediyor — ve güven veriyor.
+                        </p>
                     </article>
-                    <article class="pg-card">
+                    <article class="pg-card" style="--i:1">
                         <span class="pg-card__num">02</span>
                         <h3 class="pg-card__title">Güçlü kalmaya çalışman</h3>
-                        <p class="pg-card__text">Her şey her zaman kolay olmayabilir ama yine de devam eden tarafını görmek güzel.</p>
+                        <p class="pg-card__text">
+                            Her şey her zaman kolay olmayabilir.
+                            Yine de “devam ediyorum” diyen o tarafın… fark edilmeye değer.
+                        </p>
                     </article>
-                    <article class="pg-card">
+                    <article class="pg-card" style="--i:2">
                         <span class="pg-card__num">03</span>
                         <h3 class="pg-card__title">Gülüşün</h3>
-                        <p class="pg-card__text">Bazı insanların gülüşü sadece kendi yüzünü değil, karşısındaki insanın gününü de değiştiriyor.</p>
+                        <p class="pg-card__text">
+                            Bazı insanların gülüşü sadece kendi yüzünü aydınlatır.
+                            Senin gülüşün… karşı tarafa da bulaşır. Gününü yumuşatır.
+                        </p>
                     </article>
-                    <article class="pg-card">
+                    <article class="pg-card" style="--i:3">
                         <span class="pg-card__num">04</span>
                         <h3 class="pg-card__title">İnceliğin</h3>
-                        <p class="pg-card__text">Küçük şeylere verdiğin değer, aslında senin hakkında çok şey söylüyor.</p>
+                        <p class="pg-card__text">
+                            Küçük şeylere verdiğin değer, aslında senin kalbin hakkında çok şey söylüyor.
+                            Büyük jestler değil; kibarlık, dikkat, incelik.
+                        </p>
                     </article>
-                    <article class="pg-card">
+                    <article class="pg-card" style="--i:4">
                         <span class="pg-card__num">05</span>
                         <h3 class="pg-card__title">Kalbin</h3>
-                        <p class="pg-card__text">İnsan bazen kelimelerden çok davranışlardan anlaşılıyor.</p>
+                        <p class="pg-card__text">
+                            İnsan bazen kelimelerden çok davranışlardan anlaşılır.
+                            Ve senin kalbin… sessiz de olsa hissediliyor.
+                        </p>
                     </article>
                 </div>
-                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-5">Devam</button>
+                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-5">Devam et</button>
             </div>
         </section>
 
@@ -113,11 +153,19 @@
         <section class="pg-scene" id="pg-scene-5" data-pg-scene hidden>
             <div class="pg-scene__inner pg-scene__inner--center">
                 <h2 class="pg-title pg-title--md">Bazen günler biraz zor geçer</h2>
+                <p class="pg-lead">
+                    Bunu yargılamak için söylemiyorum.
+                    Sadece şunu hatırlatmak için: kötü bir gün, seni tanımlamaz.
+                </p>
+                <p class="pg-hint" role="note">
+                    <span class="pg-hint__dot" aria-hidden="true"></span>
+                    Aşağıdaki butona bas — her basışta sana bir not gelecek.
+                </p>
                 <button type="button" class="pg-btn pg-btn--wide" id="pg-hard-day">
                     Bugün biraz zor geçtiyse dokun.
                 </button>
-                <div class="pg-hard-reply" id="pg-hard-reply" aria-live="polite"></div>
-                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-6">Devam</button>
+                <div class="pg-hard-reply" id="pg-hard-reply" hidden aria-live="polite"></div>
+                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-6">Devam et</button>
             </div>
         </section>
 
@@ -125,7 +173,10 @@
         <section class="pg-scene" id="pg-scene-6" data-pg-scene hidden>
             <div class="pg-scene__inner">
                 <h2 class="pg-title pg-title--md">Bugün sana bırakmak istediğim bir şarkı var.</h2>
-                <p class="pg-lead">Bazı şarkılar söylemek istediğimiz şeyleri bizden biraz daha güzel söylüyor.</p>
+                <p class="pg-lead">
+                    Bazı şarkılar, söylemek istediğimiz ama bir türlü tam oturtamadığımız cümleleri
+                    bizden daha yumuşak söyler. Bu da onlardan biri.
+                </p>
 
                 @php
                     $primary = $music['primary'] ?? [];
@@ -147,7 +198,7 @@
                         <div class="pg-track__meta">
                             <p class="pg-track__artist">{{ $pArtist !== '' ? $pArtist : 'Gripin' }}</p>
                             <h3 class="pg-track__title">{{ $pTitle !== '' ? $pTitle : 'Nasip' }}</h3>
-                            <p class="pg-soft">1:42’den başlayacak — sahne açılınca çalar.</p>
+                            <p class="pg-soft">1:42’den başlayacak. İstersen kapatmadan dinle; istersen sadece eşlik etsin.</p>
                         </div>
 
                         @if($ytEmbed)
@@ -158,9 +209,7 @@
                                 data-yt-id="{{ $ytId }}"
                                 data-yt-start="{{ $ytStart }}"
                             >
-                                <div class="pg-yt__frame-wrap" id="pg-yt-host">
-                                    {{-- iframe JS ile eklenir (autoplay + kullanıcı jesti) --}}
-                                </div>
+                                <div class="pg-yt__frame-wrap" id="pg-yt-host"></div>
                                 <button type="button" class="pg-btn pg-btn--small" id="pg-yt-play" hidden>
                                     Müziği başlat
                                 </button>
@@ -187,7 +236,7 @@
                     @endif
                 </div>
 
-                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-7">Devam</button>
+                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-7">Devam et</button>
             </div>
         </section>
 
@@ -195,15 +244,20 @@
         <section class="pg-scene" id="pg-scene-7" data-pg-scene hidden>
             <div class="pg-scene__inner">
                 <h2 class="pg-title pg-title--md">Belki bir gün…</h2>
+                <p class="pg-lead">
+                    Bunlar söz değil. Söz verme de değil.
+                    Sadece içinden geçen, hafif, samimi ihtimaller.
+                </p>
                 <ul class="pg-maybe">
-                    <li>Bir kahve içeriz.</li>
-                    <li>Bir akşam yürüyüşe çıkarız.</li>
-                    <li>Berbat bir filmi izleyip birlikte eleştiririz.</li>
-                    <li>Yeni bir yer keşfederiz.</li>
-                    <li>Plansız bir gün geçiririz.</li>
-                    <li>Sadece oturup uzun uzun konuşuruz.</li>
+                    <li style="--i:0">Belki bir gün bir kahve içeriz. Konuşmak zorunda bile değiliz; sessizlik de olur.</li>
+                    <li style="--i:1">Belki bir akşam yürüyüşe çıkarız. Nereye gittiğimiz o kadar önemli olmaz.</li>
+                    <li style="--i:2">Belki berbat bir filmi izler, birlikte eleştiririz. Gülmek yeter.</li>
+                    <li style="--i:3">Belki yeni bir yer keşfederiz. Sıradan bir sokak bile özel görünebilir.</li>
+                    <li style="--i:4">Belki plansız bir gün geçiririz. Her şeyin planlı olması gerekmez.</li>
+                    <li style="--i:5">Belki sadece oturur, uzun uzun konuşuruz. Veya hiç konuşmayız; o da güzeldir.</li>
                 </ul>
-                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-8">Devam</button>
+                <p class="pg-soft">Şimdilik bu kadarı… gerisi zamana kalır.</p>
+                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-8">Devam et</button>
             </div>
         </section>
 
@@ -211,7 +265,10 @@
         <section class="pg-scene" id="pg-scene-8" data-pg-scene hidden>
             <div class="pg-scene__inner pg-scene__inner--split">
                 <div class="pg-reveal-copy">
-                    <p class="pg-lead">Bu küçük şeyi kimin hazırladığını merak edersen…</p>
+                    <p class="pg-lead">
+                        Bu küçük şeyi kimin hazırladığını merak edersen…
+                        Merak etmek de çok doğal.
+                    </p>
                 </div>
                 <div class="pg-portrait" data-pg-reveal>
                     <div class="pg-portrait__glow" aria-hidden="true"></div>
@@ -234,10 +291,14 @@
                         <h2 class="pg-title pg-title--sm">Ekranın arkasındaki kişi: {{ $sender }}</h2>
                         <p class="pg-lead">Bu kişi senin için yaptı.</p>
                         <p class="pg-lead">Biraz gülümse diye.</p>
-                        <p class="pg-soft pg-soft--late">Ve evet, her detayını düşünerek.</p>
+                        <p class="pg-soft">
+                            Baskı kurmak için değil.
+                            Senin iyi hissetmen, yüzünde küçük bir aydınlık kalsın diye.
+                        </p>
+                        <p class="pg-soft pg-soft--late">Ve evet… her detayını düşünerek.</p>
                     </div>
                 </div>
-                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-9">Son bir şey</button>
+                <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-9">Son bir şey kaldı</button>
             </div>
         </section>
 
@@ -248,9 +309,11 @@
                     <p class="pg-final-line" data-step="0">Son bir şey daha…</p>
                     <p class="pg-final-line" data-step="1" hidden>Sana küçük bir şey bırakmak istedim.</p>
                     <p class="pg-final-line" data-step="2" hidden>Gerçek değil belki…</p>
-                    <p class="pg-final-line" data-step="3" hidden>Ama içindeki düşünce gerçek.</p>
+                    <p class="pg-final-line" data-step="3" hidden>Ama içindeki düşünce çok gerçek.</p>
                     <h2 class="pg-title pg-final-line" data-step="4" hidden>Burak'tan sana küçük bir hediye.</h2>
                 </div>
+
+                <p class="pg-soft" id="pg-flower-wait" hidden>Çiçek açılıyor… biraz bekle :)</p>
 
                 <div class="pg-flower-wrap" id="pg-flower-wrap" hidden>
                     <svg class="pg-flower" id="pg-flower" viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -288,21 +351,34 @@
                 <div class="pg-after-flower" id="pg-after-flower" hidden>
                     <p class="pg-lead">Belki bu gerçek bir çiçek değil.</p>
                     <p class="pg-lead">Ama içindeki düşünce gerçek.</p>
-                    <p class="pg-soft">Küçük bir gülümsemeye sebep olursa, amacı tamamlanmış sayılır.</p>
+                    <p class="pg-soft">
+                        Küçük bir gülümsemeye sebep olursa,
+                        bugünün amacı tamamlanmış sayılır.
+                    </p>
                     <p class="pg-signature">Burak'tan sana.<br><span>— B.</span></p>
                 </div>
 
                 <div class="pg-mission" id="pg-mission">
-                    <button type="button" class="pg-btn" id="pg-smile-btn">Gülümsedim :)</button>
+                    <p class="pg-hint pg-hint--center" id="pg-smile-hint" hidden>
+                        <span class="pg-hint__dot" aria-hidden="true"></span>
+                        Çiçek açıldıysa, istersen buraya bas.
+                    </p>
+                    <button type="button" class="pg-btn" id="pg-smile-btn" hidden disabled aria-disabled="true">
+                        Gülümsedim :)
+                    </button>
                     <div class="pg-mission__done" id="pg-mission-done" hidden>
                         <p class="pg-lead">Tamam.</p>
-                        <p class="pg-soft" id="pg-mission-text" hidden>O zaman bu sayfanın görevi başarıyla tamamlandı.</p>
+                        <p class="pg-soft" id="pg-mission-text" hidden>
+                            O zaman bu sayfanın görevi başarıyla tamamlandı.
+                            Yüzündeki o küçük gülümseme yeter.
+                        </p>
                         <pre class="pg-code-line" id="pg-mission-code" hidden>mission.status = "completed";</pre>
                     </div>
                 </div>
 
                 <footer class="pg-closing" id="pg-closing" hidden>
-                    <p>Senden bir cevap beklemek için değil, seni önemsediğimi hissettirmek için.</p>
+                    <p>Senden bir cevap beklemek için değil…</p>
+                    <p>Seni önemsediğimi, hissettirmek için.</p>
                     <p class="pg-closing__last">Şimdilik sadece biraz gülümse.</p>
                 </footer>
             </div>
@@ -319,6 +395,9 @@
             <h2 class="pg-modal__title" id="pg-modal-title">Developer Note</h2>
             <p>Bu sayfayı yapmak birkaç saat sürebilir.</p>
             <p>Seni düşünmek biraz daha uzun sürdü.</p>
+            <p style="margin-top:0.75rem;color:rgba(243,240,232,0.45);font-size:0.9rem;">
+                Ve hayır — senden bir şey beklemiyor. Sadece gülümsemeni umuyor.
+            </p>
             <button type="button" class="pg-btn pg-btn--small" data-pg-modal-close>Kapat</button>
         </div>
     </div>

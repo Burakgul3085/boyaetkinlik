@@ -9,30 +9,50 @@
     const scenes = Array.from(document.querySelectorAll('[data-pg-scene]'));
 
     const moodMessages = {
-        tired: 'O zaman bugün kendine biraz daha nazik davran. Her şeyi bugün çözmek zorunda değilsin.',
-        confused: 'Bazı hislerin adı hemen konulmuyor. Bazen zaman en iyi açıklamayı kendi yapıyor.',
-        ok: "Bazen 'idare ediyorum' bile yeterince büyük bir başarıdır.",
-        better: 'Güzel. Umarım yarın bu cümleyi biraz daha rahat söylersin.',
+        tired:
+            'Anladım. O zaman bugün kendine biraz daha nazik davran. '
+            + 'Her şeyi bugün çözmek zorunda değilsin. '
+            + 'Bazen sadece yorulduğunu kabul etmek bile yeter. '
+            + 'Kendine izin ver — dinlenmek de bir iş.',
+        confused:
+            'Kafanın karışık olması anormal değil. '
+            + 'Bazı hislerin adı hemen konulmuyor; bazen zaman en iyi açıklamayı kendi yapıyor. '
+            + 'Zorlama. Yavaşça toparlanır. '
+            + 'Şimdilik bu kadarını bilmek yeter: yalnız değilsin.',
+        ok:
+            "Bazen 'idare ediyorum' demek küçük görünür ama aslında büyük bir cümledir. "
+            + 'Ayakta durmak, devam etmek, o günü taşımak… '
+            + 'Bunların hepsi bir emek. Ve o emek fark ediliyor.',
+        better:
+            'Güzel… gerçekten. '
+            + 'Umarım yarın bu cümleyi biraz daha rahat söylersin. '
+            + 'İyi anların çoğalması için bir şey isteme yok buradan; '
+            + 'sadece bunu okuman bile yeter.',
     };
 
     const hardDayMessages = [
-        'Bugünün kötü olması, yarının da kötü olacağı anlamına gelmiyor.',
-        'Her şeyi bugün çözmek zorunda değilsin.',
-        'Bazen sistemin ihtiyacı olan şey sadece biraz dinlenmektir.',
-        'Kendine başkalarına davrandığından biraz daha nazik davran.',
-        'Bugün yalnızca günü tamamlamak bile yeterli olabilir.',
+        'Bugünün kötü olması, yarının da kötü olacağı anlamına gelmiyor. Yarın henüz yazılmadı.',
+        'Her şeyi bugün çözmek zorunda değilsin. Bir seferde bir nefes, bir adım… yeter.',
+        'Bazen sistemin ihtiyacı olan şey sadece biraz dinlenmektir. Sen de öylesin; makine değilsin.',
+        'Kendine başkalarına davrandığından biraz daha nazik davran. Senin de buna hakkın var.',
+        'Bugün yalnızca günü tamamlamak bile yeterli olabilir. Küçük zaferler de zaferdir.',
         'happiness.exe temporarily unavailable\nrecovery mode started...\n\nÖneri: biraz müzik, biraz kahve ve biraz nefes almak.',
+        'Zor günler sonsuza kadar sürmez. Seni yoran şeyler de… kalıcı olmak zorunda değil.',
+        'Bu notu okuduğun için teşekkürler. Demek ki hâlâ “devam” diyorsun. Bu da bir güç.',
     ];
 
     const terminalLines = [
         '> checking today...',
-        '> finding something worth smiling about...',
-        '> result: found',
+        '> looking for a reason to smile...',
+        '> scanning quiet thoughts...',
+        '> result: found — you',
         '',
         'smile.status = "loading";',
         'hope.level++;',
+        'care.for_you = true;',
         '',
         'done.',
+        '> message: “yüzünde küçük bir ışık kalır diye.”',
     ];
 
     function hidePreloader() {
@@ -40,17 +60,16 @@
     }
 
     if (document.readyState === 'complete') {
-        setTimeout(hidePreloader, 120);
+        setTimeout(hidePreloader, 180);
     } else {
-        window.addEventListener('load', () => setTimeout(hidePreloader, 120), { once: true });
+        window.addEventListener('load', () => setTimeout(hidePreloader, 180), { once: true });
     }
 
     function updateProgress() {
         if (!progressBar) return;
         const idx = scenes.findIndex((s) => s.classList.contains('is-active'));
         if (idx < 0) return;
-        const pct = ((idx + 1) / scenes.length) * 100;
-        progressBar.style.height = `${pct}%`;
+        progressBar.style.height = `${((idx + 1) / scenes.length) * 100}%`;
     }
 
     function showScene(target) {
@@ -59,6 +78,12 @@
             const active = scene === target;
             scene.hidden = !active;
             scene.classList.toggle('is-active', active);
+            if (active) {
+                scene.classList.remove('is-enter');
+                // force reflow for re-animation of children
+                void scene.offsetWidth;
+                scene.classList.add('is-enter');
+            }
         });
         updateProgress();
         if (!reduceMotion) {
@@ -88,6 +113,9 @@
             if (moodReply) {
                 moodReply.hidden = false;
                 moodReply.textContent = moodMessages[key] || '';
+                moodReply.classList.remove('is-pop');
+                void moodReply.offsetWidth;
+                moodReply.classList.add('is-pop');
             }
             if (moodContinue) moodContinue.hidden = false;
             try {
@@ -105,7 +133,6 @@
         terminalStarted = true;
         let line = 0;
         let col = 0;
-        let buffer = '';
 
         if (reduceMotion) {
             terminalBody.textContent = terminalLines.join('\n');
@@ -116,16 +143,15 @@
             if (line >= terminalLines.length) return;
             const current = terminalLines[line];
             if (col <= current.length) {
-                buffer = terminalLines.slice(0, line).join('\n')
+                terminalBody.textContent = terminalLines.slice(0, line).join('\n')
                     + (line > 0 ? '\n' : '')
                     + current.slice(0, col);
-                terminalBody.textContent = buffer;
                 col += 1;
-                window.setTimeout(step, current === '' ? 80 : 18);
+                window.setTimeout(step, current === '' ? 70 : 16);
             } else {
                 line += 1;
                 col = 0;
-                window.setTimeout(step, 160);
+                window.setTimeout(step, 140);
             }
         };
         step();
@@ -137,8 +163,11 @@
     hardBtn?.addEventListener('click', () => {
         if (!hardReply) return;
         const msg = hardDayMessages[Math.floor(Math.random() * hardDayMessages.length)];
-        hardReply.textContent = msg;
         hardReply.hidden = false;
+        hardReply.textContent = msg;
+        hardReply.classList.remove('is-pop');
+        void hardReply.offsetWidth;
+        hardReply.classList.add('is-pop');
     });
 
     // Portrait reveal
@@ -147,8 +176,22 @@
         portrait?.classList.add('is-visible');
     }
 
-    // Final sequence + flower
+    // Final sequence + flower → then unlock smile
     let finalStarted = false;
+    const smileBtn = document.getElementById('pg-smile-btn');
+    const smileHint = document.getElementById('pg-smile-hint');
+    const flowerWait = document.getElementById('pg-flower-wait');
+
+    function unlockSmile() {
+        if (!smileBtn) return;
+        smileBtn.hidden = false;
+        smileBtn.disabled = false;
+        smileBtn.removeAttribute('aria-disabled');
+        smileBtn.classList.add('is-ready');
+        if (smileHint) smileHint.hidden = false;
+        if (flowerWait) flowerWait.hidden = true;
+    }
+
     function runFinal() {
         if (finalStarted) return;
         finalStarted = true;
@@ -157,20 +200,31 @@
         const flower = document.getElementById('pg-flower');
         const after = document.getElementById('pg-after-flower');
 
-        const delays = reduceMotion ? [0, 0, 0, 0, 0] : [0, 900, 1800, 2700, 3600];
+        // Smile kilitli — çiçek bitene kadar
+        if (smileBtn) {
+            smileBtn.hidden = true;
+            smileBtn.disabled = true;
+            smileBtn.setAttribute('aria-disabled', 'true');
+        }
+        if (smileHint) smileHint.hidden = true;
+
+        const delays = reduceMotion ? [0, 0, 0, 0, 0] : [0, 1000, 2000, 3000, 4000];
 
         lines.forEach((el, i) => {
             window.setTimeout(() => {
                 el.hidden = false;
                 el.classList.add('is-in');
                 if (i === lines.length - 1) {
+                    if (flowerWait) flowerWait.hidden = false;
                     window.setTimeout(() => {
                         if (flowerWrap) flowerWrap.hidden = false;
                         flower?.classList.add('is-grow');
+                        const growMs = reduceMotion ? 80 : 2600;
                         window.setTimeout(() => {
                             if (after) after.hidden = false;
-                        }, reduceMotion ? 50 : 2300);
-                    }, reduceMotion ? 100 : 700);
+                            unlockSmile();
+                        }, growMs);
+                    }, reduceMotion ? 80 : 700);
                 }
             }, delays[i] || 0);
         });
@@ -186,7 +240,6 @@
         if (id === 'pg-scene-9') runFinal();
     });
 
-    // YouTube — sahne 6'da 1:42'den autoplay (önceki "Devam" jesti sayesinde)
     let youtubeStarted = false;
 
     function startYoutube() {
@@ -209,7 +262,6 @@
         iframe.referrerPolicy = 'strict-origin-when-cross-origin';
         host.appendChild(iframe);
 
-        // Tarayıcı engellerse kullanıcı butona basabilir
         if (playBtn) {
             window.setTimeout(() => {
                 playBtn.hidden = false;
@@ -221,15 +273,15 @@
         }
     }
 
-    // Smile mission
-    const smileBtn = document.getElementById('pg-smile-btn');
     const missionDone = document.getElementById('pg-mission-done');
     const missionText = document.getElementById('pg-mission-text');
     const missionCode = document.getElementById('pg-mission-code');
     const closing = document.getElementById('pg-closing');
 
     smileBtn?.addEventListener('click', () => {
+        if (smileBtn.disabled || smileBtn.hidden) return;
         smileBtn.hidden = true;
+        if (smileHint) smileHint.hidden = true;
         if (missionDone) missionDone.hidden = false;
         window.setTimeout(() => {
             if (missionText) missionText.hidden = false;
@@ -288,14 +340,14 @@
         }
 
         function spawn() {
-            const count = w < 480 ? 16 : 24;
+            const count = w < 480 ? 18 : 28;
             particles = Array.from({ length: count }, () => ({
                 x: Math.random() * w,
                 y: Math.random() * h,
-                r: 0.6 + Math.random() * 1.6,
-                vy: 0.08 + Math.random() * 0.25,
-                vx: (Math.random() - 0.5) * 0.12,
-                a: 0.15 + Math.random() * 0.35,
+                r: 0.5 + Math.random() * 1.8,
+                vy: 0.06 + Math.random() * 0.22,
+                vx: (Math.random() - 0.5) * 0.1,
+                a: 0.12 + Math.random() * 0.38,
             }));
         }
 
@@ -341,5 +393,7 @@
         });
     }
 
+    // Hero enter anim
+    document.getElementById('pg-scene-1')?.classList.add('is-enter');
     updateProgress();
 })();
