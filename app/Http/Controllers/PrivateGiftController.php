@@ -110,33 +110,50 @@ class PrivateGiftController extends Controller
 
     private function photoAbsolutePath(): ?string
     {
+        $candidates = [];
+
         $relative = (string) config('private-gift.photo_relative', 'private/gift/profile.jpg');
         $relative = ltrim(str_replace(['\\', '..'], ['/', ''], $relative), '/');
-        $path = storage_path('app/'.$relative);
+        if ($relative !== '') {
+            $candidates[] = storage_path('app/'.$relative);
+        }
 
-        if (! is_file($path) || ! is_readable($path)) {
-            // Fallback common extensions
-            $base = storage_path('app/private/gift/profile');
-            foreach (['.jpg', '.jpeg', '.png', '.webp'] as $ext) {
-                $try = $base.$ext;
-                if (is_file($try) && is_readable($try)) {
-                    $path = $try;
-                    break;
+        foreach (['.jpg', '.jpeg', '.png', '.webp'] as $ext) {
+            $candidates[] = storage_path('app/private/gift/profile'.$ext);
+            $candidates[] = public_path('private-gift/profile'.$ext);
+        }
+
+        $allowedRoots = array_values(array_filter([
+            realpath(storage_path('app')),
+            realpath(public_path('private-gift')),
+            realpath(public_path()),
+        ]));
+
+        foreach (array_unique($candidates) as $path) {
+            if (! is_file($path)) {
+                continue;
+            }
+
+            // is_readable bazen host kısıtında yanlış negatif dönmesin diye fopen dene
+            $handle = @fopen($path, 'rb');
+            if ($handle === false) {
+                continue;
+            }
+            fclose($handle);
+
+            $real = realpath($path);
+            if ($real === false) {
+                continue;
+            }
+
+            foreach ($allowedRoots as $root) {
+                if ($root !== false && str_starts_with($real, $root)) {
+                    return $real;
                 }
             }
         }
 
-        if (! is_file($path) || ! is_readable($path)) {
-            return null;
-        }
-
-        $real = realpath($path);
-        $root = realpath(storage_path('app'));
-        if ($real === false || $root === false || ! str_starts_with($real, $root)) {
-            return null;
-        }
-
-        return $real;
+        return null;
     }
 
     /**
