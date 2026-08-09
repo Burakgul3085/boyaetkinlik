@@ -1,70 +1,87 @@
-# Boya Etkinlik Platformu (Laravel 11)
+## Özet
 
-Bu proje, ücretsiz ve ücretli boyama sayfalarının listelendiği, satın alınabildiği ve token bazlı indirilebildiği bir platform iskeletidir.
+Bu depo, kullanıcıların boyama sayfalarını ve ilgili etkinlikleri keşfedebileceği, satın alabileceği ve indirebileceği tam teşekküllü bir web uygulamasıdır. PHP tabanlı Laravel Framework 11.x kullanılarak geliştirilmiştir ve modern web teknolojileriyle zenginleştirilmiştir. Uygulama, hem yönetici hem de üye paneli işlevselliği sunar, kullanıcı etkileşimini, içerik yönetimini ve ödeme süreçlerini kolaylaştırır. Özellikle çocuklara ve yaratıcı etkinlik arayanlara hitap eden dijital boyama içerikleri sunmayı amaçlar.
+
+## Özellikler
+
+*   **Ücretsiz İçerik İndirme ve E-posta ile Gönderme:** Kullanıcılar ücretsiz boyama sayfalarını doğrudan indirebilir veya e-posta adreslerine gönderilmesini talep edebilirler. Çeşitli dosya formatı seçenekleri mevcuttur.
+*   **Ücretli İçerik Satın Alma:** Ücretli boyama sayfaları için Shopier üzerinden güvenli ödeme ve satın alma imkanı sunulur.
+*   **Çoklu Dosya Formatı Desteği:** Boyama sayfaları için farklı dosya formatlarında indirme ve yazdırma seçenekleri (örn. PDF, PNG) mevcuttur.
+*   **Görsel Önizleme:** Ürün sayfalarında boyama sayfalarının önizleme görselleri sunulur.
+*   **Yönetici Paneli:** İçerik yönetimi (boyama sayfaları, kategoriler), üye yönetimi, blog gönderileri, işlem takibi, bülten aboneleri ve site ayarlarının yapılandırılabileceği kapsamlı bir yönetici paneli.
+*   **Üye Sistemi:** Kullanıcıların hesap oluşturup yönetebildiği, satın alımlarını takip edebildiği ve geçmiş siparişlerine erişebildiği bir üye sistemi.
+*   **İletişim ve Geri Bildirim:** Ziyaretçilerin site yöneticileriyle iletişime geçebileceği veya geri bildirim bırakabileceği iletişim formları.
+*   **SEO Dostu Yapı:** Arama motorları için optimize edilmiş URL'ler ve içerik yapısı.
+*   **Güvenlik:** Kullanıcı ve yönetici oturumları için güvenli kimlik doğrulama ve yetkilendirme mekanizmaları.
+
+## Teknolojiler
+
+Bu proje, aşağıdaki temel teknolojiler kullanılarak geliştirilmiştir:
+
+*   **Backend:** PHP 8.2+, Laravel Framework 11.x
+*   **Veritabanı:** MySQL (veya desteklenen herhangi bir Laravel uyumlu veritabanı)
+*   **Frontend:** HTML, CSS (Tailwind CSS), JavaScript (Alpine.js), Vite
+*   **E-posta Gönderimi:** PHPMailer
+*   **PDF İşleme:** Setasign/FPDF
+*   **Versiyon Kontrol Sistemi:** Git
+
+## Gereksinimler
+
+Projeyi yerel ortamınızda çalıştırmak için aşağıdaki gereksinimlere sahip olmanız gerekir:
+
+*   PHP 8.2 veya üzeri
+*   Composer
+*   Node.js ve npm (veya Yarn)
+*   MySQL, PostgreSQL veya SQLite gibi bir veritabanı sunucusu
+*   Web sunucusu (Apache, Nginx veya Laravel Sail)
 
 ## Kurulum
 
-1. `cp .env.example .env`
-2. Veritabanı ayarlarını `.env` içinde doldurun.
-3. `php artisan key:generate`
-4. `php artisan migrate --seed`
-5. `npm install && npm run build`
+Projeyi yerel ortamınızda kurmak için aşağıdaki adımları izleyin:
 
-## Varsayılan Admin
+1.  **Depoyu Klonlayın:**
 
-- E-posta: `admin@boyaetkinlik.test`
-- Şifre: `12345678`
+    ```bash
+    git clone https://github.com/Burakgul3085/boyaetkinlik.git
+    cd boyaetkinlik
+    ```
 
-## Paylaşımlı Hosting Notları
+2.  **Composer Bağımlılıklarını Yükleyin:**
 
-- `APP_ENV=production`, `APP_DEBUG=false`
-- Canlı `.env`: `APP_URL=https://boyaetkinlik.com` (sonunda `/` yok). `http://` veya `www.` yazmayın; yönlendirme `public/.htaccess` ile tek adrese toplanır.
-- Queue ve cache için `database` veya `file` kullanın.
-- Ücretli dosyalar `storage/app/private` altında saklanır ve herkese açık erişim yoktur.
-- Ücretsiz dosyalar `storage/app/public/free-pages` altında saklanır.
+    ```bash
+    composer install
+    ```
 
-### `storage:link` çalışmazsa alternatif
+3.  **Ortam Dosyasını Yapılandırın:**
 
-Paylaşımlı hostingte symlink kapalıysa:
+    `.env.example` dosyasını `.env` olarak kopyalayın ve kendi veritabanı ayarlarınızı ve diğer gerekli ortam değişkenlerinizi yapılandırın.
 
-1. `storage/app/public` içeriklerini `public/storage` altına manuel kopyalayın.
-2. Yükleme stratejisini buna göre sabit tutun (deploy betiği ile senkronize edin).
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
 
-### Hostinger (hPanel) — SSL ve tek adres
+4.  **Veritabanını Oluşturun ve Migrasyonları Çalıştırın:**
 
-1. Sol menüden **Web siteleri** → siteni seç.
-2. **Güvenlik** veya **SSL** bölümünde sertifikayı etkinleştir; mümkünse **“HTTPS’e yönlendir”** / **Force HTTPS** seçeneğini aç (çift yönlendirme genelde sorun çıkarmaz; yine de tarayıcıda `http://` ve `www` adreslerini test et).
-3. **Dosya yöneticisi** ile sunucudaki `public/.htaccess` dosyasının repodaki sürümle güncel olduğundan emin ol (www kaldırma + HTTP→HTTPS kuralları burada).
-4. Proje kökündeki `.env` dosyasında `APP_URL=https://boyaetkinlik.com` olduğunu doğrula, ardından gerekirse **Önbelleği temizle**: `php artisan config:clear` (SSH veya Hostinger **Gelişmiş** → **Terminal**).
-5. Tarayıcıda kontrol: `http://boyaetkinlik.com` ve `https://www.boyaetkinlik.com` adresleri `https://boyaetkinlik.com` adresine **301** ile gitmeli.
-6. Google Search Console’da aynı mülk altında **2–4 hafta** sonra **Performans → Sayfalar** raporunda gösterimlerin çoğunun tek kanonik URL’de toplanmaya başlamasını bekle.
+    `.env` dosyasında veritabanı bağlantı bilgilerini ayarladıktan sonra veritabanı migrasyonlarını çalıştırın:
 
-**HSTS:** Yalnızca tüm alt yolların HTTPS ile sorunsuz çalıştığından eminsen panelde aç; aksi halde atla.
+    ```bash
+    php artisan migrate
+    ```
 
-### Cloudflare (ad sunucuları Cloudflare ise — kanonik: `https://boyaetkinlik.com`)
+5.  **Frontend Bağımlılıklarını Yükleyin ve Derleyin:**
 
-Hostinger **DNS / Yönlendirmeler** bu durumda işe yaramaz; ayarlar Cloudflare’da yapılır. Sayfayı bozmamak için önce SSL’i doğrula, sonra tek kural ekleyip test et.
+    ```bash
+    npm install
+    npm run dev   # Geliştirme ortamı için
+    # veya
+    npm run build # Üretim ortamı için
+    ```
 
-1. [Cloudflare Dashboard](https://dash.cloudflare.com) → **boyaetkinlik.com** → **SSL/TLS** → genel mod **Full (strict)** (origin’de geçerli sertifika varsa). Önce **Full** deneyip site açılıyorsa strict’e geç.
-2. Aynı menüde **Edge Certificates** → **Always Use HTTPS**: **Açık** (HTTP istekleri HTTPS’e döner).
-3. **Rules** → **Redirect Rules** → **Create rule**:
-   - **Rule name:** `www to apex`
-   - **If…:** Alan *Hostname* → *equals* → `www.boyaetkinlik.com`
-   - **Then…:** *Dynamic redirect* → **301** → hedef ifade (Expression / dinamik URL alanına yapıştırın):  
-     `concat("https://boyaetkinlik.com", http.request.uri.path, if(len(http.request.uri.query) > 0, concat("?", http.request.uri.query), ""))`  
-     (Amaç: www’yi kaldırıp yol ve sorgu dizgisini aynen taşımak.)
-4. Kaydet. **Önbelleği** bir kez temizlemek için **Caching** → **Configuration** → **Purge Everything** (isteğe bağlı; sorun olursa yap).
-5. Tarayıcıda gizli sekmede dene: `https://www.boyaetkinlik.com/` → adres çubuğu **`https://boyaetkinlik.com/`** olmalı (301). Ana sayfa ve bir iç sayfa açılıyor mu kontrol et.
-6. Sunucudaki **`.env`**: `APP_URL=https://boyaetkinlik.com` ve güncel `public/.htaccess` deploy edilmiş olsun; sonra `php artisan config:clear`.
+6.  **Uygulamayı Çalıştırın:**
 
-**Döngü / “too many redirects” olursa:** Cloudflare SSL modunu **Full (strict)** yerine **Full** yapın veya geçici olarak **Always Use HTTPS** kapatıp hangi katmanda döngü olduğunu ayırın.
+    ```bash
+    php artisan serve
+    ```
 
-## Shopier Notu
-
-Shopier callback rotası: `POST /shopier/callback`
-
-Bu iskelette callback geldikten sonra:
-
-- ödeme başarılıysa işlem `paid` olur,
-- tek kullanımlık indirme tokeni üretilir,
-- kullanıcıya e-posta ile indirme linki gönderilir.
+    Uygulama genellikle `http://127.0.0.1:8000` adresinde erişilebilir olacaktır.
