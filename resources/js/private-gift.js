@@ -33,10 +33,10 @@
     const hardDayMessages = [
         'Bugünün kötü olması, yarının da kötü olacağı anlamına gelmiyor. Yarın henüz yazılmadı.',
         'Her şeyi bugün çözmek zorunda değilsin. Bir seferde bir nefes, bir adım… yeter.',
-        'Bazen sistemin ihtiyacı olan şey sadece biraz dinlenmektir. Sen de öylesin; makine değilsin.',
+        'Bazen ihtiyaç duyulan tek şey biraz dinlenmektir. Sen de öylesin; makine değilsin.',
         'Kendine başkalarına davrandığından biraz daha nazik davran. Senin de buna hakkın var.',
         'Bugün yalnızca günü tamamlamak bile yeterli olabilir. Küçük zaferler de zaferdir.',
-        'happiness.exe temporarily unavailable\nrecovery mode started...\n\nÖneri: biraz müzik, biraz kahve ve biraz nefes almak.',
+        'Öneri: biraz müzik, biraz kahve ve biraz nefes almak. Gerisi yarına kalabilir.',
         'Zor günler sonsuza kadar sürmez. Seni yoran şeyler de… kalıcı olmak zorunda değil.',
         'Bu notu okuduğun için teşekkürler. Demek ki hâlâ “devam” diyorsun. Bu da bir güç.',
     ];
@@ -219,7 +219,7 @@
                     window.setTimeout(() => {
                         if (flowerWrap) flowerWrap.hidden = false;
                         flower?.classList.add('is-grow');
-                        const growMs = reduceMotion ? 80 : 2600;
+                        const growMs = reduceMotion ? 80 : 3200;
                         window.setTimeout(() => {
                             if (after) after.hidden = false;
                             unlockSmile();

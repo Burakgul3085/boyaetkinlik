@@ -30,9 +30,8 @@
                 <p class="pg-eyebrow pg-anim" data-d="0">sadece sana</p>
                 <h1 class="pg-title pg-anim" data-d="1">Bu sıradan bir web sitesi değil.</h1>
                 <p class="pg-lead pg-anim" data-d="2">
-                    Kimseye gösterilmek için değil. Satış için değil.
-                    Sadece bugün, yüzünde küçük bir gülümseme kalsın diye
-                    hazırlanmış sessiz bir yer.
+                    Sadece senin için, sana özel hazırlandı.
+                    Bugün yüzünde küçük bir gülümseme kalsın diye yapılmış sessiz bir yer.
                 </p>
                 <p class="pg-soft pg-anim" data-d="3">
                     Acele etme. İstersen yavaş yavaş oku.
@@ -245,16 +244,16 @@
             <div class="pg-scene__inner">
                 <h2 class="pg-title pg-title--md">Belki bir gün…</h2>
                 <p class="pg-lead">
-                    Bunlar söz değil. Söz verme de değil.
-                    Sadece içinden geçen, hafif, samimi ihtimaller.
+                    Bunlar büyük vaatler değil.
+                    Sadece aklına gelebilecek küçük, samimi ihtimaller.
                 </p>
                 <ul class="pg-maybe">
-                    <li style="--i:0">Belki bir gün bir kahve içeriz. Konuşmak zorunda bile değiliz; sessizlik de olur.</li>
-                    <li style="--i:1">Belki bir akşam yürüyüşe çıkarız. Nereye gittiğimiz o kadar önemli olmaz.</li>
-                    <li style="--i:2">Belki berbat bir filmi izler, birlikte eleştiririz. Gülmek yeter.</li>
-                    <li style="--i:3">Belki yeni bir yer keşfederiz. Sıradan bir sokak bile özel görünebilir.</li>
-                    <li style="--i:4">Belki plansız bir gün geçiririz. Her şeyin planlı olması gerekmez.</li>
-                    <li style="--i:5">Belki sadece oturur, uzun uzun konuşuruz. Veya hiç konuşmayız; o da güzeldir.</li>
+                    <li style="--i:0">Belki bir gün kısa bir kahve içilir.</li>
+                    <li style="--i:1">Belki bir akşam kısa bir yürüyüş olur.</li>
+                    <li style="--i:2">Belki güzel bir şey paylaşılır, gülünür.</li>
+                    <li style="--i:3">Belki yeni bir yer denemek hoş olur.</li>
+                    <li style="--i:4">Belki plansız, sakin bir gün olur.</li>
+                    <li style="--i:5">Belki sadece kısa, rahat bir sohbet yeter.</li>
                 </ul>
                 <p class="pg-soft">Şimdilik bu kadarı… gerisi zamana kalır.</p>
                 <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-8">Devam et</button>
@@ -266,12 +265,16 @@
             <div class="pg-scene__inner pg-scene__inner--split">
                 <div class="pg-reveal-copy">
                     <p class="pg-lead">
-                        Bu küçük şeyi kimin hazırladığını merak edersen…
-                        Merak etmek de çok doğal.
+                        Bu küçük sayfayı kimin hazırladığını merak ediyorsan…
                     </p>
                 </div>
                 <div class="pg-portrait" data-pg-reveal>
+                    <div class="pg-portrait__petals" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                    </div>
                     <div class="pg-portrait__glow" aria-hidden="true"></div>
+                    <div class="pg-portrait__bloom" aria-hidden="true"></div>
                     @if(!empty($photoUrl))
                         <img
                             class="pg-portrait__img"
@@ -289,13 +292,13 @@
                     @endif
                     <div class="pg-portrait__caption">
                         <h2 class="pg-title pg-title--sm">Ekranın arkasındaki kişi: {{ $sender }}</h2>
-                        <p class="pg-lead">Bu kişi senin için yaptı.</p>
+                        <p class="pg-lead">Sadece senin için, sana özel yapıldı.</p>
                         <p class="pg-lead">Biraz gülümse diye.</p>
                         <p class="pg-soft">
-                            Baskı kurmak için değil.
-                            Senin iyi hissetmen, yüzünde küçük bir aydınlık kalsın diye.
+                            Baskı yok. Beklenti yok.
+                            Sadece küçük, tatlı bir jest.
                         </p>
-                        <p class="pg-soft pg-soft--late">Ve evet… her detayını düşünerek.</p>
+                        <p class="pg-soft pg-soft--late">Her detayı sen aklına gelince düşünüldü.</p>
                     </div>
                 </div>
                 <button type="button" class="pg-btn pg-btn--ghost" data-pg-next="#pg-scene-9">Son bir şey kaldı</button>
@@ -316,34 +319,91 @@
                 <p class="pg-soft" id="pg-flower-wait" hidden>Çiçek açılıyor… biraz bekle :)</p>
 
                 <div class="pg-flower-wrap" id="pg-flower-wrap" hidden>
-                    <svg class="pg-flower" id="pg-flower" viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <div class="pg-flower-aura" aria-hidden="true"></div>
+                    <svg class="pg-flower" id="pg-flower" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                         <defs>
-                            <radialGradient id="pg-petal-g" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" stop-color="#F5EBD6"/>
-                                <stop offset="70%" stop-color="#C9AD7A"/>
-                                <stop offset="100%" stop-color="#8A7350"/>
+                            <linearGradient id="pg-stem-g" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#8FB896"/>
+                                <stop offset="100%" stop-color="#4A6B52"/>
+                            </linearGradient>
+                            <radialGradient id="pg-petal-outer" cx="50%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#FFF6E4"/>
+                                <stop offset="45%" stop-color="#E8C99A"/>
+                                <stop offset="100%" stop-color="#B8925C"/>
                             </radialGradient>
-                            <filter id="pg-glow" x="-40%" y="-40%" width="180%" height="180%">
-                                <feGaussianBlur stdDeviation="3" result="b"/>
+                            <radialGradient id="pg-petal-mid" cx="50%" cy="40%" r="60%">
+                                <stop offset="0%" stop-color="#FFF9EE"/>
+                                <stop offset="55%" stop-color="#DDBF8A"/>
+                                <stop offset="100%" stop-color="#C9A36A"/>
+                            </radialGradient>
+                            <radialGradient id="pg-petal-inner" cx="50%" cy="45%" r="55%">
+                                <stop offset="0%" stop-color="#FFFDF8"/>
+                                <stop offset="60%" stop-color="#F0D7A8"/>
+                                <stop offset="100%" stop-color="#D4B07A"/>
+                            </radialGradient>
+                            <radialGradient id="pg-center-g" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#FFF8E8"/>
+                                <stop offset="70%" stop-color="#E8C98A"/>
+                                <stop offset="100%" stop-color="#C4A06A"/>
+                            </radialGradient>
+                            <filter id="pg-glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="b"/>
                                 <feMerge>
                                     <feMergeNode in="b"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
+                            <filter id="pg-soft-glow" x="-80%" y="-80%" width="260%" height="260%">
+                                <feGaussianBlur stdDeviation="6" result="b"/>
+                                <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 0.9 0 0 0  0 0 0.6 0 0  0 0 0 0.45 0"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
                         </defs>
+
+                        {{-- ışık çizgisi --}}
+                        <path class="pg-flower__light" d="M110 290 L110 118" fill="none" stroke="rgba(201,173,122,0.35)" stroke-width="2" stroke-linecap="round"/>
+
                         <g class="pg-flower__stem-group">
-                            <path class="pg-flower__stem" d="M100 250 C98 200 102 160 100 120" fill="none" stroke="#5C7A62" stroke-width="3" stroke-linecap="round"/>
-                            <path class="pg-flower__leaf pg-flower__leaf--l" d="M100 170 C70 160 55 140 62 125 C80 130 95 145 100 160" fill="#6E8F78"/>
-                            <path class="pg-flower__leaf pg-flower__leaf--r" d="M100 190 C130 180 145 160 138 145 C120 150 105 165 100 180" fill="#7A9982"/>
+                            <path class="pg-flower__stem" d="M110 290 C108 230 112 185 110 138" fill="none" stroke="url(#pg-stem-g)" stroke-width="3.5" stroke-linecap="round"/>
+                            <path class="pg-flower__leaf pg-flower__leaf--l" d="M110 200 C78 188 55 168 58 148 C82 154 100 172 110 190" fill="#6E9478" opacity="0.95"/>
+                            <path class="pg-flower__leaf pg-flower__leaf--r" d="M110 225 C142 212 162 190 158 168 C136 176 118 196 110 214" fill="#7FA68A" opacity="0.95"/>
+                            <path class="pg-flower__leaf pg-flower__leaf--l2" d="M110 250 C85 242 68 228 70 212 C90 216 104 230 110 244" fill="#648A6E" opacity="0.9"/>
                         </g>
-                        <g class="pg-flower__head" filter="url(#pg-glow)">
-                            <ellipse class="pg-flower__petal" data-i="0" cx="100" cy="78" rx="18" ry="34" fill="url(#pg-petal-g)"/>
-                            <ellipse class="pg-flower__petal" data-i="1" cx="100" cy="78" rx="18" ry="34" fill="url(#pg-petal-g)"/>
-                            <ellipse class="pg-flower__petal" data-i="2" cx="100" cy="78" rx="18" ry="34" fill="url(#pg-petal-g)"/>
-                            <ellipse class="pg-flower__petal" data-i="3" cx="100" cy="78" rx="18" ry="34" fill="url(#pg-petal-g)"/>
-                            <ellipse class="pg-flower__petal" data-i="4" cx="100" cy="78" rx="18" ry="34" fill="url(#pg-petal-g)"/>
-                            <ellipse class="pg-flower__petal" data-i="5" cx="100" cy="78" rx="18" ry="34" fill="url(#pg-petal-g)"/>
-                            <circle class="pg-flower__center" cx="100" cy="90" r="16" fill="#E8D5A8"/>
+
+                        <g class="pg-flower__head" filter="url(#pg-soft-glow)" transform="translate(110 108)">
+                            {{-- dış petaller --}}
+                            <g class="pg-flower__ring pg-flower__ring--outer">
+                                <ellipse class="pg-flower__petal" data-layer="o" data-i="0" cx="0" cy="-38" rx="16" ry="38" fill="url(#pg-petal-outer)"/>
+                                <ellipse class="pg-flower__petal" data-layer="o" data-i="1" cx="0" cy="-38" rx="16" ry="38" fill="url(#pg-petal-outer)" transform="rotate(45)"/>
+                                <ellipse class="pg-flower__petal" data-layer="o" data-i="2" cx="0" cy="-38" rx="16" ry="38" fill="url(#pg-petal-outer)" transform="rotate(90)"/>
+                                <ellipse class="pg-flower__petal" data-layer="o" data-i="3" cx="0" cy="-38" rx="16" ry="38" fill="url(#pg-petal-outer)" transform="rotate(135)"/>
+                                <ellipse class="pg-flower__petal" data-layer="o" data-i="4" cx="0" cy="-38" rx="16" ry="38" fill="url(#pg-petal-outer)" transform="rotate(180)"/>
+                                <ellipse class="pg-flower__petal" data-layer="o" data-i="5" cx="0" cy="-38" rx="16" ry="38" fill="url(#pg-petal-outer)" transform="rotate(225)"/>
+                                <ellipse class="pg-flower__petal" data-layer="o" data-i="6" cx="0" cy="-38" rx="16" ry="38" fill="url(#pg-petal-outer)" transform="rotate(270)"/>
+                                <ellipse class="pg-flower__petal" data-layer="o" data-i="7" cx="0" cy="-38" rx="16" ry="38" fill="url(#pg-petal-outer)" transform="rotate(315)"/>
+                            </g>
+                            {{-- orta --}}
+                            <g class="pg-flower__ring pg-flower__ring--mid">
+                                <ellipse class="pg-flower__petal" data-layer="m" data-i="0" cx="0" cy="-26" rx="13" ry="28" fill="url(#pg-petal-mid)"/>
+                                <ellipse class="pg-flower__petal" data-layer="m" data-i="1" cx="0" cy="-26" rx="13" ry="28" fill="url(#pg-petal-mid)" transform="rotate(60)"/>
+                                <ellipse class="pg-flower__petal" data-layer="m" data-i="2" cx="0" cy="-26" rx="13" ry="28" fill="url(#pg-petal-mid)" transform="rotate(120)"/>
+                                <ellipse class="pg-flower__petal" data-layer="m" data-i="3" cx="0" cy="-26" rx="13" ry="28" fill="url(#pg-petal-mid)" transform="rotate(180)"/>
+                                <ellipse class="pg-flower__petal" data-layer="m" data-i="4" cx="0" cy="-26" rx="13" ry="28" fill="url(#pg-petal-mid)" transform="rotate(240)"/>
+                                <ellipse class="pg-flower__petal" data-layer="m" data-i="5" cx="0" cy="-26" rx="13" ry="28" fill="url(#pg-petal-mid)" transform="rotate(300)"/>
+                            </g>
+                            {{-- iç --}}
+                            <g class="pg-flower__ring pg-flower__ring--inner">
+                                <ellipse class="pg-flower__petal" data-layer="i" data-i="0" cx="0" cy="-16" rx="9" ry="18" fill="url(#pg-petal-inner)"/>
+                                <ellipse class="pg-flower__petal" data-layer="i" data-i="1" cx="0" cy="-16" rx="9" ry="18" fill="url(#pg-petal-inner)" transform="rotate(72)"/>
+                                <ellipse class="pg-flower__petal" data-layer="i" data-i="2" cx="0" cy="-16" rx="9" ry="18" fill="url(#pg-petal-inner)" transform="rotate(144)"/>
+                                <ellipse class="pg-flower__petal" data-layer="i" data-i="3" cx="0" cy="-16" rx="9" ry="18" fill="url(#pg-petal-inner)" transform="rotate(216)"/>
+                                <ellipse class="pg-flower__petal" data-layer="i" data-i="4" cx="0" cy="-16" rx="9" ry="18" fill="url(#pg-petal-inner)" transform="rotate(288)"/>
+                            </g>
+                            <circle class="pg-flower__center" cx="0" cy="0" r="12" fill="url(#pg-center-g)" filter="url(#pg-glow)"/>
+                            <circle class="pg-flower__center-dot" cx="0" cy="0" r="4" fill="#FFF8E8" opacity="0.9"/>
                         </g>
                     </svg>
                 </div>
