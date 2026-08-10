@@ -33,7 +33,6 @@ use App\Http\Controllers\MemberGoogleAuthController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PaintRoomController;
 use App\Http\Controllers\PaintRoomJoinController;
-use App\Http\Controllers\PrivateGiftController;
 use App\Http\Controllers\PurchaseVerificationController;
 use App\Http\Controllers\ShopierController;
 use App\Http\Controllers\SitemapController;
@@ -80,17 +79,6 @@ Route::post('/e-bulten/kayit', [NewsletterController::class, 'store'])->name('ne
 Route::post('/ziyaretci-geri-bildirim', [VisitorFeedbackController::class, 'store'])
     ->middleware('throttle:8,1')
     ->name('visitor-feedback.store');
-
-// Gizli kişisel hediye sayfası — menüde yok; path .env ile; kapalı/yanlış = 404.
-$privateGiftPath = trim((string) config('private-gift.path', ''), '/');
-if ($privateGiftPath !== '' && preg_match('/^[A-Za-z0-9\-_]+$/', $privateGiftPath)) {
-    Route::get('/'.$privateGiftPath, [PrivateGiftController::class, 'show'])
-        ->middleware('throttle:30,1')
-        ->name('private-gift.show');
-    Route::get('/'.$privateGiftPath.'/photo', [PrivateGiftController::class, 'photo'])
-        ->middleware('throttle:30,1')
-        ->name('private-gift.photo');
-}
 
 Route::prefix('goruntulu-boyama')->name('paint-room.')->group(function () {
     Route::get('/', [PaintRoomController::class, 'index'])->name('index');

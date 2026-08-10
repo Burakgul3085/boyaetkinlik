@@ -29,8 +29,6 @@ export default defineConfig({
                 'resources/js/online-experiment-number-trace.js',
                 'resources/js/paint-room.js',
                 'resources/js/paint-room-page-browser.js',
-                'resources/css/private-gift.css',
-                'resources/js/private-gift.js',
             ],
             refresh: true,
         }),
